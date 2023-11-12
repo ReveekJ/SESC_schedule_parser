@@ -1,0 +1,9 @@
+selenium
+aiogram
+uvloop
+ujson
+aiodns
+asyncpg
+alembic
+sqlalchemy
+python-dotenv
