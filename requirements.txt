@@ -1,5 +1,5 @@
 selenium
-aiogram
+aiogram==3.1.1
 uvloop
 ujson
 aiodns
@@ -7,3 +7,5 @@ asyncpg
 alembic
 sqlalchemy
 python-dotenv
+beautifulsoup4
+requests
