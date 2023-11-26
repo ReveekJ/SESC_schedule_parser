@@ -1,8 +1,13 @@
+import os
+import sys
+
+import asyncpg
 from sqlalchemy import select, insert, delete, update
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
 
 from config import POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB
-import asyncpg
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'models')))
 
 from models.models import users
 
@@ -27,12 +32,6 @@ class DB:
         res = await self.session.execute(query)
         await self.session.commit()
         return res.all()
-
-    async def __select_user_by_id(self, _id):
-        query = select(users).where(users.c.id == _id)
-        res = await self.session.execute(query)
-        await self.session.commit()
-        return res
 
     async def create_user(self, **kwargs):
         # what must be in kwargs u can see in models.py
