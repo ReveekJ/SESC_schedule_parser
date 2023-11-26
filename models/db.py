@@ -9,7 +9,7 @@ from config import POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_POR
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'models')))
 
-from models.models import users
+from models.models import users, columns_json
 
 
 class DB:
@@ -30,8 +30,13 @@ class DB:
     async def select_user_by_id(self, _id):
         query = select(users).where(users.c.id == _id)
         res = await self.session.execute(query)
+        final_result = {}
+
+        for index, elem in enumerate(res.all()[0]):
+            final_result[columns_json[index]] = elem
+
         await self.session.commit()
-        return res.all()
+        return final_result
 
     async def create_user(self, **kwargs):
         # what must be in kwargs u can see in models.py
