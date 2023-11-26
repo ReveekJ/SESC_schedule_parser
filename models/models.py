@@ -5,4 +5,6 @@ users = Table('users',
               metadata,
               Column('id', Integer, primary_key=True),
               Column('role', Text),
-              Column('sub_info', Text))
+              Column('sub_info', Text),
+              Column('lang', Text)
+              )
