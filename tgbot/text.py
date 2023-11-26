@@ -1,14 +1,5 @@
 from models.db import DB
-
-
-# text = {'ru':
-#             {'hello': 'Привет! Это бот, котрый может показать тебе актуальное расписание у любого класса и на '
-#                       'любой день в СУНЦ УрФУ!',
-#              'choose_role': 'Выберите Вашу роль',
-#              'disciple': 'Ученик',
-#              'teacher': 'Учитель',
-#              'parents': 'Родитель'},
-#         'en': ''}
+from models.models import columns_json
 
 
 # порядок ввода: tuple(краткое имя, русское вариант, англиский вариант) ......
@@ -52,6 +43,7 @@ class TextMessage:
         session = DB()
         await session.connect()
         lang = await session.select_user_by_id(user_id)
+        lang = lang[columns_json[3]]
         return self.__text[lang][short_name_text_mes]
 
 
