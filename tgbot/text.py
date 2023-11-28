@@ -48,8 +48,9 @@ class TextMessage:
 
 
 TEXT = TextMessage(('hello', 'Привет! Это бот, котрый может показать тебе актуальное расписание у любого класса и на '
-                             'любой день в СУНЦ УрФУ!', ''),
-                   ('choose_role', 'Выберите Вашу роль', ''),
-                   ('disciple', 'Ученик', ''),
-                   ('teacher', 'Учитель', ''),
-                   ('parents', 'Родитель', ''))
+                             'любой день в СУНЦ УрФУ!', 'Hi! This is a bot that can show you the current schedule for '
+                                                        'any class and on any day in SESC UrFU!'),
+                   ('choose_role', 'Выберите Вашу роль', 'Choose your role'),
+                   ('disciple', 'Ученик', 'Student'),
+                   ('teacher', 'Учитель', 'Teacher'),
+                   ('parents', 'Родитель', 'Parent'))
