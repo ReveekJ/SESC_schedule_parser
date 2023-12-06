@@ -2,14 +2,13 @@ import os
 import sys
 
 import asyncpg
+from models.model import users, columns_json
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
 
 from config import POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'models')))
-
-from models.models import users, columns_json
 
 
 class DB:
@@ -49,15 +48,8 @@ class DB:
         await self.session.execute(stmt)
         await self.session.commit()
 
-    async def update_user_info(self, _id, role=None, sub_info=None):
-        if role is not None and sub_info is not None:
-            stmt = update(users).where(users.c.id == _id).values(role=role, sub_info=sub_info)
-        elif sub_info is None:
-            stmt = update(users).where(users.c.id == _id).values(role=role)
-        elif role is None:
-            stmt = update(users).where(users.c.id == _id).values(sub_info=sub_info)
-        else:
-            raise ValueError('No args')
+    async def update_user_info(self, _id, **kwargs):
+        stmt = update(users).where(users.c.id == _id).values(**kwargs)
 
         await self.session.execute(stmt)
         await self.session.commit()
