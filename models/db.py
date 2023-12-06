@@ -26,6 +26,7 @@ class DB:
             f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}')
         self.session = AsyncSession(self.engine)
 
+    # Возвращает None если запись не найдется, иначе вернется dict
     async def select_user_by_id(self, _id):
         _id = self.__convert_to_id_type(_id)
 
@@ -33,8 +34,11 @@ class DB:
         res = await self.session.execute(query)
         final_result = {}
 
-        for index, elem in enumerate(res.all()[0]):
-            final_result[columns_json[index]] = elem
+        try:
+            for index, elem in enumerate(res.all()[0]):
+                final_result[columns_json[index]] = elem
+        except IndexError:
+            return None
 
         await self.session.commit()
         return final_result
@@ -42,7 +46,7 @@ class DB:
     async def create_user(self, **kwargs):
         # what must be in kwargs u can see in models.py
         # проверка, что переданы все параметры
-        if kwargs.keys() != columns_json.values():
+        if list(kwargs.keys()) != list(columns_json.values()):
             raise ValueError('Не хватает параметров для создания пользователя')
 
         # преобразование id в тип id, который находтся в бд
