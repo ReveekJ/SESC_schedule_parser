@@ -3,7 +3,39 @@ from bs4 import BeautifulSoup as bs
 from bs4 import NavigableString
 
 
+class UnchangeableType:
+    def __init__(self):
+        self.count_of_change = 0
+
+    def __set_name__(self, owner, name):
+        self.name = '_' + name
+
+    def __set__(self, instance, value):
+        if self.count_of_change < 3:
+            self.count_of_change += 1
+            return setattr(instance, self.name, value)
+        else:
+            raise ValueError('You can not change this attribute')
+
+    def __get__(self, instance, owner):
+        return getattr(instance, self.name)
+
+
 class SESCInfo:
+    __instance = None
+
+    GROUP = UnchangeableType()
+    TEACHER = UnchangeableType()
+    WEEKDAY = UnchangeableType()
+    AUDITORY = UnchangeableType()
+    TYPE = UnchangeableType()
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super().__new__(cls)
+
+        return cls.__instance
+
     def __init__(self):
         self.url = 'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii'
         self.__r = requests.get(self.url)
@@ -11,7 +43,6 @@ class SESCInfo:
         self.__selects = self.__soup.find_all('select')
 
         self.GROUP = self.__parse_group_info()
-        # self.GROUP_REVERSED = {i: j for i, j in self.GROUP.items()}
         self.TEACHER = self.__parse_teacher_info()
         self.WEEKDAY = self.__parse_weekday_info()
         self.AUDITORY = self.__parse_auditory_info()
@@ -44,3 +75,6 @@ class SESCInfo:
 
     def __parse_type_info(self) -> dict:
         return self.__parse(self.__selects[0], [])
+
+
+SESC_Info = SESCInfo()
