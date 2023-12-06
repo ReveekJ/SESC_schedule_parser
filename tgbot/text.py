@@ -1,7 +1,3 @@
-from models.db import DB
-from models.models import columns_json
-
-
 # порядок ввода: tuple(краткое имя, русское вариант, англиский вариант) ......
 class TextMessage:
     __instance = None
@@ -39,11 +35,11 @@ class TextMessage:
                     continue
         return res
 
-    async def __call__(self, short_name_text_mes: str, user_id: int):
-        session = DB()
-        await session.connect()
-        lang = await session.select_user_by_id(user_id)
-        lang = lang[columns_json[3]]
+    def __call__(self, short_name_text_mes: str, lang: str):
+        # session = DB()
+        # await session.connect()
+        # lang = await session.select_user_by_id(user_id)
+        # lang = lang[columns_json[3]]
         return self.__text[lang][short_name_text_mes]
 
 
@@ -51,6 +47,8 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                              'любой день в СУНЦ УрФУ!', 'Hi! This is a bot that can show you the current schedule for '
                                                         'any class and on any day in SESC UrFU!'),
                    ('choose_role', 'Выберите Вашу роль', 'Choose your role'),
-                   ('disciple', 'Ученик', 'Student'),
+                   ('choose_sub_info_student', 'Выберите Ваш класс', 'Choose your class'),
+                   ('choose_sub_info_teacher', 'Выберите Ваше ФИО', 'Choose your name'),
+                   ('student', 'Ученик', 'Student'),
                    ('teacher', 'Учитель', 'Teacher'),
-                   ('parents', 'Родитель', 'Parent'))
+                   ('parent', 'Родитель', 'Parent'))
