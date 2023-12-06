@@ -20,6 +20,13 @@ router = Router()
 
 @router.message(CommandStart())
 async def start_registration(message: Message, state: FSMContext) -> None:
+    session = DB()
+    await session.connect()
+
+    if await session.select_user_by_id(message.from_user.id) is not None:
+        # TODO: send main message
+        return None
+
     lang = message.from_user.language_code
     await state.update_data(lang=lang)
 
@@ -76,7 +83,7 @@ async def set_sub_role_student(callback: CallbackQuery, state: FSMContext):
     lang = data['lang']
     chat_id = callback.from_user.id
 
-    await session.create_user(id=str(chat_id),
+    await session.create_user(id=chat_id,
                               role=role,
                               sub_info=sub_role,
                               lang=lang)
