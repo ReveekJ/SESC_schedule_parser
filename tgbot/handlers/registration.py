@@ -7,6 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from models.db import DB
 from tgbot.text import TEXT
 from tgbot.keyboard import get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb
+from models.database import get_async_session
 
 
 class Form(StatesGroup):
@@ -20,10 +21,9 @@ router = Router()
 
 @router.message(CommandStart())
 async def start_registration(message: Message, state: FSMContext) -> None:
-    session = DB()
-    await session.connect()
+    session = await get_async_session()
 
-    if await session.select_user_by_id(message.from_user.id) is not None:
+    if await DB().select_user_by_id(session, message.from_user.id) is not None:
         # TODO: send main message
         return None
 
@@ -73,8 +73,7 @@ async def set_role_teacher(callback: CallbackQuery, state: FSMContext) -> None:
 
 @router.callback_query(Form.sub_info)
 async def set_sub_role_student(callback: CallbackQuery, state: FSMContext):
-    session = DB()
-    await session.connect()
+    session = await get_async_session()
 
     data = await state.get_data()
     # print(data)
@@ -83,10 +82,11 @@ async def set_sub_role_student(callback: CallbackQuery, state: FSMContext):
     lang = data['lang']
     chat_id = callback.from_user.id
 
-    await session.create_user(id=chat_id,
-                              role=role,
-                              sub_info=sub_role,
-                              lang=lang)
+    await DB().create_user(session,
+                           id=chat_id,
+                           role=role,
+                           sub_info=sub_role,
+                           lang=lang)
 
     # TODO: send main page
 
