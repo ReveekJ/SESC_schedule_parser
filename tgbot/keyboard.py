@@ -38,3 +38,13 @@ def get_choose_teacher_kb() -> InlineKeyboardMarkup:
     kb.adjust(2)
 
     return kb.as_markup()
+
+def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text=TEXT('today', lang), callback_data='today')
+    kb.button(text=TEXT('tomorrow', lang), callback_data='tomorrow')
+    kb.button(text=TEXT('all', lang), callback_data='all')
+    kb.adjust(1)
+    return kb.as_markup()
+
+

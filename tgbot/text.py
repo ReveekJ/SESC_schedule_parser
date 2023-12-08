@@ -51,4 +51,8 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('choose_sub_info_teacher', 'Выберите Ваше ФИО', 'Choose your name'),
                    ('student', 'Ученик', 'Student'),
                    ('teacher', 'Учитель', 'Teacher'),
-                   ('parent', 'Родитель', 'Parent'))
+                   ('parent', 'Родитель', 'Parent'),
+                   ('today', 'Расписание на сегодня', 'Schedule for today'),
+                   ('tomorrow', 'Расписание на завтра', 'Schedule for tomorrow'),
+                   ('all', 'Показать все расписание', 'View all schedule'))
+
