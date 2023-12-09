@@ -6,10 +6,10 @@ from sesc_info import SESC_Info
 
 def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    kb.button(text=TEXT('student', lang), callback_data='student')
+    kb.button(text=TEXT('student', lang), callback_data='group')
     kb.button(text=TEXT('teacher', lang), callback_data='teacher')
     # The Illusion of choice
-    kb.button(text=TEXT('parent', lang), callback_data='student')
+    kb.button(text=TEXT('parent', lang), callback_data='group')
 
     kb.adjust(1)
 
