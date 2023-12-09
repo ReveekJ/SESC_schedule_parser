@@ -54,5 +54,6 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('parent', 'Родитель', 'Parent'),
                    ('today', 'Расписание на сегодня', 'Schedule for today'),
                    ('tomorrow', 'Расписание на завтра', 'Schedule for tomorrow'),
-                   ('all', 'Показать все расписание', 'View all schedule'))
-
+                   ('all', 'Показать все расписание', 'View all schedule'),
+                   ('main', 'Расписание', 'Schedule'))
+# TODO: переделать текст main
