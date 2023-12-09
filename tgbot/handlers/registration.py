@@ -6,7 +6,7 @@ from aiogram.types import Message, CallbackQuery
 
 from models.db import DB
 from tgbot.text import TEXT
-from tgbot.keyboard import get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb
+from tgbot.keyboard import get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule
 from models.database import get_async_session
 
 
@@ -22,12 +22,15 @@ router = Router()
 @router.message(CommandStart())
 async def start_registration(message: Message, state: FSMContext) -> None:
     session = await get_async_session()
+    lang = message.from_user.language_code
 
     if await DB().select_user_by_id(session, message.from_user.id) is not None:
         # TODO: send main message
+        print('нашел пользователя')
+        await message.answer(TEXT('main', lang=lang), reply_markup=get_choose_schedule(lang),
+                             disable_notification=True)
         return None
 
-    lang = message.from_user.language_code
     await state.update_data(lang=lang)
 
     await state.set_state(Form.role)
@@ -39,7 +42,7 @@ async def start_registration(message: Message, state: FSMContext) -> None:
                          disable_notification=True)
 
 
-@router.callback_query(Form.role, F.data.casefold() == 'student')
+@router.callback_query(Form.role, F.data.casefold() == 'group')
 async def set_role_student(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     lang = data.get('lang')
@@ -76,6 +79,7 @@ async def set_sub_role_student(callback: CallbackQuery, state: FSMContext):
     session = await get_async_session()
 
     data = await state.get_data()
+    await state.clear()
     # print(data)
     role = data['role']
     sub_role = callback.data
@@ -87,6 +91,9 @@ async def set_sub_role_student(callback: CallbackQuery, state: FSMContext):
                            role=role,
                            sub_info=sub_role,
                            lang=lang)
+
+    await callback.message.answer(TEXT('main', lang=lang), reply_markup=get_choose_schedule(lang),
+                                  disable_notification=True)
 
     # TODO: send main page
 
