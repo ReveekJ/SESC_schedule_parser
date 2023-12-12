@@ -1,5 +1,3 @@
-import time
-
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
@@ -51,12 +49,17 @@ class Parser:
             return path[:path.rfind('/') + 1] + file
 
     def __check_file_in_path(self, path: str) -> str:
+        path_to_file = path[:path.rfind('/')]
+
         for files in os.scandir(path[:path.rfind('/')]):
-            if files.name[:files.name.find('__')] == path[path.rfind('/') + 1: path.find('__')] and \
-                    (datetime.datetime.now() - datetime.datetime.strptime(files.name[files.name.find('__') + 2: files.name.find('.png')],
-                                                                          '%Y-%m-%d %H:%M:%S.%f')) \
-                    < datetime.timedelta(minutes=self.expiration_time_of_schedule):
-                return files.name
+            if files.name[:files.name.find('__')] == path[path.rfind('/') + 1: path.find('__')]:
+                if (datetime.datetime.now() - datetime.datetime.strptime(
+                        files.name[files.name.find('__') + 2: files.name.find('.png')],
+                        '%Y-%m-%d %H:%M:%S.%f')) \
+                        < datetime.timedelta(minutes=self.expiration_time_of_schedule):
+                    return files.name
+                else:
+                    os.remove(path_to_file + '/' + files.name)
 
         return ''
 
