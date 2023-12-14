@@ -55,5 +55,8 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('today', 'Расписание на сегодня', 'Schedule for today'),
                    ('tomorrow', 'Расписание на завтра', 'Schedule for tomorrow'),
                    ('all', 'Показать все расписание', 'View all schedule'),
-                   ('main', 'Расписание', 'Schedule'))
-# TODO: переделать текст main
+                   ('main', 'Расписание на ', 'Schedule for '),
+                   ('month', ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь',
+                              'Октябрь', 'Ноябрь', 'Декабрь'],
+                    ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
+                     'November', 'December']))
