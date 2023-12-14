@@ -25,8 +25,6 @@ async def start_registration(message: Message, state: FSMContext) -> None:
     lang = message.from_user.language_code
 
     if await DB().select_user_by_id(session, message.from_user.id) is not None:
-        # TODO: send main message
-        print('нашел пользователя')
         await message.answer(TEXT('main', lang=lang), reply_markup=get_choose_schedule(lang),
                              disable_notification=True)
         return None
@@ -92,9 +90,7 @@ async def set_sub_role_student(callback: CallbackQuery, state: FSMContext):
                            sub_info=sub_role,
                            lang=lang)
 
+    await callback.message.delete()
     await callback.message.answer(TEXT('main', lang=lang), reply_markup=get_choose_schedule(lang),
                                   disable_notification=True)
-
-    # TODO: send main page
-
     await callback.answer()
