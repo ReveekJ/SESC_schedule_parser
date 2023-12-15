@@ -20,20 +20,20 @@ async def send_schedule_for_today(callback: CallbackQuery):
 
     await callback.message.delete()
 
-    today = str((datetime.date.today().weekday()) % 6 + 1)
-    file = PARSER.parse(user_data['role'], user_data['sub_info'], today)
-    print(file)
+    file = PARSER.parse(user_data['role'], user_data['sub_info'],
+                        str((datetime.date.today().weekday()) % 6 + 1))
+
     schedule = FSInputFile(file)
 
-    result = await callback.message.answer_photo(
-        schedule)
-
-    await callback.message.answer(result.photo[-1].file_id,
-                                  disable_notification=True)
+    await callback.message.answer_photo(
+        schedule,
+        caption=TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 1],
+        disable_notification=True)
 
     await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),
                                   disable_notification=True)
+    await callback.answer()
 
 
 @router.callback_query(F.data == 'tomorrow')
@@ -48,13 +48,10 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
     file = PARSER.parse(user_data['role'], user_data['sub_info'], today)
     schedule = FSInputFile(file)
 
-    result = await callback.message.answer_photo(
+    await callback.message.answer_photo(
         schedule,
-        caption=""
-    )
-
-    await callback.message.answer(result.photo[-1].file_id,
-                                  disable_notification=True)
+        caption=TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 2],
+        disable_notification=True)
 
     await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),
