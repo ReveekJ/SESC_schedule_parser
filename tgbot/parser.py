@@ -41,13 +41,13 @@ class Parser:
             try:
                 schedule.screenshot(path + '.png')
             except WebDriverException:
-                print('Поймал ошибку')
-                schedule.screenshot(path + '.png')
+                return 'NO_SCHEDULE'
 
             return path + '.png'
         else:
             return path[:path.rfind('/') + 1] + file
 
+    # TODO: удаляются не все расписания
     def __check_file_in_path(self, path: str) -> str:
         path_to_file = path[:path.rfind('/')]
 
