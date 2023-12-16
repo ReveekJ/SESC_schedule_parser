@@ -49,7 +49,7 @@ async def set_role_student(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(Form.sub_info)
 
     await callback.message.delete()
-    await callback.message.answer(TEXT('choose_sub_info_student', lang=lang),
+    await callback.message.answer(TEXT('choose_sub_info_group', lang=lang),
                                   reply_markup=get_choose_group_kb(),
                                   disable_notification=True)
 
