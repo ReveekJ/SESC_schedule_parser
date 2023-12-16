@@ -23,12 +23,16 @@ async def send_schedule_for_today(callback: CallbackQuery):
     file = PARSER.parse(user_data['role'], user_data['sub_info'],
                         str((datetime.date.today().weekday()) % 6 + 1))
 
-    schedule = FSInputFile(file)
-
-    await callback.message.answer_photo(
-        schedule,
-        caption=TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 1],
-        disable_notification=True)
+    # проверка на присутствие расписания
+    if file == 'NO_SCHEDULE':
+        await callback.message.answer(TEXT('no_schedule', lang),
+                                      disable_notification=True)
+    else:
+        schedule = FSInputFile(file)
+        await callback.message.answer_photo(
+            schedule,
+            caption=TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 1],
+            disable_notification=True)
 
     await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),
@@ -44,14 +48,20 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
 
     await callback.message.delete()
 
-    today = str((datetime.date.today().weekday()) % 6 + 2)
+    today = str((datetime.date.today().weekday() + 2) % 6)
     file = PARSER.parse(user_data['role'], user_data['sub_info'], today)
-    schedule = FSInputFile(file)
 
-    await callback.message.answer_photo(
-        schedule,
-        caption=TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 2],
-        disable_notification=True)
+    # проверка на присутствие расписания
+    if file == 'NO_SCHEDULE':
+        await callback.message.answer(TEXT('no_schedule', lang),
+                                      disable_notification=True)
+    else:
+        schedule = FSInputFile(file)
+
+        await callback.message.answer_photo(
+            schedule,
+            caption=TEXT('main', lang) + TEXT('weekdays', lang)[(datetime.date.today().weekday() + 2) % 6],
+            disable_notification=True)
 
     await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),
