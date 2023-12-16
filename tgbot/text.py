@@ -47,8 +47,9 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                              'любой день в СУНЦ УрФУ!', 'Hi! This is a bot that can show you the current schedule for '
                                                         'any class and on any day in SESC UrFU!'),
                    ('choose_role', 'Выберите Вашу роль', 'Choose your role'),
-                   ('choose_sub_info_student', 'Выберите Ваш класс', 'Choose your class'),
+                   ('choose_sub_info_group', 'Выберите Ваш класс', 'Choose your class'),
                    ('choose_sub_info_teacher', 'Выберите Ваше ФИО', 'Choose your name'),
+                   ('choose_sub_info_auditory', 'Выберите аудиторию', 'Choose auditory'),
                    ('student', 'Ученик', 'Student'),
                    ('teacher', 'Учитель', 'Teacher'),
                    ('parent', 'Родитель', 'Parent'),
@@ -77,4 +78,8 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                         5: 'Friday',
                         6: 'Saturday',
                         7: 'Sunday'
-                    }))
+                    }),
+                   ('choose_type', 'Для кого/чего вы ищете расписание?',
+                    'Who/what are you looking for a schedule for?'),
+                   ('choose_day', 'Выберите день', 'Choose a day'),
+                   'no_schedule', 'Занятий нет', 'There are no classes')
