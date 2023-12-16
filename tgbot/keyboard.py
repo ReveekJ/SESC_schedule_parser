@@ -16,7 +16,7 @@ def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def get_choose_group_kb() -> InlineKeyboardMarkup:
+def get_choose_group_kb(lang: str = None) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     groups = SESC_Info.GROUP
 
@@ -28,7 +28,8 @@ def get_choose_group_kb() -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def get_choose_teacher_kb() -> InlineKeyboardMarkup:
+# Должно принимать lang для того чтобы работал allSchedule
+def get_choose_teacher_kb(lang: str = None) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     groups = SESC_Info.TEACHER
 
@@ -39,12 +40,39 @@ def get_choose_teacher_kb() -> InlineKeyboardMarkup:
 
     return kb.as_markup()
 
+
 def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=TEXT('today', lang), callback_data='today')
     kb.button(text=TEXT('tomorrow', lang), callback_data='tomorrow')
-    kb.button(text=TEXT('all', lang), callback_data='all')
+    kb.button(text=TEXT('all', lang), callback_data='see_all')
     kb.adjust(1)
     return kb.as_markup()
 
 
+# TODO: translate into English
+def get_choose_type_kb(lang: str) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+
+    for i, j in SESC_Info.TYPE.items():
+        kb.button(text=i, callback_data='type_' + j)
+
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
+    pass
+
+
+def get_choose_weekday_kb(lang: str) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+
+    for callback_data, text in TEXT('weekdays', lang).items():
+        if callback_data == 7:
+            continue
+
+        kb.button(text=text, callback_data=str(callback_data))
+
+    kb.adjust(1)
+    return kb.as_markup()
