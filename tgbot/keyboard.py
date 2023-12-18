@@ -63,7 +63,13 @@ def get_choose_type_kb(lang: str) -> InlineKeyboardMarkup:
 
 
 def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
-    pass
+    kb = InlineKeyboardBuilder()
+
+    for i, j in SESC_Info.AUDITORY.items():
+        kb.button(text=i, callback_data=j)
+
+    kb.adjust(3)
+    return kb.as_markup()
 
 
 def get_choose_weekday_kb(lang: str) -> InlineKeyboardMarkup:
