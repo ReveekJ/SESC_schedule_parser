@@ -33,27 +33,28 @@ async def get_type(callback: CallbackQuery, state: FSMContext):
 
 
 # TODO: Доделать
-@router.callback_query(Form.type, F.text == 'all')
-async def get_all(callback: CallbackQuery, state: FSMContext):
-    lang = callback.from_user.language_code
-    data = callback.data.split('_')[-1]
-    print('all')
-    await state.update_data(type=data)
-    await state.set_state(Form.weekday)
-
-    await callback.message.delete()
-    await callback.message.answer(TEXT('choose_type_weekday', lang),
-                                  reply_markup=get_choose_type_kb(lang),
-                                  disable_notification=True)
-
-    await callback.answer()
+# @router.callback_query(Form.type, F.data == 'type_all')
+# async def get_all(callback: CallbackQuery, state: FSMContext):
+#     lang = callback.from_user.language_code
+#
+#     data = callback.data.split('_')[-1]
+#
+#     await state.update_data(type=data)
+#     await state.update_data(second='')
+#     await state.set_state(Form.weekday)
+#
+#     await callback.message.delete()
+#     await callback.message.answer(TEXT('choose_day', lang),
+#                                   reply_markup=get_choose_weekday_kb(lang),
+#                                   disable_notification=True)
+#
+#     await callback.answer()
 
 
 @router.callback_query(Form.type)
 async def get_group(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     data = callback.data.split('_')[-1]
-    print('отправка на выбор второго')
     p = [get_choose_auditory_kb, get_choose_teacher_kb, get_choose_group_kb]
     keyboards = {e: p[i] for i, e in enumerate(SESC_Info.TYPE.values()) if e != 'all'}
 

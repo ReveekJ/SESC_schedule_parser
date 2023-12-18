@@ -56,6 +56,9 @@ def get_choose_type_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
 
     for i, j in SESC_Info.TYPE.items():
+        # ignore all schedule
+        if j == 'all':
+            continue
         kb.button(text=i, callback_data='type_' + j)
 
     kb.adjust(1)
