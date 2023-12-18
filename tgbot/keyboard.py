@@ -45,6 +45,7 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=TEXT('today', lang), callback_data='today')
     kb.button(text=TEXT('tomorrow', lang), callback_data='tomorrow')
+    kb.button(text=TEXT('all_days', lang), callback_data='all_days')
     kb.button(text=TEXT('all', lang), callback_data='see_all')
     kb.adjust(1)
     return kb.as_markup()
