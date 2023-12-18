@@ -47,7 +47,8 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
 
     await callback.message.delete()
 
-    today = str((datetime.date.today().weekday() + 2) % 6)
+    today = str((datetime.date.today().weekday() + 2) % 6) if datetime.date.today().weekday() != 6 else '1'
+
     file = PARSER.parse(user_data['role'], user_data['sub_info'], today)
 
     # проверка на присутствие расписания
@@ -59,7 +60,8 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
 
         await callback.message.answer_photo(
             schedule,
-            caption=TEXT('main', lang) + TEXT('weekdays', lang)[(datetime.date.today().weekday() + 2) % 6],
+            caption=TEXT('main', lang) + TEXT('weekdays', lang)[(datetime.date.today().weekday() + 2) % 6
+                                                                if datetime.date.today().weekday() != 6 else 1],
             disable_notification=True)
 
     await callback.message.answer(TEXT('main', lang),
@@ -107,4 +109,3 @@ async def get_sch_for_this_day(callback: CallbackQuery):
                                   disable_notification=True)
 
     await callback.answer()
-    
