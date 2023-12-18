@@ -82,4 +82,5 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('choose_type', 'Для кого/чего вы ищете расписание?',
                     'Who/what are you looking for a schedule for?'),
                    ('choose_day', 'Выберите день', 'Choose a day'),
-                   'no_schedule', 'Занятий нет', 'There are no classes')
+                   ('no_schedule', 'Занятий нет', 'There are no classes'),
+                   ('all_days', 'Показать на конкретный день', 'View all days'),)
