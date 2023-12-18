@@ -80,7 +80,12 @@ async def get_all_days_sch(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data in [str(i) for i in range(1, 7)])
+@router.callback_query(F.data == '1')
+@router.callback_query(F.data == '2')
+@router.callback_query(F.data == '3')
+@router.callback_query(F.data == '4')
+@router.callback_query(F.data == '5')
+@router.callback_query(F.data == '6')
 async def get_sch_for_this_day(callback: CallbackQuery):
     lang = callback.from_user.language_code
     session = await get_async_session()
@@ -96,6 +101,10 @@ async def get_sch_for_this_day(callback: CallbackQuery):
             schedule,
             caption=TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)],
             disable_notification=True)
+
+    await callback.message.answer(TEXT('main', lang),
+                                  reply_markup=get_choose_schedule(lang),
+                                  disable_notification=True)
 
     await callback.answer()
     
