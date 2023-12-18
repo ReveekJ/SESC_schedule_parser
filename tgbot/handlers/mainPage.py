@@ -6,8 +6,7 @@ from models.database import get_async_session
 import datetime
 
 from tgbot.text import TEXT
-from tgbot.keyboard import get_choose_schedule
-
+from tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
 
 router = Router()
 
@@ -66,6 +65,37 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
     await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),
                                   disable_notification=True)
+    await callback.answer()
 
-# @router.callback_query(F.data == 'all')
-# async def send_all_schedule(callback: CallbackQuery):
+
+@router.callback_query(F.data == 'all_days')
+async def get_all_days_sch(callback: CallbackQuery):
+    lang = callback.from_user.language_code
+
+    await callback.message.delete()
+    await callback.message.answer(TEXT('choose_day', lang),
+                                  reply_markup=get_choose_weekday_kb(lang),
+                                  disable_notification=True)
+
+    await callback.answer()
+
+
+@router.callback_query(F.data in [str(i) for i in range(1, 7)])
+async def get_sch_for_this_day(callback: CallbackQuery):
+    lang = callback.from_user.language_code
+    session = await get_async_session()
+    user_data = await DB().select_user_by_id(session, callback.from_user.id)
+    file = PARSER.parse(user_data['role'], user_data['sub_info'], callback.data)
+
+    if file == 'NO_SCHEDULE':
+        await callback.message.answer(TEXT('no_schedule', lang),
+                                      disable_notification=True)
+    else:
+        schedule = FSInputFile(file)
+        await callback.message.answer_photo(
+            schedule,
+            caption=TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)],
+            disable_notification=True)
+
+    await callback.answer()
+    
