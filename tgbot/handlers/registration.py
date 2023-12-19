@@ -77,12 +77,12 @@ async def set_role_teacher(callback: CallbackQuery, state: FSMContext) -> None:
 async def set_letter_of_teacher(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
 
-    await state.update_data(letter_of_teacher=callback.data)
     await state.set_state(Form.sub_info)
 
     await callback.message.delete()
     await callback.message.answer(text=TEXT('choose_sub_info_teacher', lang),
-                                  reply_markup=get_choose_teacher_kb(callback.data))
+                                  reply_markup=get_choose_teacher_kb(callback.data.split('_')[-1]),
+                                  disable_notification=True)
 
     await callback.answer()
 
