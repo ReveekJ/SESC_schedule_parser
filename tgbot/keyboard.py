@@ -28,13 +28,23 @@ def get_choose_group_kb(lang: str = None) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-# Должно принимать lang для того чтобы работал allSchedule
-def get_choose_teacher_kb(lang: str = None) -> InlineKeyboardMarkup:
+def get_letter_of_teacher_kb(lang: str = None) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    groups = SESC_Info.TEACHER
+    letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У',
+               'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 
-    for i in groups.keys():
-        kb.button(text=i, callback_data=groups[i])
+    [kb.button(text=i, callback_data=i) for i in letters]
+    kb.adjust(3)
+    return kb.as_markup()
+
+
+# Должно принимать lang для того чтобы работал allSchedule
+def get_choose_teacher_kb(letter: str, lang: str = None) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+
+    for key, value in SESC_Info.TEACHER.items():
+        if key[0] == letter:
+            kb.button(text=key, callback_data=value)
 
     kb.adjust(2)
 
