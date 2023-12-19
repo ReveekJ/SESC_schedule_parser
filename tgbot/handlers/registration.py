@@ -6,12 +6,14 @@ from aiogram.types import Message, CallbackQuery
 
 from models.db import DB
 from tgbot.text import TEXT
-from tgbot.keyboard import get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule
+from tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
+                            get_letter_of_teacher_kb)
 from models.database import get_async_session
 
 
 class Form(StatesGroup):
     role = State()
+    letter_of_teacher = State()
     sub_info = State()
     lang = State()
 
@@ -58,16 +60,29 @@ async def set_role_student(callback: CallbackQuery, state: FSMContext) -> None:
 
 @router.callback_query(Form.role, F.data.casefold() == 'teacher')
 async def set_role_teacher(callback: CallbackQuery, state: FSMContext) -> None:
-    data = await state.get_data()
-    lang = data.get('lang')
+    lang = callback.from_user.language_code
 
     await state.update_data(role=callback.data)
+    await state.set_state(Form.letter_of_teacher)
+
+    await callback.message.delete()
+    await callback.message.answer(TEXT('choose_letter', lang=lang),
+                                  reply_markup=get_letter_of_teacher_kb(lang),
+                                  disable_notification=True)
+
+    await callback.answer()
+
+
+@router.callback_query(Form.letter_of_teacher)
+async def set_letter_of_teacher(callback: CallbackQuery, state: FSMContext):
+    lang = callback.from_user.language_code
+
+    await state.update_data(letter_of_teacher=callback.data)
     await state.set_state(Form.sub_info)
 
     await callback.message.delete()
-    await callback.message.answer(TEXT('choose_sub_info_teacher', lang=lang),
-                                  reply_markup=get_choose_teacher_kb(),
-                                  disable_notification=True)
+    await callback.message.answer(text=TEXT('choose_sub_info_teacher', lang),
+                                  reply_markup=get_choose_teacher_kb(callback.data))
 
     await callback.answer()
 
