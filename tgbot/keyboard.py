@@ -33,8 +33,9 @@ def get_letter_of_teacher_kb(lang: str = None) -> InlineKeyboardMarkup:
     letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У',
                'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 
-    [kb.button(text=i, callback_data=i) for i in letters]
+    [kb.button(text=i, callback_data='letter_' + i) for i in letters]
     kb.adjust(3)
+
     return kb.as_markup()
 
 
