@@ -6,12 +6,13 @@ from aiogram.types import CallbackQuery, FSInputFile
 from tgbot.parser import PARSER
 from tgbot.text import TEXT
 from tgbot.keyboard import (get_choose_type_kb, get_choose_group_kb, get_choose_weekday_kb, get_choose_auditory_kb,
-                            get_choose_teacher_kb, get_choose_schedule)
+                            get_choose_teacher_kb, get_choose_schedule, get_letter_of_teacher_kb)
 from tgbot.sesc_info import SESC_Info
 
 
 class Form(StatesGroup):
     type = State()
+    letter_of_teacher = State()
     second = State()
     weekday = State()
 
@@ -55,15 +56,27 @@ async def get_type(callback: CallbackQuery, state: FSMContext):
 async def get_group(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     data = callback.data.split('_')[-1]
-    p = [get_choose_auditory_kb, get_choose_teacher_kb, get_choose_group_kb]
+    p = [get_choose_auditory_kb, get_letter_of_teacher_kb, get_choose_group_kb]
     keyboards = {e: p[i] for i, e in enumerate(SESC_Info.TYPE.values()) if e != 'all'}
 
     await state.update_data(type=data)
     await state.set_state(Form.second)
 
     await callback.message.delete()
-    await callback.message.answer(TEXT('choose_sub_info_' + data, lang),
+    await callback.message.answer(TEXT('choose_sub_info_' + data if data != 'teacher' else 'choose_letter', lang),
                                   reply_markup=keyboards[data](lang),
+                                  disable_notification=True)
+
+    await callback.answer()
+
+
+@router.callback_query(Form.second, F.data.startswith('letter_'))
+async def second_teacher(callback: CallbackQuery, state: FSMContext):
+    lang = callback.from_user.language_code
+
+    await callback.message.delete()
+    await callback.message.answer(text=TEXT('choose_sub_info_teacher', lang),
+                                  reply_markup=get_choose_teacher_kb(callback.data.split('_')[-1]),
                                   disable_notification=True)
 
     await callback.answer()
