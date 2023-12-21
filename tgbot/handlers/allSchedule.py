@@ -119,10 +119,22 @@ async def weekday(callback: CallbackQuery, state: FSMContext):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
+        match _type:
+            case 'teacher':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)] + ' ' + SESC_Info.TEACHER_REVERSE[
+                    _second]
+            case 'group':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)] + ' ' + SESC_Info.GROUP_REVERSE[
+                    _second]
+            case 'auditory':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)] + ' ' + SESC_Info.AUDITORY_REVERSE[
+                    _second]
+            case _:
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)]
 
         await callback.message.answer_photo(
             schedule,
-            caption=TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)],
+            caption=caption,
             disable_notification=True)
 
     # Send main page
