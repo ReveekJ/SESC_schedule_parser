@@ -4,6 +4,7 @@ from tgbot.parser import PARSER
 from models.db import DB
 from models.database import get_async_session
 import datetime
+from tgbot.sesc_info import SESC_Info
 
 from tgbot.text import TEXT
 from tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
@@ -28,9 +29,19 @@ async def send_schedule_for_today(callback: CallbackQuery):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
+        match user_data['role']:
+            case 'teacher':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 1] + ' ' + \
+                          SESC_Info.TEACHER_REVERSE[user_data['sub_info']]
+            case 'group':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 1] + ' ' + \
+                          SESC_Info.GROUP_REVERSE[user_data['sub_info']]
+            case _:
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 1]
+
         await callback.message.answer_photo(
             schedule,
-            caption=TEXT('main', lang) + TEXT('weekdays', lang)[datetime.date.today().weekday() % 6 + 1],
+            caption=caption,
             disable_notification=True)
 
     await callback.message.answer(TEXT('main', lang),
@@ -57,11 +68,19 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
-
+        match user_data['role']:
+            case 'teacher':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[(datetime.date.today().weekday() + 2) % 6
+                if datetime.date.today().weekday() != 6 else 1] + ' ' + SESC_Info.TEACHER_REVERSE[user_data['sub_info']]
+            case 'group':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[(datetime.date.today().weekday() + 2) % 6
+                if datetime.date.today().weekday() != 6 else 1] + ' ' + SESC_Info.GROUP_REVERSE[user_data['sub_info']]
+            case _:
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[(datetime.date.today().weekday() + 2) % 6
+                if datetime.date.today().weekday() != 6 else 1]
         await callback.message.answer_photo(
             schedule,
-            caption=TEXT('main', lang) + TEXT('weekdays', lang)[(datetime.date.today().weekday() + 2) % 6
-                                                                if datetime.date.today().weekday() != 6 else 1],
+            caption=caption,
             disable_notification=True)
 
     await callback.message.answer(TEXT('main', lang),
@@ -99,9 +118,20 @@ async def get_sch_for_this_day(callback: CallbackQuery):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
+        match user_data['role']:
+            case 'teacher':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)] + ' ' + \
+                          SESC_Info.TEACHER_REVERSE[
+                              user_data['sub_info']]
+            case 'group':
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)] + ' ' + \
+                          SESC_Info.GROUP_REVERSE[
+                              user_data['sub_info']]
+            case _:
+                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)]
         await callback.message.answer_photo(
             schedule,
-            caption=TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)],
+            caption=caption,
             disable_notification=True)
 
     await callback.message.answer(TEXT('main', lang),
