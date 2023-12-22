@@ -4,6 +4,10 @@ from tgbot.text import TEXT
 from sesc_info import SESC_Info
 
 
+def add_back_btn(keyboard: InlineKeyboardBuilder, lang: str):
+    keyboard.button(text=TEXT('back', lang), callback_data='back')
+
+
 def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=TEXT('student', lang), callback_data='group')
@@ -16,36 +20,38 @@ def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def get_choose_group_kb(lang: str = None) -> InlineKeyboardMarkup:
+def get_choose_group_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     groups = SESC_Info.GROUP
 
     for i in groups.keys():
         kb.button(text=i, callback_data=groups[i])
+    add_back_btn(kb, lang)
 
     kb.adjust(3)
-
     return kb.as_markup()
 
 
-def get_letter_of_teacher_kb(lang: str = None) -> InlineKeyboardMarkup:
+def get_letter_of_teacher_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У',
                'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 
     [kb.button(text=i, callback_data='letter_' + i) for i in letters]
+    add_back_btn(kb, lang)
+
     kb.adjust(3)
 
     return kb.as_markup()
 
 
-# Должно принимать lang для того чтобы работал allSchedule
-def get_choose_teacher_kb(letter: str, lang: str = None) -> InlineKeyboardMarkup:
+def get_choose_teacher_kb(letter: str, lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
 
     for key, value in SESC_Info.TEACHER.items():
         if key[0] == letter:
             kb.button(text=key, callback_data=value)
+    add_back_btn(kb, lang)
 
     kb.adjust(2)
 
@@ -71,6 +77,7 @@ def get_choose_type_kb(lang: str) -> InlineKeyboardMarkup:
         if j == 'all':
             continue
         kb.button(text=i, callback_data='type_' + j)
+    add_back_btn(kb, lang)
 
     kb.adjust(1)
     return kb.as_markup()
@@ -81,6 +88,7 @@ def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
 
     for i, j in SESC_Info.AUDITORY.items():
         kb.button(text=i, callback_data=j)
+    add_back_btn(kb, lang)
 
     kb.adjust(3)
     return kb.as_markup()
@@ -94,6 +102,7 @@ def get_choose_weekday_kb(lang: str) -> InlineKeyboardMarkup:
             continue
 
         kb.button(text=text, callback_data=str(callback_data))
+    add_back_btn(kb, lang)
 
     kb.adjust(1)
     return kb.as_markup()
