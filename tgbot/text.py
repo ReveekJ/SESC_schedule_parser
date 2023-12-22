@@ -85,4 +85,5 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('no_schedule', 'Занятий нет', 'There are no classes'),
                    ('all_days', 'Показать на конкретный день', 'View all days'),
                    ('choose_letter', 'Выберите первую букву Вашей фамилии',
-                    'Choose the first letter of your last name'))
+                    'Choose the first letter of your last name'),
+                   ('back', 'Назад', 'Back'))
