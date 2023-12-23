@@ -34,6 +34,7 @@ async def func_start_registration(message: Message, state: FSMContext):
     user_id = message.from_user.id
 
     if await DB().select_user_by_id(session, user_id) is not None:
+        await state.clear()
         await bot.send_message(user_id,
                                TEXT('main', lang=lang), reply_markup=get_choose_schedule(lang),
                                disable_notification=True)

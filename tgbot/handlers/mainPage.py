@@ -95,7 +95,7 @@ async def get_all_days_sch(callback: CallbackQuery):
 
     await callback.message.delete()
     await callback.message.answer(TEXT('choose_day', lang),
-                                  reply_markup=get_choose_weekday_kb(lang),
+                                  reply_markup=get_choose_weekday_kb(lang, back=False),
                                   disable_notification=True)
 
     await callback.answer()

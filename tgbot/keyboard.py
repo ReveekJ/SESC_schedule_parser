@@ -94,7 +94,7 @@ def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def get_choose_weekday_kb(lang: str) -> InlineKeyboardMarkup:
+def get_choose_weekday_kb(lang: str, back: bool = True) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
 
     for callback_data, text in TEXT('weekdays', lang).items():
@@ -102,7 +102,9 @@ def get_choose_weekday_kb(lang: str) -> InlineKeyboardMarkup:
             continue
 
         kb.button(text=text, callback_data=str(callback_data))
-    add_back_btn(kb, lang)
+
+    if back:
+        add_back_btn(kb, lang)
 
     kb.adjust(1)
     return kb.as_markup()
