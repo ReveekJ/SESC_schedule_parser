@@ -1,70 +1,122 @@
-from selenium.webdriver import Firefox
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
-from selenium.common.exceptions import WebDriverException
-import os
-import datetime
+import aiohttp
+import simplejson as json
+from PIL import Image, ImageDraw, ImageFont
 
 
 class Parser:
-    __instance = None
 
-    # TODO: доделать singleton
-    def __new__(cls, *args, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = super().__new__(cls)
+    # Инициализация json-файла
+    def __init__(self, font_path):
+        self.font_path = font_path
+        # self.data = SESC_Info
 
-        return cls.__instance
-
-    def __init__(self, expiration_time_of_schedule: int = 20):
-        # expiration_time_of_schedule в минутах
-        self.expiration_time_of_schedule = expiration_time_of_schedule
-        self.driver = Firefox()
-        self.driver.get('https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii')
-
-    def parse(self, first_select: str, second_select: str, third_select: str) -> str:
+    # Преобразование информации и управление процессом создания таблицы
+    async def parse(self, _type: str, _second: str, _weekday: str):
         path = (__file__[:__file__.rfind('/', 0, __file__.rfind('/'))] + '/' +
-                f'schedules/{first_select}_{second_select}_{third_select}__{datetime.datetime.now()}')
-        file = self.__check_file_in_path(path)
+                f'schedules/schedule{_second}.png')
 
-        if file == '':
-            selects = {'tx_suncschedule_schedule[type]': first_select,
-                       f'tx_suncschedule_schedule[{first_select}]': second_select,
-                       'tx_suncschedule_schedule[weekday]': third_select}
-
-            for i in selects:
-                elem = Select(self.driver.find_element(By.NAME, i))
-                elem.select_by_value(selects[i])
-
-            schedule = self.driver.find_element(By.TAG_NAME, 'table')
-
-            try:
-                schedule.screenshot(path + '.png')
-            except WebDriverException:
-                return 'NO_SCHEDULE'
-
-            return path + '.png'
+        if _type == 'group':
+            info = await self.get_student_json(int(_weekday), int(_second))
+        elif _type == 'teacher':
+            info = await self.get_teacher_json(int(_weekday), _second)
         else:
-            return path[:path.rfind('/') + 1] + file
+            raise ValueError('IDK')
 
-    # TODO: удаляются не все расписания
-    def __check_file_in_path(self, path: str) -> str:
-        path_to_file = path[:path.rfind('/')]
+        if not info['lessons']:
+            return 'NO_SCHEDULE'
 
-        for files in os.scandir(path[:path.rfind('/')]):
-            if files.name[:files.name.find('__')] == path[path.rfind('/') + 1: path.find('__')]:
-                if (datetime.datetime.now() - datetime.datetime.strptime(
-                        files.name[files.name.find('__') + 2: files.name.find('.png')],
-                        '%Y-%m-%d %H:%M:%S.%f')) \
-                        < datetime.timedelta(minutes=self.expiration_time_of_schedule):
-                    return files.name
-                else:
-                    os.remove(path_to_file + '/' + files.name)
+        await self.create_table(info['lessons'], path)
 
-        return ''
+        return path
 
-    def quit(self):
-        self.driver.quit()
+    @staticmethod  # Отправление запроса учителя
+    async def get_teacher_json(weekday: int, teacher: str):
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+            async with session.get(
+                    f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=teacher&{weekday=}&teacher={teacher}') as resp:
+                return json.loads(await resp.text())
+
+    @staticmethod  # Отправление запроса ученика
+    async def get_student_json(weekday: int, group: int):
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+            async with session.get(
+                    f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=group&{weekday=}&{group=}'
+            ) as resp:
+                return json.loads(await resp.text())
+
+    @staticmethod  # Создание таблицы
+    async def create_table(info: list, path: str):
+        # написал ChatGPT
+        # Создаем изображение и определяем размеры и шрифт
+        width, height = 960, 540
+        image = Image.new('RGB', (width, height), (255, 255, 255))
+        draw = ImageDraw.Draw(image)
+        font_path = '/usr/share/fonts/truetype/freefont/FreeSans.ttf'
+        font_size = 20
+        font = ImageFont.truetype(font_path, font_size)
+
+        # Размеры колонок
+        column_width1 = 120
+        column_width2 = width - column_width1 - 20
+
+        # Расчет высоты строки и высоты текста
+        row_height = height // 8
+        text_height = font.getbbox('A')[3] - font.getbbox('A')[1] + 4
+
+        # Рисуем шапку таблицы
+        header_bg_color = (0, 128, 0)
+        header_text = 'Уроки'
+        header_text_bounding_box = font.getbbox(header_text)
+        header_text_width = header_text_bounding_box[2] - header_text_bounding_box[0]
+        header_text_x = column_width1 + (column_width2 - header_text_width) // 2
+        header_text_y = (row_height - text_height) // 2
+        draw.rectangle(((0, 0), (width, row_height)), fill=header_bg_color)
+        draw.text((header_text_x, header_text_y), header_text, font=font, fill=(255, 255, 255))
+
+        # Рисуем разделительную полосу после шапки
+        draw.line([(column_width1, 0), (column_width1, row_height)], fill=(128, 128, 128), width=1)
+
+        # Рисуем таблицу с данными
+        lessons = info
+
+        p = len(lessons) + 1
+        # Если уроков меньше 7, добавляем пустые уроки, чтобы получить 7 строк
+        while len(lessons) < 7:
+            lessons.append(
+                {'uid': None, 'subject': '', 'auditory': '', 'group': '', 'teacher': '', 'subgroup': 0, 'number': p,
+                 'weekday': None})
+            p += 1
+
+        # Рисуем таблицу с данными
+        for i, lesson in enumerate(lessons):
+            start_y = (i + 1) * row_height
+
+            # Рисуем разделительную полосу
+            draw.line([(0, start_y), (width, start_y)], fill=(128, 128, 128), width=1)
+
+            # Рисуем номер урока в первой колонке
+            lesson_number = str(lesson['number'])
+
+            lesson_number_bounding_box = font.getbbox(lesson_number)
+            lesson_number_width = lesson_number_bounding_box[2] - lesson_number_bounding_box[0]
+            lesson_number_x = (column_width1 - lesson_number_width) // 2
+            lesson_number_y = start_y + (row_height - text_height) // 2
+            draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
+
+            # Рисуем разделительные полоски для колонок
+            draw.line([(column_width1, start_y), (column_width1, start_y + row_height)], fill=(128, 128, 128), width=1)
+
+            # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
+            lesson_info = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}" if lesson[
+                                                                                                   'subject'] != '' else ''
+            lesson_info_width = font.getbbox(lesson_info)[2] - font.getbbox(lesson_info)[0]
+            lesson_info_x = column_width1 + (column_width2 - lesson_info_width) // 2
+            lesson_info_y = start_y + (row_height - text_height) // 2
+
+            draw.text((lesson_info_x, lesson_info_y), lesson_info, font=font, fill=(0, 0, 0))
+
+        # Сохраняем изображение в файл
+        image.save(path)
 
 
-PARSER = Parser()
+PARSER = Parser('/usr/share/fonts/truetype/freefont/FreeSans.ttf')
