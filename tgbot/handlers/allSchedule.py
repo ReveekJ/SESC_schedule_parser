@@ -129,7 +129,7 @@ async def func_weekday(callback: CallbackQuery, state: FSMContext):
     except TelegramBadRequest:
         pass
 
-    file = PARSER.parse(_type, _second, _weekday)
+    file = await PARSER.parse(_type, _second, _weekday)
 
     # проверка на присутствие расписания
     if file == 'NO_SCHEDULE':

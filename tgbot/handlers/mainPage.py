@@ -20,7 +20,7 @@ async def send_schedule_for_today(callback: CallbackQuery):
 
     await callback.message.delete()
 
-    file = PARSER.parse(user_data['role'], user_data['sub_info'],
+    file = await PARSER.parse(user_data['role'], user_data['sub_info'],
                         str((datetime.date.today().weekday()) % 6 + 1))
 
     # проверка на присутствие расписания
@@ -60,7 +60,7 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
 
     today = str((datetime.date.today().weekday() + 2) % 6) if datetime.date.today().weekday() != 6 else '1'
 
-    file = PARSER.parse(user_data['role'], user_data['sub_info'], today)
+    file = await PARSER.parse(user_data['role'], user_data['sub_info'], today)
 
     # проверка на присутствие расписания
     if file == 'NO_SCHEDULE':
@@ -111,7 +111,7 @@ async def get_sch_for_this_day(callback: CallbackQuery):
     lang = callback.from_user.language_code
     session = await get_async_session()
     user_data = await DB().select_user_by_id(session, callback.from_user.id)
-    file = PARSER.parse(user_data['role'], user_data['sub_info'], callback.data)
+    file = await PARSER.parse(user_data['role'], user_data['sub_info'], callback.data)
 
     if file == 'NO_SCHEDULE':
         await callback.message.answer(TEXT('no_schedule', lang),
