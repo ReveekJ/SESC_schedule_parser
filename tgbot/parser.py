@@ -1,6 +1,7 @@
 import aiohttp
 import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
+from tgbot.sesc_info import SESC_Info
 
 
 class Parser:
@@ -16,36 +17,59 @@ class Parser:
                 f'schedules/schedule{_second}.png')
 
         if _type == 'group':
-            info = await self.get_student_json(int(_weekday), int(_second))
+            info = await self.__get_student_json(int(_weekday), int(_second))
         elif _type == 'teacher':
-            info = await self.get_teacher_json(int(_weekday), _second)
+            info = await self.__get_teacher_json(int(_weekday), _second)
         else:
             raise ValueError('IDK')
 
         if not info['lessons']:
             return 'NO_SCHEDULE'
 
-        await self.create_table(info['lessons'], path)
+        await self.__create_table(info['lessons'], path)
 
         return path
 
     @staticmethod  # Отправление запроса учителя
-    async def get_teacher_json(weekday: int, teacher: str):
+    async def __get_teacher_json(weekday: int, teacher: str):
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
             async with session.get(
                     f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=teacher&{weekday=}&teacher={teacher}') as resp:
                 return json.loads(await resp.text())
 
     @staticmethod  # Отправление запроса ученика
-    async def get_student_json(weekday: int, group: int):
+    async def __get_student_json(weekday: int, group: int):
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
             async with session.get(
                     f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=group&{weekday=}&{group=}'
             ) as resp:
                 return json.loads(await resp.text())
 
+    async def check_for_changes_student(self):
+        changed_groups = []
+
+        for day in SESC_Info.WEEKDAY.values():
+            for group in SESC_Info.GROUP.values():
+                schedule = await self.__get_student_json(int(day), int(group))
+                print(group, day)
+                if schedule['diffs']:
+                    changed_groups.append(('group', group, day))
+        return changed_groups
+
+    async def check_for_changes_teacher(self):
+        changed_teachers = []
+
+        for day in SESC_Info.WEEKDAY.values():
+            for teacher in SESC_Info.TEACHER.values():
+                schedule = await self.__get_teacher_json(int(day), teacher)
+                print(teacher, day)
+                if schedule['diffs']:
+                    changed_teachers.append(('teacher', teacher, day))
+
+        return changed_teachers
+
     @staticmethod  # Создание таблицы
-    async def create_table(info: list, path: str):
+    async def __create_table(info: list, path: str):
         # написал ChatGPT
         # Создаем изображение и определяем размеры и шрифт
         width, height = 960, 540
