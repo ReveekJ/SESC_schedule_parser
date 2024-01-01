@@ -9,5 +9,4 @@ qodana.yaml
 test/test.py
 .env
 docker-compose.yaml
-migrations/
 .idea/
