@@ -9,6 +9,8 @@ from tgbot.sesc_info import SESC_Info
 from tgbot.text import TEXT
 from tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
 
+from tgbot.handlers.auxiliary import send_schedule
+
 router = Router()
 
 
@@ -21,7 +23,7 @@ async def send_schedule_for_today(callback: CallbackQuery):
     await callback.message.delete()
 
     file = await PARSER.parse(user_data['role'], user_data['sub_info'],
-                        str((datetime.date.today().weekday()) % 6 + 1))
+                              str((datetime.date.today().weekday()) % 6 + 1))
 
     # проверка на присутствие расписания
     if file == 'NO_SCHEDULE':
@@ -118,21 +120,13 @@ async def get_sch_for_this_day(callback: CallbackQuery):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
-        match user_data['role']:
-            case 'teacher':
-                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)] + ' ' + \
-                          SESC_Info.TEACHER_REVERSE[
-                              user_data['sub_info']]
-            case 'group':
-                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)] + ' ' + \
-                          SESC_Info.GROUP_REVERSE[
-                              user_data['sub_info']]
-            case _:
-                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(callback.data)]
-        await callback.message.answer_photo(
-            schedule,
-            caption=caption,
-            disable_notification=True)
+        await send_schedule(chat_id=callback.from_user.id,
+                            schedule=schedule,
+                            short_name_text_mes='main',
+                            role=user_data['role'],
+                            sub_info=user_data['sub_info'],
+                            weekday=int(callback.data),
+                            lang=lang)
 
     await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),

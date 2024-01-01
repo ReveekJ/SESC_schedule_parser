@@ -4,7 +4,6 @@ from aiogram.fsm.state import State
 from aiogram.types import CallbackQuery, FSInputFile
 from aiogram.exceptions import TelegramBadRequest
 
-
 from tgbot.parser import PARSER
 from tgbot.text import TEXT
 from tgbot.keyboard import (get_choose_type_kb, get_choose_group_kb, get_choose_weekday_kb, get_choose_auditory_kb,
@@ -12,6 +11,7 @@ from tgbot.keyboard import (get_choose_type_kb, get_choose_group_kb, get_choose_
 from tgbot.sesc_info import SESC_Info
 from tgbot.handlers.auxiliary import Form, bot
 from tgbot.handlers.registration import func_start_registration
+from tgbot.handlers.auxiliary import send_schedule
 
 
 class AllScheduleMachine(Form):
@@ -137,24 +137,13 @@ async def func_weekday(callback: CallbackQuery, state: FSMContext):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
-        match _type:
-            case 'teacher':
-                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)] + ' ' + SESC_Info.TEACHER_REVERSE[
-                    _second]
-            case 'group':
-                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)] + ' ' + SESC_Info.GROUP_REVERSE[
-                    _second]
-            case 'auditory':
-                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)] + ' ' + SESC_Info.AUDITORY_REVERSE[
-                    _second]
-            case _:
-                caption = TEXT('main', lang) + TEXT('weekdays', lang)[int(_weekday)]
-
-        await bot.send_photo(user_id,
-                             schedule,
-                             caption=caption,
-                             disable_notification=True)
-
+        await send_schedule(chat_id=user_id,
+                            short_name_text_mes='main',
+                            role=_type,
+                            sub_info=_second,
+                            weekday=int(_weekday),
+                            lang=lang,
+                            schedule=schedule)
     # Send main page
     await bot.send_message(user_id,
                            TEXT('main', lang=lang),
