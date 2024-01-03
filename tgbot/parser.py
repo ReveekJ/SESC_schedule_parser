@@ -34,7 +34,8 @@ class Parser:
     async def __get_teacher_json(weekday: int, teacher: str):
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
             async with session.get(
-                    f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=teacher&{weekday=}&teacher={teacher}') as resp:
+                    f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=teacher&{weekday=}'
+                    f'&teacher={teacher}') as resp:
                 return json.loads(await resp.text())
 
     @staticmethod  # Отправление запроса ученика
@@ -68,14 +69,14 @@ class Parser:
 
         return changed_teachers
 
-    @staticmethod  # Создание таблицы
-    async def __create_table(info: list, path: str):
+    # Создание таблицы
+    async def __create_table(self, info: list, path: str):
         # написал ChatGPT
         # Создаем изображение и определяем размеры и шрифт
         width, height = 960, 540
         image = Image.new('RGB', (width, height), (255, 255, 255))
         draw = ImageDraw.Draw(image)
-        font_path = '/usr/share/fonts/truetype/freefont/FreeSans.ttf'
+        font_path = self.font_path
         font_size = 20
         font = ImageFont.truetype(font_path, font_size)
 
@@ -101,8 +102,10 @@ class Parser:
         draw.line([(column_width1, 0), (column_width1, row_height)], fill=(128, 128, 128), width=1)
 
         # Рисуем таблицу с данными
-        lessons = info
+        lessons = sorted(info, key=lambda x: x['number'])
 
+        # TODO: пофиксить баг. Когда есть subgroup этот цикл никогда не исполнится, нужно переписать условие,
+        #  не по длинне, а по наибольшему number
         p = len(lessons) + 1
         # Если уроков меньше 7, добавляем пустые уроки, чтобы получить 7 строк
         while len(lessons) < 7:
@@ -111,9 +114,10 @@ class Parser:
                  'weekday': None})
             p += 1
 
+        skipped_rows = 0
         # Рисуем таблицу с данными
         for i, lesson in enumerate(lessons):
-            start_y = (i + 1) * row_height
+            start_y = (i - skipped_rows + 1) * row_height
 
             # Рисуем разделительную полосу
             draw.line([(0, start_y), (width, start_y)], fill=(128, 128, 128), width=1)
@@ -125,19 +129,58 @@ class Parser:
             lesson_number_width = lesson_number_bounding_box[2] - lesson_number_bounding_box[0]
             lesson_number_x = (column_width1 - lesson_number_width) // 2
             lesson_number_y = start_y + (row_height - text_height) // 2
-            draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
 
             # Рисуем разделительные полоски для колонок
             draw.line([(column_width1, start_y), (column_width1, start_y + row_height)], fill=(128, 128, 128), width=1)
 
-            # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
-            lesson_info = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}" if lesson[
-                                                                                                   'subject'] != '' else ''
-            lesson_info_width = font.getbbox(lesson_info)[2] - font.getbbox(lesson_info)[0]
-            lesson_info_x = column_width1 + (column_width2 - lesson_info_width) // 2
-            lesson_info_y = start_y + (row_height - text_height) // 2
+            if lesson['subgroup'] == 0:
+                # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
+                lesson_info = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}" \
+                    if lesson['subject'] != '' else ''
+                lesson_info_width = font.getbbox(lesson_info)[2] - font.getbbox(lesson_info)[0]
+                lesson_info_x = column_width1 + (column_width2 - lesson_info_width) // 2
+                lesson_info_y = start_y + (row_height - text_height) // 2
 
-            draw.text((lesson_info_x, lesson_info_y), lesson_info, font=font, fill=(0, 0, 0))
+                draw.text((lesson_info_x, lesson_info_y), lesson_info, font=font, fill=(0, 0, 0))
+
+                # рисуем номер урока
+                draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
+
+            else:
+                # TODO: доюавить разделительную полоску между расписаниеми для subgroup
+                lesson_info_subgroup1 = ''
+                lesson_info_subgroup2 = ''
+
+                # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
+                if lesson['subgroup'] == 1:
+                    lesson_info_subgroup1 = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}"
+
+                    lesson2 = [i for i in lessons if i['subgroup'] == 2 and i['number'] == lesson['number']][0]
+                    lesson_info_subgroup2 = f"{lesson2['subject']}, {lesson2['teacher']}, {lesson2['auditory']}"
+                elif lesson['subgroup'] == 2:
+                    skipped_rows += 1
+                    continue
+
+                lesson_info_subgroup1_width = (font.getbbox(lesson_info_subgroup1)[2] -
+                                               font.getbbox(lesson_info_subgroup1)[0])
+
+                lesson_info_subgroup1_x = column_width1 + (column_width2 // 2 - lesson_info_subgroup1_width) // 2
+                lesson_info_subgroup1_y = start_y + (row_height - text_height) // 2
+
+                lesson_info_subgroup2_width = font.getbbox(lesson_info_subgroup2)[2] - \
+                                              font.getbbox(lesson_info_subgroup2)[0]
+
+                lesson_info_subgroup2_x = column_width1 + column_width2 // 2 + (
+                        column_width2 // 2 - lesson_info_subgroup2_width) // 2
+                lesson_info_subgroup2_y = start_y + (row_height - text_height) // 2
+
+                draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), lesson_info_subgroup1, font=font,
+                          fill=(0, 0, 0))
+                draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), lesson_info_subgroup2, font=font,
+                          fill=(0, 0, 0))
+
+                # рисуем номер урока
+                draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
 
         # Сохраняем изображение в файл
         image.save(path)
