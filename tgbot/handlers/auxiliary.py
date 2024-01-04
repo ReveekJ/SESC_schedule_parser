@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from aiogram import Router, F, Bot
 from aiogram.fsm.state import StatesGroup, State
@@ -64,47 +65,54 @@ def convert_to_datetime_object(times: list[datetime.time]):
     return result
 
 
-async def sending_schedule_changes():
-    times = convert_to_datetime_object([datetime.time(0, 0, 0),
-                                        datetime.time(5, 0, 0),
-                                        datetime.time(6, 0, 0),
-                                        datetime.time(7, 0, 0),
-                                        datetime.time(12, 0, 0),
-                                        datetime.time(15, 0, 0),
-                                        datetime.time(18, 0, 0),
-                                        datetime.time(20, 0, 0)])
-    n = len(times)
-    i = 0
+def sending_schedule_changes():
+    # TODO: проверить как это работает
+    async def inner():
+        times = convert_to_datetime_object([datetime.time(0, 0, 0),
+                                            datetime.time(5, 0, 0),
+                                            datetime.time(6, 0, 0),
+                                            datetime.time(7, 0, 0),
+                                            datetime.time(12, 0, 0),
+                                            datetime.time(15, 0, 0),
+                                            datetime.time(18, 0, 0),
+                                            datetime.time(20, 0, 0)])
+        n = len(times)
+        i = 0
 
-    while True:
-        groups_changes = await PARSER.check_for_changes_student()
-        teachers_changes = await PARSER.check_for_changes_teacher()
+        while True:
+            groups_changes = await PARSER.check_for_changes_student()
+            teachers_changes = await PARSER.check_for_changes_teacher()
 
-        print('проверяю расписание')
-        try:
-            for elem in groups_changes.append(*teachers_changes):
-                role = elem[0]
-                sub_info = elem[1]
-                weekday = elem[2]
+            print('проверяю расписание')
+            try:
+                for elem in groups_changes.append(*teachers_changes):
+                    role = elem[0]
+                    sub_info = elem[1]
+                    weekday = elem[2]
 
-                schedule = await PARSER.parse(role, sub_info, weekday)
-                schedule = FSInputFile(schedule)
+                    schedule = await PARSER.parse(role, sub_info, weekday)
+                    schedule = FSInputFile(schedule)
 
-                session = await get_async_session()
-                users = await DB().select_users_by_role_and_sub_info(session,
-                                                                     role=role,
-                                                                     sub_info=sub_info)
+                    session = await get_async_session()
+                    users = await DB().select_users_by_role_and_sub_info(session,
+                                                                         role=role,
+                                                                         sub_info=sub_info)
 
-                for user_data in users:
-                    await send_schedule(chat_id=user_data['id'],
-                                        short_name_text_mes='changed_schedule',
-                                        role=role,
-                                        sub_info=sub_info,
-                                        weekday=weekday,
-                                        lang=user_data['lang'],
-                                        schedule=schedule)
-        # возникает если пытаемся добавить пустой список
-        except TypeError:
-            pass
-        time_to_sleep = abs(times[i % n] - convert_to_datetime_object([datetime.datetime.now().time()])[0])
-        await asyncio.sleep(time_to_sleep.seconds)
+                    for user_data in users:
+                        await send_schedule(chat_id=user_data['id'],
+                                            short_name_text_mes='changed_schedule',
+                                            role=role,
+                                            sub_info=sub_info,
+                                            weekday=weekday,
+                                            lang=user_data['lang'],
+                                            schedule=schedule)
+            # возникает если пытаемся добавить пустой список
+            except TypeError:
+                pass
+            time_to_sleep = abs(times[i % n] - convert_to_datetime_object([datetime.datetime.now().time()])[0])
+            time.sleep(time_to_sleep.seconds)
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(inner())
+    loop.close()
