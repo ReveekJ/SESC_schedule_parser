@@ -108,3 +108,10 @@ def get_choose_weekday_kb(lang: str, back: bool = True) -> InlineKeyboardMarkup:
 
     kb.adjust(1)
     return kb.as_markup()
+
+
+def hard_choice(lang: str):
+    kb = InlineKeyboardBuilder()
+    kb.button(text=TEXT('yes', lang), callback_data='relogin')
+    kb.button(text=TEXT('no', lang), callback_data='reloginf')
+    return kb.as_markup()
