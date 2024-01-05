@@ -87,4 +87,8 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('choose_letter', 'Выберите первую букву Вашей фамилии',
                     'Choose the first letter of your last name'),
                    ('back', 'Назад', 'Back'),
-                   ('changed_schedule', 'Изменения в расписании на', 'Schedule changes for'))
+                   ('changed_schedule', 'Изменения в расписании на', 'Schedule changes for'),
+                   ('yes', 'Да', 'Yes'),
+                   ('no', 'Нет', 'No'),
+                   ('aus', "Вы уверены?", 'Are you sure?'),
+                   ('use', 'Чтобы продолжить используйте /start', 'To continue use /start'))
