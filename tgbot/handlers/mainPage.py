@@ -115,6 +115,7 @@ async def get_sch_for_this_day(callback: CallbackQuery):
     user_data = await DB().select_user_by_id(session, callback.from_user.id)
     file = await PARSER.parse(user_data['role'], user_data['sub_info'], callback.data)
 
+    await callback.message.delete()
     if file == 'NO_SCHEDULE':
         await callback.message.answer(TEXT('no_schedule', lang),
                                       disable_notification=True)
