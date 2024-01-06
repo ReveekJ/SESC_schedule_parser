@@ -66,7 +66,19 @@ def convert_to_datetime_object(times: list[datetime.time]):
 
 
 def sending_schedule_changes():
-    # TODO: проверить как это работает
+    def merge_schedule(lessons: list[dict], diffs: list[dict]) -> list[dict]:
+        merged_schedule = lessons
+
+        for difference in diffs:
+            number = difference['number']
+            subgroup = difference['subgroup']
+
+            for index, lesson in enumerate(merged_schedule):
+                if lesson['number'] == number and lesson['subgroup'] == subgroup:
+                    merged_schedule[index] = difference
+
+        return merged_schedule
+
     async def inner():
         times = convert_to_datetime_object([datetime.time(0, 0, 0),
                                             datetime.time(5, 0, 0),
@@ -83,15 +95,17 @@ def sending_schedule_changes():
             groups_changes = await PARSER.check_for_changes_student()
             teachers_changes = await PARSER.check_for_changes_teacher()
 
-            print('проверяю расписание')
             try:
                 for elem in groups_changes.append(*teachers_changes):
                     role = elem[0]
                     sub_info = elem[1]
                     weekday = elem[2]
+                    schedule = elem[3]
 
-                    schedule = await PARSER.parse(role, sub_info, weekday)
-                    schedule = FSInputFile(schedule)
+                    merged_schedule = merge_schedule(schedule['lessons'], schedule['diffs'])
+                    # schedule = await PARSER.parse(role, sub_info, weekday)
+                    path = PARSER.get_path(sub_info)
+                    schedule = FSInputFile(PARSER.create_table(merged_schedule, path))
 
                     session = await get_async_session()
                     users = await DB().select_users_by_role_and_sub_info(session,
