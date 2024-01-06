@@ -38,7 +38,7 @@ class SESCInfo:
 
     def __init__(self):
         self.url = 'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii'
-        self.__r = requests.get(self.url)
+        self.__r = requests.get(self.url, verify=False)
         self.__soup = bs(self.__r.text, 'html.parser')
         self.__selects = self.__soup.find_all('select')
 
@@ -90,4 +90,3 @@ class SESCInfo:
 
 
 SESC_Info = SESCInfo()
-print(SESC_Info.GROUP)
