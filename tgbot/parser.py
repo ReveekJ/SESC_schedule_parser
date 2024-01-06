@@ -11,10 +11,14 @@ class Parser:
         self.font_path = font_path
         # self.data = SESC_Info
 
+    @staticmethod
+    def get_path(_second):
+        return (__file__[:__file__.rfind('/', 0, __file__.rfind('/'))] + '/' +
+                f'schedules/schedule{_second}.png')
+
     # Преобразование информации и управление процессом создания таблицы
     async def parse(self, _type: str, _second: str, _weekday: str):
-        path = (__file__[:__file__.rfind('/', 0, __file__.rfind('/'))] + '/' +
-                f'schedules/schedule{_second}.png')
+        path = self.get_path(_second)
 
         if _type == 'group':
             info = await self.__get_student_json(int(_weekday), int(_second))
@@ -54,7 +58,7 @@ class Parser:
                 schedule = await self.__get_student_json(int(day), int(group))
                 print(group, day)
                 if schedule['diffs']:
-                    changed_groups.append(('group', group, day))
+                    changed_groups.append(('group', group, day, schedule))
         return changed_groups
 
     async def check_for_changes_teacher(self):
@@ -65,13 +69,12 @@ class Parser:
                 schedule = await self.__get_teacher_json(int(day), teacher)
                 print(teacher, day)
                 if schedule['diffs']:
-                    changed_teachers.append(('teacher', teacher, day))
+                    changed_teachers.append(('teacher', teacher, day, schedule))
 
         return changed_teachers
 
     # Создание таблицы
     async def __create_table(self, info: list, path: str):
-        # написал ChatGPT
         # Создаем изображение и определяем размеры и шрифт
         width, height = 960, 540
         image = Image.new('RGB', (width, height), (255, 255, 255))
