@@ -9,12 +9,30 @@ class Parser:
     # Инициализация json-файла
     def __init__(self, font_path):
         self.font_path = font_path
-        # self.data = SESC_Info
 
     @staticmethod
     def get_path(_second):
         return (__file__[:__file__.rfind('/', 0, __file__.rfind('/'))] + '/' +
                 f'schedules/schedule{_second}.png')
+
+    @staticmethod
+    def merge_schedule(lessons: list[dict], diffs: list[dict]) -> list[dict]:
+        merged_schedule = lessons
+
+        # проходимся по diffs
+        for difference in diffs:
+            number = difference['number']
+            subgroup = difference['subgroup']
+
+            # пытаемся найти соответствие по number и subgroup
+            for index, lesson in enumerate(merged_schedule):
+                if lesson['number'] == number and lesson['subgroup'] == subgroup:
+                    merged_schedule[index] = difference
+            # если соответствия нет, то добавляем этот урок
+            else:
+                merged_schedule.append(difference)
+
+        return merged_schedule
 
     # Преобразование информации и управление процессом создания таблицы
     async def parse(self, _type: str, _second: str, _weekday: str):
@@ -30,7 +48,7 @@ class Parser:
         if not info['lessons']:
             return 'NO_SCHEDULE'
 
-        await self.__create_table(info['lessons'], path)
+        self.create_table(self.merge_schedule(info['lessons'], info['diffs']), path)
 
         return path
 
@@ -74,7 +92,14 @@ class Parser:
         return changed_teachers
 
     # Создание таблицы
-    async def __create_table(self, info: list, path: str):
+    def create_table(self, info: list, path: str):
+        def is_exist_lesson_by_number(_lessons: list[dict], number: int) -> bool:
+            for _les in _lessons:
+                if _les['number'] == number:
+                    return True
+
+            return False
+
         # Создаем изображение и определяем размеры и шрифт
         width, height = 960, 540
         image = Image.new('RGB', (width, height), (255, 255, 255))
@@ -104,23 +129,22 @@ class Parser:
         # Рисуем разделительную полосу после шапки
         draw.line([(column_width1, 0), (column_width1, row_height)], fill=(128, 128, 128), width=1)
 
-        # Рисуем таблицу с данными
-        lessons = sorted(info, key=lambda x: x['number'])
+        lessons = info
 
-        # TODO: пофиксить баг. Когда есть subgroup этот цикл никогда не исполнится, нужно переписать условие,
-        #  не по длинне, а по наибольшему number
-        p = len(lessons) + 1
         # Если уроков меньше 7, добавляем пустые уроки, чтобы получить 7 строк
-        while len(lessons) < 7:
-            lessons.append(
-                {'uid': None, 'subject': '', 'auditory': '', 'group': '', 'teacher': '', 'subgroup': 0, 'number': p,
-                 'weekday': None})
-            p += 1
+        for i in range(1, 8):
+            if not is_exist_lesson_by_number(lessons, i):
+                lessons.append(
+                    {'uid': None, 'subject': '', 'auditory': '', 'group': '', 'teacher': '', 'subgroup': 0, 'number': i,
+                     'weekday': None})
 
+        lessons = sorted(info, key=lambda x: x['number'])
+        print(lessons)
         skipped_rows = 0
+
         # Рисуем таблицу с данными
-        for i, lesson in enumerate(lessons):
-            start_y = (i - skipped_rows + 1) * row_height
+        for les, lesson in enumerate(lessons):
+            start_y = (les - skipped_rows + 1) * row_height
 
             # Рисуем разделительную полосу
             draw.line([(0, start_y), (width, start_y)], fill=(128, 128, 128), width=1)
@@ -140,14 +164,12 @@ class Parser:
                 # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
                 lesson_info = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}" \
                     if lesson['subject'] != '' else ''
+
                 lesson_info_width = font.getbbox(lesson_info)[2] - font.getbbox(lesson_info)[0]
                 lesson_info_x = column_width1 + (column_width2 - lesson_info_width) // 2
                 lesson_info_y = start_y + (row_height - text_height) // 2
 
                 draw.text((lesson_info_x, lesson_info_y), lesson_info, font=font, fill=(0, 0, 0))
-
-                # рисуем номер урока
-                draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
 
             else:
                 # TODO: доюавить разделительную полоску между расписаниеми для subgroup
@@ -158,7 +180,15 @@ class Parser:
                 if lesson['subgroup'] == 1:
                     lesson_info_subgroup1 = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}"
 
-                    lesson2 = [i for i in lessons if i['subgroup'] == 2 and i['number'] == lesson['number']][0]
+                    for les in lessons:
+                        # ищем подходящий по subgroup и number урок
+                        if les['subgroup'] == 2 and les['number'] == lesson['number']:
+                            lesson2 = les
+                            break
+                    else:
+                        # если ничего подходящего не нашли, то ставим такю заглушку
+                        lesson2 = {'subject': 'Нет', 'teacher': 'Нет', 'auditory': 'Нет'}
+
                     lesson_info_subgroup2 = f"{lesson2['subject']}, {lesson2['teacher']}, {lesson2['auditory']}"
                 elif lesson['subgroup'] == 2:
                     skipped_rows += 1
@@ -182,8 +212,8 @@ class Parser:
                 draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), lesson_info_subgroup2, font=font,
                           fill=(0, 0, 0))
 
-                # рисуем номер урока
-                draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
+            # рисуем номер урока
+            draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
 
         # Сохраняем изображение в файл
         image.save(path)
