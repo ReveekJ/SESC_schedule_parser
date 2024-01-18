@@ -1,13 +1,15 @@
+import time
+
 import aiohttp
 import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
 from tgbot.sesc_info import SESC_Info
+from tgbot.my_types import ChangesList, ChangesType
 
 
 class Parser:
-
-    # Инициализация json-файла
     def __init__(self, font_path):
+        self.changes = ChangesList()
         self.font_path = font_path
 
     @staticmethod
@@ -68,28 +70,32 @@ class Parser:
             ) as resp:
                 return json.loads(await resp.text())
 
-    async def check_for_changes_student(self):
-        changed_groups = []
-
+    async def __check_for_changes_student(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
             for group in SESC_Info.GROUP.values():
                 schedule = await self.__get_student_json(int(day), int(group))
                 print(group, day)
                 if schedule['diffs']:
-                    changed_groups.append(('group', group, day, schedule))
-        return changed_groups
+                    self.changes.append(ChangesType('group', group, day, schedule))
 
-    async def check_for_changes_teacher(self):
-        changed_teachers = []
+                # передышка для сервака urfu
+                time.sleep(0.1)
 
+    async def __check_for_changes_teacher(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
             for teacher in SESC_Info.TEACHER.values():
                 schedule = await self.__get_teacher_json(int(day), teacher)
                 print(teacher, day)
                 if schedule['diffs']:
-                    changed_teachers.append(('teacher', teacher, day, schedule))
+                    self.changes.append(ChangesType('teacher', teacher, day, schedule))
+                # передышка для сервака urfu
+                time.sleep(0.1)
 
-        return changed_teachers
+    async def check_for_changes(self) -> ChangesList:
+        await self.__check_for_changes_student()
+        await self.__check_for_changes_teacher()
+
+        return self.changes
 
     # Создание таблицы
     def create_table(self, info: list, path: str):
