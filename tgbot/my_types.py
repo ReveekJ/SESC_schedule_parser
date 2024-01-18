@@ -1,3 +1,6 @@
+import sys
+
+
 class ChangesType:
     def __init__(self, _type, _second, _weekday, _schedule):
         self.type = _type
@@ -18,7 +21,7 @@ class ChangesList(list):
         for index, elem in enumerate(self.knowing_changes):
             # проверка по diffs во избежание ошибок (почему-то бывают ошибки в lessons)
             if elem.schedule.get('diffs') == __object.schedule.get('diffs'):
-                return False, index
+                return False, self.index(__object)  # Работа метода index в этом случае изменена, см. метод
 
         return True
 
@@ -27,13 +30,23 @@ class ChangesList(list):
             raise TypeError('должно быть ChangesType')
 
         is_unique = self.__is_unique(__object)
-        if is_unique:
+        if isinstance(is_unique, bool):
             # если уникальное кладем в массив уже известных и возвращаемых
             super().append(__object)
             self.knowing_changes.append(__object)
         else:
             # если не уникальное - то убираем из возвращаемых, также это значит, что is_unique=False, index
             self.pop(is_unique[1])
+
+    # внимание измененное поведения для index при поиске ChangesType
+    def index(self, __value, __start=0, __stop=sys.maxsize):
+        if isinstance(__value, ChangesType):
+            elem: ChangesType
+            for index, elem in enumerate(self):
+                # этих 3 параметров будет достаточно, тк использовать будет только в контексте метода __is_unique
+                if elem.type == __value.type and elem.second == __value.second and elem.weekday == __value.weekday:
+                    return index
+        super().index(__value, __start, __stop)
 
 
 class UnchangeableType:
