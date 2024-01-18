@@ -22,8 +22,8 @@ async def send_schedule_for_today(callback: CallbackQuery):
 
     await callback.message.delete()
 
-    file = await PARSER.parse(user_data['role'], user_data['sub_info'],
-                              str((datetime.date.today().weekday()) % 6 + 1))
+    day = str((datetime.date.today().weekday()) % 6 + 1)
+    file = await PARSER.parse(user_data['role'], user_data['sub_info'], day)
 
     # проверка на присутствие расписания
     if file == 'NO_SCHEDULE':
@@ -37,7 +37,7 @@ async def send_schedule_for_today(callback: CallbackQuery):
                             sub_info=user_data['sub_info'],
                             schedule=schedule,
                             short_name_text_mes='main',
-                            weekday=datetime.date.today().weekday())
+                            weekday=int(day))
 
     await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),
