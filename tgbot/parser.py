@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 import aiohttp
@@ -75,21 +76,21 @@ class Parser:
             for group in SESC_Info.GROUP.values():
                 schedule = await self.__get_student_json(int(day), int(group))
                 print(group, day)
-                if schedule['diffs']:
+                if schedule.get('diffs'):
                     self.changes.append(ChangesType('group', group, day, schedule))
 
                 # передышка для сервака urfu
-                time.sleep(0.1)
+                await asyncio.sleep(0.1)
 
     async def __check_for_changes_teacher(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
             for teacher in SESC_Info.TEACHER.values():
                 schedule = await self.__get_teacher_json(int(day), teacher)
                 print(teacher, day)
-                if schedule['diffs']:
+                if schedule.get('diffs'):
                     self.changes.append(ChangesType('teacher', teacher, day, schedule))
                 # передышка для сервака urfu
-                time.sleep(0.1)
+                await asyncio.sleep(0.1)
 
     async def check_for_changes(self) -> ChangesList:
         await self.__check_for_changes_student()
