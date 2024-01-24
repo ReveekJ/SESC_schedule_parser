@@ -150,8 +150,8 @@ class Parser:
         skipped_rows = 0
 
         # Рисуем таблицу с данными
-        for les, lesson in enumerate(lessons):
-            start_y = (les - skipped_rows + 1) * row_height
+        for lesson in (lessons):
+            start_y = (lesson['number'] - skipped_rows) * row_height
 
             # Рисуем разделительную полосу
             draw.line([(0, start_y), (width, start_y)], fill=(128, 128, 128), width=1)
@@ -186,37 +186,71 @@ class Parser:
                 # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
                 if lesson['subgroup'] == 1:
                     lesson_info_subgroup1 = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}"
-
-                    for les in lessons:
-                        # ищем подходящий по subgroup и number урок
-                        if les['subgroup'] == 2 and les['number'] == lesson['number']:
-                            lesson2 = les
-                            break
-                    else:
-                        # если ничего подходящего не нашли, то ставим такю заглушку
-                        lesson2 = {'subject': 'Нет', 'teacher': 'Нет', 'auditory': 'Нет'}
-
-                    lesson_info_subgroup2 = f"{lesson2['subject']}, {lesson2['teacher']}, {lesson2['auditory']}"
+                    lesson_info_subgroup2 = -1
+                    # for les in lessons:
+                    #     # ищем подходящий по subgroup и number урок
+                    #     if les['subgroup'] == 2 and les['number'] == lesson['number']:
+                    #         lesson2 = les
+                    #         break
+                    # else:
+                    #     # если ничего подходящего не нашли, то ставим такю заглушку
+                    #     lesson2 = {'subject': 'Нет', 'teacher': 'Нет', 'auditory': 'Нет'}
+                    #
+                    # lesson_info_subgroup2 = f"{lesson2['subject']}, {lesson2['teacher']}, {lesson2['auditory']}"
                 elif lesson['subgroup'] == 2:
-                    skipped_rows += 1
-                    continue
+                    # skipped_rows += 1
+                    # continue
+                    lesson_info_subgroup1 = -1
+                    lesson_info_subgroup2 = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}"
 
-                lesson_info_subgroup1_width = (font.getbbox(lesson_info_subgroup1)[2] -
-                                               font.getbbox(lesson_info_subgroup1)[0])
+                    # for les in lessons:
+                    #     # ищем подходящий по subgroup и number урок
+                    #     if les['subgroup'] == 2 and les['number'] == lesson['number']:
+                    #         lesson2 = les
+                    #         break
+                    # else:
+                    #     # если ничего подходящего не нашли, то ставим такю заглушку
+                    #     lesson2 = {'subject': 'Нет', 'teacher': 'Нет', 'auditory': 'Нет'}
+                    #
+                    # lesson_info_subgroup1 = f"{lesson2['subject']}, {lesson2['teacher']}, {lesson2['auditory']}"
+                if lesson_info_subgroup1 != -1:
+                    lesson_info_subgroup2 = "Нет, Нет, Нет"
+                    lesson_info_subgroup1_width = (font.getbbox(lesson_info_subgroup1)[2] - font.getbbox(lesson_info_subgroup1)[0])
 
-                lesson_info_subgroup1_x = column_width1 + (column_width2 // 2 - lesson_info_subgroup1_width) // 2
-                lesson_info_subgroup1_y = start_y + (row_height - text_height) // 2
+                    lesson_info_subgroup1_x = column_width1 + (column_width2 // 2 - lesson_info_subgroup1_width) // 2
+                    lesson_info_subgroup1_y = start_y + (row_height - text_height) // 2
 
-                lesson_info_subgroup2_width = font.getbbox(lesson_info_subgroup2)[2] - \
+                    # lesson_info_subgroup2_width = font.getbbox(lesson_info_subgroup2)[2] - \
+                    #                               font.getbbox(lesson_info_subgroup2)[0]
+                    #
+                    # lesson_info_subgroup2_x = column_width1 + column_width2 // 2 + (
+                    #         column_width2 // 2 - lesson_info_subgroup2_width) // 2
+                    # lesson_info_subgroup2_y = start_y + (row_height - text_height) // 2
+                    # draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), "Нет, Нет, Нет", font=font,
+                    #           fill=(0, 0, 0))
+                    # draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), "Нет, Нет, Нет", font=font,
+                    #           fill=(255, 255, 255))
+                    draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), lesson_info_subgroup1, font=font,
+                              fill=(0, 0, 0))
+                if lesson_info_subgroup2 != -1:
+                    lesson_info_subgroup1 = 'Нет, Нет, Нет'
+                    lesson_info_subgroup2_width = font.getbbox(lesson_info_subgroup2)[2] - \
                                               font.getbbox(lesson_info_subgroup2)[0]
 
-                lesson_info_subgroup2_x = column_width1 + column_width2 // 2 + (
+                    lesson_info_subgroup2_x = column_width1 + column_width2 // 2 + (
                         column_width2 // 2 - lesson_info_subgroup2_width) // 2
-                lesson_info_subgroup2_y = start_y + (row_height - text_height) // 2
+                    lesson_info_subgroup2_y = start_y + (row_height - text_height) // 2
 
-                draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), lesson_info_subgroup1, font=font,
-                          fill=(0, 0, 0))
-                draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), lesson_info_subgroup2, font=font,
+                    # lesson_info_subgroup1_width = (
+                    #             font.getbbox(lesson_info_subgroup1)[2] - font.getbbox(lesson_info_subgroup1)[0])
+                    # lesson_info_subgroup1_x = column_width1 + (column_width2 // 2 - lesson_info_subgroup1_width) // 2
+                    # lesson_info_subgroup1_y = start_y + (row_height - text_height) // 2
+                    #
+                    # draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), "Нет, Нет, Нет", font=font,
+                    #           fill=(0, 0, 0))
+                    # draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), "Нет, Нет, Нет", font=font,
+                    #           fill=(255, 255, 255))
+                    draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), lesson_info_subgroup2, font=font,
                           fill=(0, 0, 0))
 
             # рисуем номер урока
