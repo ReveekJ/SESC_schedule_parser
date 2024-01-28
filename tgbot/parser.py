@@ -1,11 +1,10 @@
 import asyncio
-import time
 
 import aiohttp
 import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
 from tgbot.sesc_info import SESC_Info
-from tgbot.my_types import ChangesList, ChangesType
+from my_typing import ChangesList, ChangesType
 
 
 class Parser:
@@ -58,19 +57,27 @@ class Parser:
 
     @staticmethod  # Отправление запроса учителя
     async def __get_teacher_json(weekday: int, teacher: str):
-        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-            async with session.get(
-                    f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=teacher&{weekday=}'
-                    f'&teacher={teacher}') as resp:
-                return json.loads(await resp.text())
+        while True:
+            try:
+                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+                    async with session.get(
+                            f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=teacher&{weekday=}'
+                            f'&teacher={teacher}') as resp:
+                        return json.loads(await resp.text())
+            except Exception as e:
+                pass
 
     @staticmethod  # Отправление запроса ученика
     async def __get_student_json(weekday: int, group: int):
-        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-            async with session.get(
-                    f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=group&{weekday=}&{group=}'
-            ) as resp:
-                return json.loads(await resp.text())
+        while True:
+            try:
+                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+                    async with session.get(
+                            f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=group&{weekday=}&{group=}'
+                    ) as resp:
+                        return json.loads(await resp.text())
+            except Exception as e:
+                pass
 
     async def __check_for_changes_student(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
@@ -78,7 +85,7 @@ class Parser:
                 schedule = await self.__get_student_json(int(day), int(group))
                 print(group, day)
                 if schedule.get('diffs'):
-                    self.changes.append(ChangesType('group', group, day, schedule))
+                    await self.changes.append(ChangesType('group', group, day, schedule))
 
                 # передышка для сервака urfu
                 await asyncio.sleep(0.1)
@@ -89,7 +96,7 @@ class Parser:
                 schedule = await self.__get_teacher_json(int(day), teacher)
                 print(teacher, day)
                 if schedule.get('diffs'):
-                    self.changes.append(ChangesType('teacher', teacher, day, schedule))
+                    await self.changes.append(ChangesType('teacher', teacher, day, schedule))
                 # передышка для сервака urfu
                 await asyncio.sleep(0.1)
 
