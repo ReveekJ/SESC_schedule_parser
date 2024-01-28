@@ -1,4 +1,7 @@
+import asyncio
 import sys
+from models.database import get_async_session
+from models.db import ChangesDB
 
 
 class UnchangeableType:
@@ -30,8 +33,15 @@ class ChangesType:
 # при попытке например пройтись по этому типу данных будет выполнен проход по self как в массиве
 class ChangesList(list):
     def __init__(self):
-        self.knowing_changes = []  # список уже известных изменений
+        # список уже известных изменений
+        self.knowing_changes = asyncio.get_event_loop().run_until_complete(self.__get_knowing_changes_from_db())
         super().__init__([])  # список с теми изменениями, которые мы будем возвращать
+
+    @staticmethod
+    async def __get_knowing_changes_from_db() -> list[ChangesType]:
+        session = get_async_session()
+
+        await ChangesDB.get_all_changes(session)
 
     # проверка на уникальность
     def __is_unique(self, __object: ChangesType) -> bool | tuple[bool, int] | None:
@@ -48,7 +58,7 @@ class ChangesList(list):
                     print(e)
         return True
 
-    def append(self, __object: ChangesType):
+    async def append(self, __object: ChangesType):
         if not isinstance(__object, ChangesType):
             raise TypeError('должно быть ChangesType')
         # если __object.schedule.get('diffs') is None, то дальнейшие действия бесполезны
@@ -58,12 +68,16 @@ class ChangesList(list):
         is_unique = self.__is_unique(__object)
         if isinstance(is_unique, bool):
             # если уникальное кладем в массив уже известных и возвращаемых
+            session = get_async_session()
+
             super().append(__object)
             self.knowing_changes.append(__object)
+
+            await ChangesDB.add_changes(session, __object)
         elif is_unique is None:
             return None
         else:
-            # если не уникальное - то убираем из возвращаемых, также это значит, что is_unique=False, index
+            # если не уникальное - то убираем из возвращаемых, также это значит, что is_unique = False, index
             self.pop(is_unique[1])
 
     # внимание измененное поведения для index при поиске ChangesType
