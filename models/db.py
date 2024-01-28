@@ -1,9 +1,19 @@
 import asyncio
 
 from models.database import get_async_session
-from models.model import users, columns_json
+from models.model import users, changes, columns_json
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
+import json
+
+
+# продублировано из my_types
+class ChangesType:
+    def __init__(self, _type: str, _second: str, _weekday: str, _schedule: dict):
+        self.type = _type
+        self.second = _second
+        self.weekday = _weekday
+        self.schedule = _schedule
 
 
 class DB:
@@ -87,3 +97,33 @@ class DB:
 #
 # # Run the main function
 # asyncio.run(main())
+
+
+class ChangesDB:
+    @staticmethod
+    async def add_changes(session: AsyncSession, changed_schedule: ChangesType):
+        stmt = insert(changes).values((changed_schedule.type, changed_schedule.second, changed_schedule.weekday,
+                                      json.dumps(changed_schedule.schedule)))
+
+        await session.execute(stmt)
+        await session.commit()
+
+    @staticmethod
+    async def get_all_changes(session: AsyncSession) -> list[ChangesType]:
+        query = select(changes.c.type, changes.c.second, changes.c.weekday, changes.c.schedule)
+
+        query_result = await session.execute(query)
+        await session.commit()
+        result = []
+
+        for i in query_result.all():
+            result.append(ChangesType(i[0], i[1], i[2], json.loads(i[3])))
+
+        return result
+
+    @staticmethod
+    async def delete_all_changes(session: AsyncSession):
+        stmt = delete(changes)
+
+        await session.execute(stmt)
+        await session.commit()
