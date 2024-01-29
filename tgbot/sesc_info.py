@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 from bs4 import NavigableString
 
-from tgbot.my_types import UnchangeableType
+from my_typing import UnchangeableType
 
 
 class SESCInfo:
