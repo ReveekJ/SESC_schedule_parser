@@ -5,6 +5,7 @@ import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
 from tgbot.sesc_info import SESC_Info
 from my_typing import ChangesList, ChangesType
+from config import PATH_TO_FONT
 
 
 class Parser:
@@ -51,7 +52,7 @@ class Parser:
         if not info['lessons']:
             return 'NO_SCHEDULE'
 
-        self.create_table(self.merge_schedule(info['lessons'], info['diffs']), path)
+        self.create_table(_type, self.merge_schedule(info['lessons'], info['diffs']), path)
 
         return path
 
@@ -107,7 +108,18 @@ class Parser:
         return self.changes
 
     # Создание таблицы
-    def create_table(self, info: list, path: str):
+    def create_table(self, _type: str, info: list, path: str):
+        def get_text_of_lesson(__lesson: dict) -> str:
+            nonlocal _type
+
+            match _type:
+                case 'teacher':
+                    return f"{__lesson['subject']}, {__lesson['group']}, {__lesson['auditory']}" \
+                        if __lesson['subject'] != '' else ''
+                case _:
+                    return f"{__lesson['subject']}, {__lesson['teacher']}, {__lesson['auditory']}" \
+                        if __lesson['subject'] != '' else ''
+
         def is_exist_lesson_by_number(_lessons: list[dict], number: int) -> bool:
             for _les in _lessons:
                 if _les['number'] == number:
@@ -180,8 +192,7 @@ class Parser:
 
             if lesson['subgroup'] == 0:
                 # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
-                lesson_info = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}" \
-                    if lesson['subject'] != '' else ''
+                lesson_info = get_text_of_lesson(lesson)
 
                 lesson_info_width = font.getbbox(lesson_info)[2] - font.getbbox(lesson_info)[0]
                 lesson_info_x = column_width1 + (column_width2 - lesson_info_width) // 2
@@ -199,8 +210,7 @@ class Parser:
 
                 # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
                 if lesson['subgroup'] == 1:
-                    lesson_info_subgroup1 = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}"
-
+                    lesson_info_subgroup1 = get_text_of_lesson(lesson)
 
                     if lesson.get('diff'):
                         color = (252, 132, 3)
@@ -214,14 +224,14 @@ class Parser:
                             break
                     else:
                         # если ничего подходящего не нашли, то ставим такю заглушку
-                        lesson2 = {'subject': 'Нет', 'teacher': 'Нет', 'auditory': 'Нет'}
+                        lesson2 = {'subject': 'Нет', 'teacher': 'Нет', 'group': 'Нет', 'auditory': 'Нет'}
 
-                    lesson_info_subgroup2 = f"{lesson2['subject']}, {lesson2['teacher']}, {lesson2['auditory']}"
+                    lesson_info_subgroup2 = get_text_of_lesson(lesson2)
                 elif lesson['subgroup'] == 2:
                     # skipped_rows += 1
                     # continue
                     # lesson_info_subgroup1 = -1
-                    lesson_info_subgroup2 = f"{lesson['subject']}, {lesson['teacher']}, {lesson['auditory']}"
+                    lesson_info_subgroup2 = get_text_of_lesson(lesson)
                     # lesson_info_subgroup1 = 'Нет, Нет, Нет'
 
                     if lesson.get('diff'):
@@ -236,8 +246,8 @@ class Parser:
                             break
                     else:
                         # если ничего подходящего не нашли, то ставим такю заглушку
-                        lesson1 = {'subject': 'Нет', 'teacher': 'Нет', 'auditory': 'Нет'}
-                    lesson_info_subgroup1 = f"{lesson1['subject']}, {lesson1['teacher']}, {lesson1['auditory']}"
+                        lesson1 = {'subject': 'Нет', 'teacher': 'Нет', 'group': 'Нет', 'auditory': 'Нет'}
+                    lesson_info_subgroup1 = get_text_of_lesson(lesson1)
 
                 lesson_info_subgroup1_width = (
                         font.getbbox(lesson_info_subgroup1)[2] - font.getbbox(lesson_info_subgroup1)[0])
@@ -288,4 +298,4 @@ class Parser:
         image.save(path)
 
 
-PARSER = Parser('/usr/share/fonts/truetype/freefont/FreeSans.ttf')
+PARSER = Parser(PATH_TO_FONT)
