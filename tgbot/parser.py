@@ -42,12 +42,7 @@ class Parser:
     async def parse(self, _type: str, _second: str, _weekday: str):
         path = self.get_path(_second)
 
-        if _type == 'group':
-            info = await self.__get_student_json(int(_weekday), int(_second))
-        elif _type == 'teacher':
-            info = await self.__get_teacher_json(int(_weekday), _second)
-        else:
-            raise ValueError('IDK? че происходит тута ')
+        info = await self.__get_json(_type, int(_second), int(_weekday))
 
         if not info['lessons']:
             return 'NO_SCHEDULE'
@@ -57,25 +52,13 @@ class Parser:
         return path
 
     @staticmethod  # Отправление запроса учителя
-    async def __get_teacher_json(weekday: int, teacher: str):
+    async def __get_json(_type: str, _second: int, weekday: int):
         while True:
             try:
                 async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
                     async with session.get(
-                            f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=teacher&{weekday=}'
-                            f'&teacher={teacher}') as resp:
-                        return json.loads(await resp.text())
-            except Exception as e:
-                pass
-
-    @staticmethod  # Отправление запроса ученика
-    async def __get_student_json(weekday: int, group: int):
-        while True:
-            try:
-                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-                    async with session.get(
-                            f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=group&{weekday=}&{group=}'
-                    ) as resp:
+                            f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType={_type}&{weekday=}'
+                            f'&{_type}={_second}') as resp:
                         return json.loads(await resp.text())
             except Exception as e:
                 pass
@@ -83,7 +66,7 @@ class Parser:
     async def __check_for_changes_student(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
             for group in SESC_Info.GROUP.values():
-                schedule = await self.__get_student_json(int(day), int(group))
+                schedule = await self.__get_json('group', int(day), int(group))
                 print(group, day)
                 if schedule.get('diffs'):
                     await self.changes.append(ChangesType('group', group, day, schedule))
@@ -94,7 +77,7 @@ class Parser:
     async def __check_for_changes_teacher(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
             for teacher in SESC_Info.TEACHER.values():
-                schedule = await self.__get_teacher_json(int(day), teacher)
+                schedule = await self.__get_json('teacher', int(day), teacher)
                 print(teacher, day)
                 if schedule.get('diffs'):
                     await self.changes.append(ChangesType('teacher', teacher, day, schedule))
@@ -115,6 +98,9 @@ class Parser:
             match _type:
                 case 'teacher':
                     return f"{__lesson['subject']}, {__lesson['group']}, {__lesson['auditory']}" \
+                        if __lesson['subject'] != '' else ''
+                case 'auditory':
+                    return f"{__lesson['subject']}, {__lesson['teacher']}, {__lesson['group']}" \
                         if __lesson['subject'] != '' else ''
                 case _:
                     return f"{__lesson['subject']}, {__lesson['teacher']}, {__lesson['auditory']}" \
