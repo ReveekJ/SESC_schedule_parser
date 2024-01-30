@@ -74,7 +74,7 @@ def get_choose_type_kb(lang: str) -> InlineKeyboardMarkup:
 
     for i, j in SESC_Info.TYPE.items():
         # ignore all schedule
-        if j in ['all', 'auditory']:
+        if j in ['all']:
             continue
         kb.button(text=i, callback_data='type_' + j)
     add_back_btn(kb, lang)
