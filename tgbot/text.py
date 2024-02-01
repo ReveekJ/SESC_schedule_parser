@@ -91,4 +91,9 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('yes', 'Да', 'Yes'),
                    ('no', 'Нет', 'No'),
                    ('aus', "Вы уверены?", 'Are you sure?'),
-                   ('use', 'Чтобы продолжить используйте /start', 'To continue use /start'))
+                   ('use', 'Чтобы продолжить используйте /start', 'To continue use /start'),
+                   ('changes_ad', 'Этот бот умеет предупреждать об изменениях и та функция уже включена! Но, '
+                                  'по техническим причинам корректно работать она начнет только со следущей недели, '
+                                  'учитывайте это!', 'This bot is able to warn about changes and that feature is '
+                                                     'already enabled! But, for technical reasons, it will start '
+                                                     'working correctly only next week, keep this in mind!'))
