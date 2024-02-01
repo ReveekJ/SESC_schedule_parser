@@ -2,23 +2,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 from bs4 import NavigableString
 
-
-class UnchangeableType:
-    def __init__(self):
-        self.count_of_change = 0
-
-    def __set_name__(self, owner, name):
-        self.name = '_' + name
-
-    def __set__(self, instance, value):
-        if self.count_of_change < 3:
-            self.count_of_change += 1
-            return setattr(instance, self.name, value)
-        else:
-            raise ValueError('You can not change this attribute')
-
-    def __get__(self, instance, owner):
-        return getattr(instance, self.name)
+from my_typing import UnchangeableType
 
 
 class SESCInfo:
@@ -38,7 +22,7 @@ class SESCInfo:
 
     def __init__(self):
         self.url = 'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii'
-        self.__r = requests.get(self.url)
+        self.__r = requests.get(self.url, verify=False)
         self.__soup = bs(self.__r.text, 'html.parser')
         self.__selects = self.__soup.find_all('select')
 
@@ -90,4 +74,3 @@ class SESCInfo:
 
 
 SESC_Info = SESCInfo()
-print(SESC_Info.GROUP)

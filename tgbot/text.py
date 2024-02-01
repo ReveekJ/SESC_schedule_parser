@@ -56,7 +56,7 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('today', 'Расписание на сегодня', 'Schedule for today'),
                    ('tomorrow', 'Расписание на завтра', 'Schedule for tomorrow'),
                    ('all', 'Показать все расписание', 'View all schedule'),
-                   ('main', 'Расписание на ', 'Schedule for '),
+                   ('main', 'Расписание на', 'Schedule for'),
                    ('month', ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь',
                               'Октябрь', 'Ноябрь', 'Декабрь'],
                     ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
@@ -64,10 +64,10 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('weekdays', {
                        1: 'Понедельник',
                        2: 'Вторник',
-                       3: 'Среда',
+                       3: 'Среду',
                        4: 'Четверг',
-                       5: 'Пятница',
-                       6: 'Суббота',
+                       5: 'Пятницу',
+                       6: 'Субботу',
                        7: 'Воскресенье'
                    },
                     {
@@ -86,4 +86,14 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                    ('all_days', 'Показать на конкретный день', 'View all days'),
                    ('choose_letter', 'Выберите первую букву Вашей фамилии',
                     'Choose the first letter of your last name'),
-                   ('back', 'Назад', 'Back'))
+                   ('back', 'Назад', 'Back'),
+                   ('changed_schedule', 'Изменения в расписании на', 'Schedule changes for'),
+                   ('yes', 'Да', 'Yes'),
+                   ('no', 'Нет', 'No'),
+                   ('aus', "Вы уверены?", 'Are you sure?'),
+                   ('use', 'Чтобы продолжить используйте /start', 'To continue use /start'),
+                   ('changes_ad', 'Этот бот умеет предупреждать об изменениях и та функция уже включена! Но, '
+                                  'по техническим причинам корректно работать она начнет только со следущей недели, '
+                                  'учитывайте это!', 'This bot is able to warn about changes and that feature is '
+                                                     'already enabled! But, for technical reasons, it will start '
+                                                     'working correctly only next week, keep this in mind!'))

@@ -74,7 +74,7 @@ def get_choose_type_kb(lang: str) -> InlineKeyboardMarkup:
 
     for i, j in SESC_Info.TYPE.items():
         # ignore all schedule
-        if j == 'all':
+        if j in ['all']:
             continue
         kb.button(text=i, callback_data='type_' + j)
     add_back_btn(kb, lang)
@@ -107,4 +107,11 @@ def get_choose_weekday_kb(lang: str, back: bool = True) -> InlineKeyboardMarkup:
         add_back_btn(kb, lang)
 
     kb.adjust(1)
+    return kb.as_markup()
+
+
+def hard_choice(lang: str):
+    kb = InlineKeyboardBuilder()
+    kb.button(text=TEXT('yes', lang), callback_data='relogin')
+    kb.button(text=TEXT('no', lang), callback_data='reloginf')
     return kb.as_markup()

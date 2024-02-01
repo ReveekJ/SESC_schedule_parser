@@ -123,6 +123,9 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
 
     await callback.message.delete()
     await bot.send_message(user_id,
+                           TEXT('changes_ad', lang),
+                           disable_notification=True)
+    await bot.send_message(user_id,
                            TEXT('main', lang=lang),
                            reply_markup=get_choose_schedule(lang),
                            disable_notification=True)

@@ -13,3 +13,10 @@ users = Table('users',
               Column(columns_json[2], Text),
               Column(columns_json[3], Text)
               )
+
+changes = Table('changes',
+                metadata,
+                Column('type', Text, nullable=False),
+                Column('second', Text, nullable=False),
+                Column('weekday', Text, nullable=False),
+                Column('schedule', Text, nullable=False))

@@ -2,12 +2,9 @@
 .idea/
 *.png
 *.log
-*.sqlite
 venv/
 __pycache__/
 qodana.yaml
 test/test.py
 .env
 docker-compose.yaml
-migrations/
-.idea/
