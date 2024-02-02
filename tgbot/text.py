@@ -96,4 +96,5 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                                   'по техническим причинам корректно работать она начнет только со следущей недели, '
                                   'учитывайте это!', 'This bot is able to warn about changes and that feature is '
                                                      'already enabled! But, for technical reasons, it will start '
-                                                     'working correctly only next week, keep this in mind!'))
+                                                     'working correctly only next week, keep this in mind!'),
+                   'admin_sending_message', 'Сообщения отправлены, ошибок - ', 'Messages sent, errors - ')
