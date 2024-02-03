@@ -13,7 +13,7 @@ router = Router()
 
 @router.message(Command('send_to_all'))
 async def send_to_all(message: Message):
-    user_id = message.from_user.id
+    user_id = message.chat.id
 
     if user_id not in ADMINS:
         return None

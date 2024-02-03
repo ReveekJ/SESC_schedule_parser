@@ -30,7 +30,7 @@ async def relogin_confirmation(message: Message, state: FSMContext):
 @router.callback_query(F.data == "relogin")
 async def clear_user_data(callback: CallbackQuery, state: FSMContext):
     session = await get_async_session()
-    user_id = callback.from_user.id
+    user_id = callback.message.chat.id
     lang = callback.from_user.language_code
 
     await DB().delete_user(session, user_id)

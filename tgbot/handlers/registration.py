@@ -28,10 +28,11 @@ router = Router()
 # эта функция требуется для реализации кнопки back, тк мы не можем вызвать функцию, которая находится под декоратором
 # так же мы должны использовать класс Bot для отправки сообщений, тк не получется отправить сообщение черз Message,
 # но можно получить дополнительную информацию через message
-async def func_start_registration(message: Message, state: FSMContext):
+async def func_start_registration(message: Message | CallbackQuery, state: FSMContext):
     session = await get_async_session()
     lang = message.from_user.language_code
-    user_id = message.from_user.id
+
+    user_id = message.chat.id if isinstance(message,Message) else message.message.chat.id
 
     if await DB().select_user_by_id(session, user_id) is not None:
         await state.clear()
@@ -43,14 +44,14 @@ async def func_start_registration(message: Message, state: FSMContext):
     await state.update_data(lang=lang)
     await state.set_state(RegistrationMachine.role)
 
-    await bot.send_message(message.from_user.id, TEXT('choose_role', lang=lang),
+    await bot.send_message(message.chat.id, TEXT('choose_role', lang=lang),
                            reply_markup=get_choose_role_kb(lang),
                            disable_notification=True)
 
 
 async def func_set_role_student(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
-    user_id = callback.from_user.id
+    user_id = callback.message.chat.id
 
     await state.update_data(prev=func_start_registration)
 
@@ -68,7 +69,7 @@ async def func_set_role_student(callback: CallbackQuery, state: FSMContext):
 
 async def func_set_role_teacher(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
-    user_id = callback.from_user.id
+    user_id = callback.message.chat.id
 
     await state.update_data(prev=start_registration)
     await state.update_data(role=callback.data)
@@ -89,7 +90,7 @@ async def func_set_role_teacher(callback: CallbackQuery, state: FSMContext):
 
 async def func_set_letter_of_teacher(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
-    user_id = callback.from_user.id
+    user_id = callback.message.chat.id
 
     await state.update_data(prev=set_role_teacher)
     await state.set_state(RegistrationMachine.sub_info)
@@ -105,7 +106,7 @@ async def func_set_letter_of_teacher(callback: CallbackQuery, state: FSMContext)
 
 async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
     session = await get_async_session()
-    user_id = callback.from_user.id
+    user_id = callback.message.chat.id
 
     data = await state.get_data()
     await state.clear()
@@ -113,7 +114,7 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
     role = data['role']
     sub_role = callback.data
     lang = data['lang']
-    chat_id = callback.from_user.id
+    chat_id = callback.message.chat.id
 
     await DB().create_user(session,
                            id=chat_id,
