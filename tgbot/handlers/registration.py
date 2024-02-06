@@ -32,7 +32,7 @@ async def func_start_registration(message: Message | CallbackQuery, state: FSMCo
     session = await get_async_session()
     lang = message.from_user.language_code
 
-    user_id = message.chat.id if isinstance(message,Message) else message.message.chat.id
+    user_id = message.chat.id if isinstance(message, Message) else message.message.chat.id
 
     if await DB().select_user_by_id(session, user_id) is not None:
         await state.clear()
@@ -44,7 +44,7 @@ async def func_start_registration(message: Message | CallbackQuery, state: FSMCo
     await state.update_data(lang=lang)
     await state.set_state(RegistrationMachine.role)
 
-    await bot.send_message(message.chat.id, TEXT('choose_role', lang=lang),
+    await bot.send_message(user_id, TEXT('choose_role', lang=lang),
                            reply_markup=get_choose_role_kb(lang),
                            disable_notification=True)
 
