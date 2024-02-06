@@ -182,7 +182,7 @@ class Parser:
                 lesson_info_width = font.getbbox(lesson_info)[2] - font.getbbox(lesson_info)[0]
                 lesson_info_x = column_width1 + (column_width2 - lesson_info_width) // 2
                 lesson_info_y = start_y + (row_height - text_height) // 2
-                if lesson.get('diff'):
+                if lesson.get('date'):
                     color = (252, 132, 3)
                 else:
                     color = (0, 0, 0)
@@ -197,7 +197,7 @@ class Parser:
                 if lesson['subgroup'] == 1:
                     lesson_info_subgroup1 = get_text_of_lesson(lesson)
 
-                    if lesson.get('diff'):
+                    if lesson.get('date'):
                         color = (252, 132, 3)
                     else:
                         color = (0, 0, 0)
