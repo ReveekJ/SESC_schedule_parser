@@ -22,7 +22,7 @@ class ReloginMashine(RegistrationMachine):
 @router.message(Command("relogin"))
 async def relogin_confirmation(message: Message, state: FSMContext):
     lang = message.from_user.language_code
-    chat_id = message.from_user.id
+    chat_id = message.chat.id
 
     await message.delete()
     await bot.send_message(chat_id,
