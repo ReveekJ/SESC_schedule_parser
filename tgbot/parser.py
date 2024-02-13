@@ -29,7 +29,8 @@ class Parser:
 
             # пытаемся найти соответствие по number и subgroup
             for index, lesson in enumerate(merged_schedule):
-                if lesson['number'] == number and lesson['subgroup'] == subgroup:
+                if ((lesson['number'] == number and lesson['subgroup'] == subgroup) or
+                        (lesson['number'] == number and subgroup == 0)):
                     merged_schedule[index] = difference
             # если соответствия нет, то добавляем этот урок
             else:
