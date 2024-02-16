@@ -1,10 +1,9 @@
 from aiogram import Router, F
-from aiogram.types import Message, FSInputFile, ContentType
+from aiogram.types import Message, ContentType
 from typing import Union
 from aiogram.filters import BaseFilter
 from config import ADMINS
 from tgbot.handlers.auxiliary import bot
-import uuid
 
 router = Router()
 
@@ -51,5 +50,13 @@ async def feedback_photo(message: Message):
                                      disable_notification=True)
     elif message.content_type == ContentType.DOCUMENT:
         for admin in ADMINS:
-            await bot.send_animation(admin, message.document.file_id,
-                                     disable_notification=True)
+            await bot.send_document(admin, message.document.file_id,
+                                    disable_notification=True)
+    elif message.content_type == ContentType.STICKER:
+        await bot.send_sticker(message.chat.id,
+                               'CAACAgIAAxkBAAIERmXPixX1Hku9oE_2_GB-RDfTNsq6AAKDNgACRnyhS_XSczMY6WQ-NAQ',
+                               disable_notification=True)
+    else:
+        for admin in ADMINS:
+            await bot.send_message(admin, message.content_type,
+                                   disable_notification=True)
