@@ -53,6 +53,22 @@ class DB:
         await session.commit()
         return final_result
 
+    async def get_all_users(self, session: AsyncSession) -> list[dict]:
+        query = select(users)
+
+        res = await session.execute(query)
+        final_result = []
+
+        for i, user in enumerate(res.all()):
+            final_result.append({})
+            for index, elem in enumerate(user):
+                if index == 0:
+                    elem = self.__convert_from_id_type(elem)
+                final_result[i][columns_json[index]] = elem
+
+        await session.commit()
+        return final_result
+
     async def create_user(self, session: AsyncSession, **kwargs):
         # what must be in kwargs u can see in models.py
         # проверка, что переданы все параметры

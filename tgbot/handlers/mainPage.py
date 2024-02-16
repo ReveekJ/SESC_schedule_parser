@@ -17,7 +17,7 @@ router = Router()
 @router.callback_query(F.data == 'today')
 async def send_schedule_for_today(callback: CallbackQuery):
     session = await get_async_session()
-    user_data = await DB().select_user_by_id(session, callback.from_user.id)
+    user_data = await DB().select_user_by_id(session, callback.message.chat.id)
     lang = callback.from_user.language_code
 
     await callback.message.delete()
@@ -31,7 +31,7 @@ async def send_schedule_for_today(callback: CallbackQuery):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
-        await send_schedule(chat_id=callback.from_user.id,
+        await send_schedule(chat_id=callback.message.chat.id,
                             lang=lang,
                             role=user_data['role'],
                             sub_info=user_data['sub_info'],
@@ -48,12 +48,12 @@ async def send_schedule_for_today(callback: CallbackQuery):
 @router.callback_query(F.data == 'tomorrow')
 async def send_schedule_for_tomorrow(callback: CallbackQuery):
     session = await get_async_session()
-    user_data = await DB().select_user_by_id(session, callback.from_user.id)
+    user_data = await DB().select_user_by_id(session, callback.message.chat.id)
     lang = callback.from_user.language_code
 
     await callback.message.delete()
-
-    day = str((datetime.date.today().weekday() + 2) % 6) if datetime.date.today().weekday() != 6 else '1'
+    today_to_tomorrow = {0: '2', 1: '3', 2: '4', 3: '5', 4: '6', 5: '1'}
+    day = today_to_tomorrow[datetime.date.today().weekday()]
 
     file = await PARSER.parse(user_data['role'], user_data['sub_info'], day)
 
@@ -63,7 +63,7 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
-        await send_schedule(chat_id=callback.from_user.id,
+        await send_schedule(chat_id=callback.message.chat.id,
                             lang=lang,
                             role=user_data['role'],
                             sub_info=user_data['sub_info'],
@@ -98,7 +98,7 @@ async def get_all_days_sch(callback: CallbackQuery):
 async def get_sch_for_this_day(callback: CallbackQuery):
     lang = callback.from_user.language_code
     session = await get_async_session()
-    user_data = await DB().select_user_by_id(session, callback.from_user.id)
+    user_data = await DB().select_user_by_id(session, callback.message.chat.id)
     file = await PARSER.parse(user_data['role'], user_data['sub_info'], callback.data)
 
     await callback.message.delete()
@@ -107,7 +107,7 @@ async def get_sch_for_this_day(callback: CallbackQuery):
                                       disable_notification=True)
     else:
         schedule = FSInputFile(file)
-        await send_schedule(chat_id=callback.from_user.id,
+        await send_schedule(chat_id=callback.message.chat.id,
                             schedule=schedule,
                             short_name_text_mes='main',
                             role=user_data['role'],

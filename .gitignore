@@ -8,3 +8,5 @@ qodana.yaml
 test/test.py
 .env
 docker-compose.yaml
+*.mp4
+*.mp3

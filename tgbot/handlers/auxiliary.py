@@ -62,12 +62,10 @@ async def sending_schedule_changes():
         role = elem.type
         sub_info = elem.second
         weekday = elem.weekday
-        schedule = elem.schedule
+        # schedule = elem.schedule
 
         # создаем расписание с изменениями
-        merged_schedule = PARSER.merge_schedule(schedule['lessons'], schedule['diffs'])
-        path = PARSER.get_path(sub_info)
-        PARSER.create_table(merged_schedule, path)
+        path = await PARSER.parse(str(role), str(sub_info), str(weekday))
         schedule = FSInputFile(path)
 
         session = await get_async_session()

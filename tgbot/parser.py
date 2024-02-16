@@ -29,11 +29,11 @@ class Parser:
 
             # пытаемся найти соответствие по number и subgroup
             for index, lesson in enumerate(merged_schedule):
-                if lesson['number'] == number and lesson['subgroup'] == subgroup:
+                if ((lesson['number'] == number and lesson['subgroup'] == subgroup) or
+                        (lesson['number'] == number and subgroup == 0)):
                     merged_schedule[index] = difference
             # если соответствия нет, то добавляем этот урок
             else:
-                difference["diff"] = True
                 merged_schedule.append(difference)
 
         return merged_schedule
@@ -66,9 +66,9 @@ class Parser:
     async def __check_for_changes_student(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
             for group in SESC_Info.GROUP.values():
-                schedule = await self.__get_json('group', int(day), int(group))
-                print(group, day)
-                if schedule.get('diffs'):
+                schedule = await self.__get_json('group', int(group), int(day))
+
+                if schedule.get('diffs') is not None:
                     await self.changes.append(ChangesType('group', group, day, schedule))
 
                 # передышка для сервака urfu
@@ -77,8 +77,8 @@ class Parser:
     async def __check_for_changes_teacher(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
             for teacher in SESC_Info.TEACHER.values():
-                schedule = await self.__get_json('teacher', int(day), teacher)
-                print(teacher, day)
+                schedule = await self.__get_json('teacher', int(teacher), int(day))
+
                 if schedule.get('diffs'):
                     await self.changes.append(ChangesType('teacher', teacher, day, schedule))
                 # передышка для сервака urfu
@@ -183,7 +183,7 @@ class Parser:
                 lesson_info_width = font.getbbox(lesson_info)[2] - font.getbbox(lesson_info)[0]
                 lesson_info_x = column_width1 + (column_width2 - lesson_info_width) // 2
                 lesson_info_y = start_y + (row_height - text_height) // 2
-                if lesson.get('diff'):
+                if lesson.get('date'):
                     color = (252, 132, 3)
                 else:
                     color = (0, 0, 0)
@@ -198,7 +198,7 @@ class Parser:
                 if lesson['subgroup'] == 1:
                     lesson_info_subgroup1 = get_text_of_lesson(lesson)
 
-                    if lesson.get('diff'):
+                    if lesson.get('date'):
                         color = (252, 132, 3)
                     else:
                         color = (0, 0, 0)
@@ -220,7 +220,7 @@ class Parser:
                     lesson_info_subgroup2 = get_text_of_lesson(lesson)
                     # lesson_info_subgroup1 = 'Нет, Нет, Нет'
 
-                    if lesson.get('diff'):
+                    if lesson.get('date') is not None:
                         color = (252, 132, 3)
                     else:
                         color = (0, 0, 0)

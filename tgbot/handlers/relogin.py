@@ -10,6 +10,7 @@ from tgbot.handlers.registration import func_start_registration, RegistrationMac
 
 from tgbot.text import TEXT
 from tgbot.keyboard import hard_choice, get_choose_schedule
+from tgbot.handlers.auxiliary import bot
 
 router = Router()
 
@@ -21,23 +22,27 @@ class ReloginMashine(RegistrationMachine):
 @router.message(Command("relogin"))
 async def relogin_confirmation(message: Message, state: FSMContext):
     lang = message.from_user.language_code
+    chat_id = message.chat.id
 
     await message.delete()
-    await message.answer(TEXT("aus", lang),
-                         reply_markup=hard_choice(lang=lang))
+    await bot.send_message(chat_id,
+                           TEXT("aus", lang),
+                           reply_markup=hard_choice(lang=lang),
+                           disable_notification=True)
 
 
 @router.callback_query(F.data == "relogin")
 async def clear_user_data(callback: CallbackQuery, state: FSMContext):
     session = await get_async_session()
-    user_id = callback.from_user.id
+    user_id = callback.message.chat.id
     lang = callback.from_user.language_code
 
     await DB().delete_user(session, user_id)
     await callback.message.delete()
 
-    await callback.message.answer(TEXT('hello', lang),
-                                  disable_notification=True)
+    await bot.send_message(user_id,
+                           TEXT('hello', lang),
+                           disable_notification=True)
     await func_start_registration(callback, state)
     await callback.answer()
 
@@ -45,11 +50,13 @@ async def clear_user_data(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "reloginf")
 async def cancel_deletion(callback: CallbackQuery):
     lang = callback.from_user.language_code
+    user_id = callback.message.chat.id
 
     await callback.message.delete()
     # отправка основного сообщения
-    await callback.message.answer(TEXT('main', lang),
-                                  reply_markup=get_choose_schedule(lang),
-                                  disable_notification=True)
+    await bot.send_message(user_id,
+                           TEXT('main', lang),
+                           reply_markup=get_choose_schedule(lang),
+                           disable_notification=True)
 
     await callback.answer()
