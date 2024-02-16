@@ -27,51 +27,29 @@ async def feedback(message: Message):
                                disable_notification=True)
 
 
-@router.message(ChatTypeFilter(chat_ignor_type=['group', 'supergroup']) and F.video)
+@router.message(ChatTypeFilter(chat_ignor_type=['group', 'supergroup']))
 async def feedback_photo(message: Message):
-    path_to_feedback = f"{__file__[:__file__.rfind('/', 0, __file__.rfind('/', 0, __file__.rfind('/')))] + '/temp/' + str(uuid.uuid4())}"
     if message.content_type == ContentType.PHOTO:
-        await bot.download(
-            message.photo[-1],
-            destination=path_to_feedback + '.png')
-        image_from_pc = FSInputFile(path_to_feedback)
-
         for admin in ADMINS:
-            await bot.send_photo(admin, image_from_pc,
+            await bot.send_photo(admin, message.photo[-1].file_id,
                                  disable_notification=True)
-
     elif message.content_type == ContentType.VIDEO:
-        # await bot.download(
-        #     message.video,
-        #     destination=path_to_feedback + '.mp4')
-        video = message.video.file_id
-
         for admin in ADMINS:
-            await bot.send_video(admin, video,
+            await bot.send_video(admin, message.video.file_id,
                                  disable_notification=True)
-
     elif message.content_type == ContentType.VOICE:
-        # await bot.download(
-        #     message.audio[-1],
-        #     destination=path_to_feedback + '.mp3')
-        # image_from_pc = FSInputFile(path_to_feedback)
-        image_from_pc = message.voice.file_id
         for admin in ADMINS:
-            await bot.send_voice(admin, image_from_pc,
+            await bot.send_voice(admin, message.voice.file_id,
                                  disable_notification=True)
     elif message.content_type == ContentType.VIDEO_NOTE:
-        await bot.download(
-            message.video_note[-1],
-            destination=path_to_feedback + '.mp4')
-        image_from_pc = FSInputFile(path_to_feedback)
         for admin in ADMINS:
-            await bot.send_video(admin, image_from_pc,
-                                 disable_notification=True)
+            await bot.send_video_note(admin, message.video_note.file_id,
+                                      disable_notification=True)
     elif message.content_type == ContentType.ANIMATION:
-        await bot.download(
-            message.animation[-1],
-            destination=path_to_feedback + '.mp4')
-        image_from_pc = FSInputFile(path_to_feedback)
         for admin in ADMINS:
-            await bot.send_video(admin, image_from_pc,
-                                 disable_notification=True)
+            await bot.send_animation(admin, message.animation.file_id,
+                                     disable_notification=True)
+    elif message.content_type == ContentType.DOCUMENT:
+        for admin in ADMINS:
+            await bot.send_animation(admin, message.document.file_id,
+                                     disable_notification=True)
