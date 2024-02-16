@@ -15,13 +15,19 @@ def set_tasks(scheduler: AsyncIOScheduler):
              datetime.time(5, 0, 0),
              datetime.time(6, 0, 0),
              datetime.time(7, 0, 0),
-             datetime.time(12, 0, 0),
-             datetime.time(15, 0, 0),
+             datetime.time(9, 30, 0),
+             datetime.time(10, 20, 0),
+             datetime.time(11, 10, 0),
+             datetime.time(12, 10, 0),
+             datetime.time(13, 5, 0),
+             datetime.time(14, 5, 0),
+             datetime.time(15, 5, 0),
              datetime.time(18, 0, 0),
              datetime.time(20, 0, 0)]
 
     for i in times[:len(times) - 1]:
-        scheduler.add_job(sending_schedule_changes, CronTrigger(hour=i.hour, minute=i.minute, second=i.second))
+        # минус 2, так как сервер находится в Москве
+        scheduler.add_job(sending_schedule_changes, CronTrigger(hour=i.hour - 2, minute=i.minute, second=i.second))
 
     scheduler.add_job(sending_schedule_changes, CronTrigger(hour=times[-1].hour, minute=times[-1].minute,
                                                             second=times[-1].second),
