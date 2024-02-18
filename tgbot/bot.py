@@ -11,7 +11,7 @@ from tgbot.handlers.auxiliary import sending_schedule_changes
 
 
 def set_tasks(scheduler: AsyncIOScheduler):
-    times = [datetime.time(0, 0, 0),
+    times = [datetime.time(2, 0, 0),
              datetime.time(5, 0, 0),
              datetime.time(6, 0, 0),
              datetime.time(7, 0, 0),

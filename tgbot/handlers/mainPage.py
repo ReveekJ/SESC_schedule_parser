@@ -52,7 +52,7 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
     lang = callback.from_user.language_code
 
     await callback.message.delete()
-    today_to_tomorrow = {0: '2', 1: '3', 2: '4', 3: '5', 4: '6', 5: '1'}
+    today_to_tomorrow = {0: '2', 1: '3', 2: '4', 3: '5', 4: '6', 5: '1', 6: '1'}
     day = today_to_tomorrow[datetime.date.today().weekday()]
 
     file = await PARSER.parse(user_data['role'], user_data['sub_info'], day)
