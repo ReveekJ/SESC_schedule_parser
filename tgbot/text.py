@@ -97,4 +97,7 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                                   'учитывайте это!', 'This bot is able to warn about changes and that feature is '
                                                      'already enabled! But, for technical reasons, it will start '
                                                      'working correctly only next week, keep this in mind!'),
-                   'admin_sending_message', 'Сообщения отправлены, ошибок - ', 'Messages sent, errors - ')
+                   'admin_sending_message', 'Сообщения отправлены, ошибок - ', 'Messages sent, errors - ',
+                   ('get_feedback', 'Напишите и отправьте свой отзыв прямо здесь',
+                    'Write and send your feedback right here'),
+                   ('feedback_done', 'Отзыв успешно отправлен', 'The review has been sent successfully'))

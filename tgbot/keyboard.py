@@ -115,3 +115,10 @@ def hard_choice(lang: str):
     kb.button(text=TEXT('yes', lang), callback_data='relogin')
     kb.button(text=TEXT('no', lang), callback_data='reloginf')
     return kb.as_markup()
+
+
+def back_kb(lang: str) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    add_back_btn(kb, lang)
+
+    return kb.as_markup()
