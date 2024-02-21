@@ -62,10 +62,10 @@ async def func_set_role_student(callback: CallbackQuery, state: FSMContext):
     await state.set_state(RegistrationMachine.sub_info)
 
     await callback.message.delete()
-    await bot.edit_message_text(chat_id=user_id,
-                                text=TEXT('choose_sub_info_group', lang=lang),
-                                reply_markup=get_choose_group_kb(lang),
-                                disable_notification=True)
+    await bot.send_message(user_id,
+                           text=TEXT('choose_sub_info_group', lang=lang),
+                           reply_markup=get_choose_group_kb(lang),
+                           disable_notification=True)
 
     await callback.answer()
 
