@@ -55,17 +55,17 @@ async def func_start_registration(message: Message | CallbackQuery, state: FSMCo
 async def func_set_role_student(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     user_id = callback.message.chat.id
+    message_id = callback.message.message_id
 
     await state.update_data(prev=func_start_registration)
 
     await state.update_data(role=callback.data)
     await state.set_state(RegistrationMachine.sub_info)
 
-    await callback.message.delete()
-    await bot.send_message(user_id,
-                           text=TEXT('choose_sub_info_group', lang=lang),
-                           reply_markup=get_choose_group_kb(lang),
-                           disable_notification=True)
+    await bot.edit_message_text(chat_id=user_id,
+                                message_id=message_id,
+                                text=TEXT('choose_sub_info_group', lang=lang),
+                                reply_markup=get_choose_group_kb(lang))
 
     await callback.answer()
 
@@ -73,20 +73,16 @@ async def func_set_role_student(callback: CallbackQuery, state: FSMContext):
 async def func_set_role_teacher(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     user_id = callback.message.chat.id
+    message_id = callback.message.message_id
 
     await state.update_data(prev=start_registration)
     await state.update_data(role=callback.data)
     await state.set_state(RegistrationMachine.letter_of_teacher)
 
-    try:
-        await callback.message.delete()
-    except TelegramBadRequest:
-        pass
-
-    await bot.send_message(user_id,
-                           TEXT('choose_letter', lang=lang),
-                           reply_markup=get_letter_of_teacher_kb(lang),
-                           disable_notification=True)
+    await bot.edit_message_text(chat_id=user_id,
+                                message_id=message_id,
+                                text=TEXT('choose_letter', lang=lang),
+                                reply_markup=get_letter_of_teacher_kb(lang))
 
     await callback.answer()
 
@@ -94,15 +90,15 @@ async def func_set_role_teacher(callback: CallbackQuery, state: FSMContext):
 async def func_set_letter_of_teacher(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     user_id = callback.message.chat.id
+    message_id = callback.message.message_id
 
     await state.update_data(prev=set_role_teacher)
     await state.set_state(RegistrationMachine.sub_info)
 
-    await callback.message.delete()
-    await bot.send_message(user_id,
-                           text=TEXT('choose_sub_info_teacher', lang),
-                           reply_markup=get_choose_teacher_kb(callback.data.split('_')[-1], lang),
-                           disable_notification=True)
+    await bot.edit_message_text(chat_id=user_id,
+                                message_id=message_id,
+                                text=TEXT('choose_sub_info_teacher', lang),
+                                reply_markup=get_choose_teacher_kb(callback.data.split('_')[-1], lang))
 
     await callback.answer()
 
@@ -110,6 +106,7 @@ async def func_set_letter_of_teacher(callback: CallbackQuery, state: FSMContext)
 async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
     session = await get_async_session()
     user_id = callback.message.chat.id
+    message_id = callback.message.message_id
 
     data = await state.get_data()
     await state.clear()
@@ -125,11 +122,10 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
                            sub_info=sub_role,
                            lang=lang)
 
-    await callback.message.delete()
-    await bot.send_message(user_id,
-                           TEXT('main', lang=lang),
-                           reply_markup=get_choose_schedule(lang),
-                           disable_notification=True)
+    await bot.edit_message_text(chat_id=user_id,
+                                message_id=message_id,
+                                text=TEXT('main', lang=lang),
+                                reply_markup=get_choose_schedule(lang))
 
     await callback.answer()
 
