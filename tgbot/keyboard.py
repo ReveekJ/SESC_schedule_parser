@@ -14,6 +14,7 @@ def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
     kb.button(text=TEXT('teacher', lang), callback_data='teacher')
     # The Illusion of choice
     kb.button(text=TEXT('parent', lang), callback_data='group')
+    # kb.button(text=TEXT('administration_role', lang), callback_data='administration')
 
     kb.adjust(1)
 
@@ -76,7 +77,7 @@ def get_choose_type_kb(lang: str) -> InlineKeyboardMarkup:
         # ignore all schedule
         if j in ['all']:
             continue
-        kb.button(text=i, callback_data='type_' + j)
+        kb.button(text=TEXT(j, lang), callback_data='type_' + j)
     add_back_btn(kb, lang)
 
     kb.adjust(1)
@@ -97,7 +98,7 @@ def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
 def get_choose_weekday_kb(lang: str, back: bool = True) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
 
-    for callback_data, text in TEXT('weekdays', lang).items():
+    for callback_data, text in TEXT('weekdays_kb', lang).items():
         if callback_data == 7:
             continue
 

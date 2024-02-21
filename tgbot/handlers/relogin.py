@@ -40,9 +40,6 @@ async def clear_user_data(callback: CallbackQuery, state: FSMContext):
     await DB().delete_user(session, user_id)
     await callback.message.delete()
 
-    await bot.send_message(user_id,
-                           TEXT('hello', lang),
-                           disable_notification=True)
     await func_start_registration(callback, state)
     await callback.answer()
 

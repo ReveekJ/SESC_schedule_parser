@@ -43,19 +43,30 @@ class TextMessage:
         return self.__text[lang][short_name_text_mes]
 
 
-TEXT = TextMessage(('hello', 'Привет! Это бот, котрый может показать тебе актуальное расписание у любого класса и на '
-                             'любой день в СУНЦ УрФУ!', 'Hi! This is a bot that can show you the current schedule for '
-                                                        'any class and on any day in SESC UrFU!'),
-                   ('choose_role', 'Выберите Вашу роль', 'Choose your role'),
-                   ('choose_sub_info_group', 'Выберите Ваш класс', 'Choose your class'),
-                   ('choose_sub_info_teacher', 'Выберите Ваше ФИО', 'Choose your name'),
-                   ('choose_sub_info_auditory', 'Выберите аудиторию', 'Choose auditory'),
+TEXT = TextMessage(('hello', '''Осторожно 🐌 расписание СУНЦ УрФУ!
+Этот бот может:
+🎓 Быстро найти актуальное расписание по твоему запросу
+🎓 Оперативно уведомить о любых изменениях в твоем школьном расписании
+
+✅ Пройди регистрацию в пару кликов:''',
+                    '''Watch out for the SESC URFU 🐌  schedule!
+This bot can:
+🎓 Quickly find the current schedule according to your request
+🎓 Promptly notify you of any changes in your school schedule
+
+✅ Register in a couple of clicks:'''),
+                   ('choose_role',  'Выбери свою роль', 'Choose your role'),
+                   ('choose_sub_info_group', 'Выбери свой класс', 'Choose your class'),
+                   ('choose_sub_info_teacher', 'Выбери ФИО учителя', 'Choose your name'),
+                   ('choose_sub_info_auditory', 'Выбери аудиторию', 'Choose auditory'),
                    ('student', 'Ученик', 'Student'),
-                   ('teacher', 'Учитель', 'Teacher'),
+                   ('teacher', 'Преподаватель', 'Teacher'),
                    ('parent', 'Родитель', 'Parent'),
+                   ('auditory', 'Аудитория', 'Auditory'),
+                   ('group', 'Класс', 'Group'),
                    ('today', 'Расписание на сегодня', 'Schedule for today'),
                    ('tomorrow', 'Расписание на завтра', 'Schedule for tomorrow'),
-                   ('all', 'Показать все расписание', 'View all schedule'),
+                   ('all', 'Все расписание', 'All schedule'),
                    ('main', 'Расписание на', 'Schedule for'),
                    ('month', ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь',
                               'Октябрь', 'Ноябрь', 'Декабрь'],
@@ -79,25 +90,38 @@ TEXT = TextMessage(('hello', 'Привет! Это бот, котрый може
                         6: 'Saturday',
                         7: 'Sunday'
                     }),
-                   ('choose_type', 'Для кого/чего вы ищете расписание?',
+                   ('weekdays_kb', {
+                       1: 'Понедельник',
+                       2: 'Вторник',
+                       3: 'Среда',
+                       4: 'Четверг',
+                       5: 'Пятница',
+                       6: 'Суббота',
+                       7: 'Воскресенье'
+                   },
+                    {
+                        1: 'Monday',
+                        2: 'Tuesday',
+                        3: 'Wednesday',
+                        4: 'Thursday',
+                        5: 'Friday',
+                        6: 'Saturday',
+                        7: 'Sunday'
+                    }),
+                   ('choose_type', 'Для кого/чего ищешь расписание?',
                     'Who/what are you looking for a schedule for?'),
-                   ('choose_day', 'Выберите день', 'Choose a day'),
+                   ('choose_day', 'Выбери день недели', 'Choose a day of the week'),
                    ('no_schedule', 'Занятий нет', 'There are no classes'),
-                   ('all_days', 'Показать на конкретный день', 'View all days'),
-                   ('choose_letter', 'Выберите первую букву Вашей фамилии',
-                    'Choose the first letter of your last name'),
-                   ('back', 'Назад', 'Back'),
+                   ('all_days', 'Конкретный день недели', 'A specific day of the week'),
+                   ('choose_letter', 'Выбери первую букву фамилии учителя',
+                    "Choose the first letter of the teacher's last name"),
+                   ('back', '⬅ Назад', '⬅ Back'),
                    ('changed_schedule', 'Изменения в расписании на', 'Schedule changes for'),
                    ('yes', 'Да', 'Yes'),
                    ('no', 'Нет', 'No'),
                    ('aus', "Вы уверены?", 'Are you sure?'),
-                   ('use', 'Чтобы продолжить используйте /start', 'To continue use /start'),
-                   ('changes_ad', 'Этот бот умеет предупреждать об изменениях и та функция уже включена! Но, '
-                                  'по техническим причинам корректно работать она начнет только со следущей недели, '
-                                  'учитывайте это!', 'This bot is able to warn about changes and that feature is '
-                                                     'already enabled! But, for technical reasons, it will start '
-                                                     'working correctly only next week, keep this in mind!'),
-                   'admin_sending_message', 'Сообщения отправлены, ошибок - ', 'Messages sent, errors - ',
+                   ('admin_sending_message', 'Сообщения отправлены, ошибок - ', 'Messages sent, errors - '),
                    ('get_feedback', 'Напишите и отправьте свой отзыв прямо здесь',
                     'Write and send your feedback right here'),
-                   ('feedback_done', 'Отзыв успешно отправлен', 'The review has been sent successfully'))
+                   ('feedback_done', 'Отзыв успешно отправлен', 'The review has been sent successfully'),
+                   ('administration_role', 'Администрация', 'Administration'))
