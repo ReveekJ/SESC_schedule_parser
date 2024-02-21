@@ -31,14 +31,21 @@ router = Router()
 async def func_start_registration(message: Message | CallbackQuery, state: FSMContext):
     session = await get_async_session()
     lang = message.from_user.language_code
-
     user_id = message.chat.id if isinstance(message, Message) else message.message.chat.id
+    message_id = message.message_id if isinstance(message, Message) else message.message.message_id
 
     if await DB().select_user_by_id(session, user_id) is not None:
         await state.clear()
-        await bot.send_message(user_id,
-                               TEXT('main', lang=lang), reply_markup=get_choose_schedule(lang),
-                               disable_notification=True)
+        if isinstance(message, CallbackQuery):
+            await bot.edit_message_text(chat_id=user_id,
+                                        message_id=message_id,
+                                        text=TEXT('main', lang=lang),
+                                        reply_markup=get_choose_schedule(lang))
+        else:
+            await bot.send_message(chat_id=user_id,
+                                   text=TEXT('main', lang=lang),
+                                   reply_markup=get_choose_schedule(lang),
+                                   disable_notification=True)
         return None
 
     await bot.send_message(user_id, TEXT('hello', lang),

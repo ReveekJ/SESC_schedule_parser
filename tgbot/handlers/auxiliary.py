@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Router, F, Bot
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, FSInputFile
+from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
 from config import TOKEN
 from tgbot.parser import PARSER
 from models.db import DB
@@ -27,7 +27,7 @@ async def back(callback: CallbackQuery, state: FSMContext):
     func = await state.get_data()
     func = func.get('prev')
 
-    await callback.message.delete()
+    # await callback.message.delete()
 
     await func(callback, state)
 

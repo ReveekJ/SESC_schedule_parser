@@ -4,12 +4,11 @@ from tgbot.parser import PARSER
 from models.db import DB
 from models.database import get_async_session
 import datetime
-from tgbot.sesc_info import SESC_Info
 
 from tgbot.text import TEXT
 from tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
 
-from tgbot.handlers.auxiliary import send_schedule
+from tgbot.handlers.auxiliary import send_schedule, bot
 
 router = Router()
 
@@ -80,11 +79,13 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
 @router.callback_query(F.data == 'all_days')
 async def get_all_days_sch(callback: CallbackQuery):
     lang = callback.from_user.language_code
+    chat_id = callback.message.chat.id
+    message_id = callback.message.message_id
 
-    await callback.message.delete()
-    await callback.message.answer(TEXT('choose_day', lang),
-                                  reply_markup=get_choose_weekday_kb(lang, back=False),
-                                  disable_notification=True)
+    await bot.edit_message_text(chat_id=chat_id,
+                                message_id=message_id,
+                                text=TEXT('choose_day', lang),
+                                reply_markup=get_choose_weekday_kb(lang, back=False))
 
     await callback.answer()
 
