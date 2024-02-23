@@ -18,6 +18,7 @@ class RegistrationMachine(Form):
     letter_of_teacher = State()
     sub_info = State()
     lang = State()
+    start_message_id = State()
 
 
 router = Router()
@@ -47,16 +48,25 @@ async def func_start_registration(message: Message | CallbackQuery, state: FSMCo
                                    reply_markup=get_choose_schedule(lang),
                                    disable_notification=True)
         return None
+    data = await state.get_data()
 
-    await bot.send_message(user_id, TEXT('hello', lang),
-                           disable_notification=True)
+    if data.get('role') is None:
+        msg = await bot.send_message(user_id, TEXT('hello', lang),
+                                     disable_notification=True)
+        await state.update_data(start_message_id=msg.message_id)
 
     await state.update_data(lang=lang)
     await state.set_state(RegistrationMachine.role)
 
-    await bot.send_message(user_id, TEXT('choose_role', lang=lang),
-                           reply_markup=get_choose_role_kb(lang),
-                           disable_notification=True)
+    if isinstance(message, CallbackQuery) and message.message.text != TEXT('aus', lang):
+        await bot.edit_message_text(chat_id=user_id,
+                                    message_id=message_id,
+                                    text=TEXT('choose_role', lang=lang),
+                                    reply_markup=get_choose_role_kb(lang))
+    else:
+        await bot.send_message(user_id, TEXT('choose_role', lang=lang),
+                               reply_markup=get_choose_role_kb(lang),
+                               disable_notification=True)
 
 
 async def func_set_role_student(callback: CallbackQuery, state: FSMContext):
@@ -116,8 +126,11 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
     message_id = callback.message.message_id
 
     data = await state.get_data()
+
+    # удаляем стартовое сообщение
+    await bot.delete_message(chat_id=user_id, message_id=data['start_message_id'])
+
     await state.clear()
-    # print(data)
     role = data['role']
     sub_role = callback.data
     lang = data['lang']
