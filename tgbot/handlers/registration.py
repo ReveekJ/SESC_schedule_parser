@@ -11,6 +11,7 @@ from tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_
                             get_letter_of_teacher_kb)
 from models.database import get_async_session
 from tgbot.handlers.auxiliary import Form, bot
+from tgbot.sesc_info import SESC_Info
 
 
 class RegistrationMachine(Form):
@@ -51,7 +52,9 @@ async def func_start_registration(message: Message | CallbackQuery, state: FSMCo
     data = await state.get_data()
 
     if data.get('role') is None:
-        msg = await bot.send_message(user_id, TEXT('hello', lang),
+        hello_text = TEXT('welcome', lang=lang) + message.from_user.full_name + '!\n' + TEXT('hello', lang=lang)
+        msg = await bot.send_message(user_id,
+                                     text=hello_text,
                                      disable_notification=True)
         await state.update_data(start_message_id=msg.message_id)
 
@@ -123,27 +126,31 @@ async def func_set_letter_of_teacher(callback: CallbackQuery, state: FSMContext)
 async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
     session = await get_async_session()
     user_id = callback.message.chat.id
-    message_id = callback.message.message_id
+    current_message_id = callback.message.message_id
 
     data = await state.get_data()
-
-    # удаляем стартовое сообщение
-    await bot.delete_message(chat_id=user_id, message_id=data['start_message_id'])
 
     await state.clear()
     role = data['role']
     sub_role = callback.data
     lang = data['lang']
     chat_id = callback.message.chat.id
+    start_message_id = data['start_message_id']
 
+    # сохраняем пользователя в базу данных
     await DB().create_user(session,
                            id=chat_id,
                            role=role,
                            sub_info=sub_role,
                            lang=lang)
 
+    # отправляем приветственное и основное сообщения
     await bot.edit_message_text(chat_id=user_id,
-                                message_id=message_id,
+                                message_id=start_message_id,
+                                text=TEXT('registration_done', lang=lang))
+
+    await bot.edit_message_text(chat_id=user_id,
+                                message_id=current_message_id,
                                 text=TEXT('main', lang=lang),
                                 reply_markup=get_choose_schedule(lang))
 
