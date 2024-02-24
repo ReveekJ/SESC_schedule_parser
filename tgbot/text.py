@@ -112,9 +112,10 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                    ('no', 'Нет', 'No'),
                    ('aus', "Вы уверены?", 'Are you sure?'),
                    ('admin_sending_message', 'Сообщения отправлены, ошибок - ', 'Messages sent, errors - '),
-                   ('get_feedback', 'Напишите и отправьте свой отзыв прямо здесь',
-                    'Write and send your feedback right here'),
-                   ('feedback_done', 'Отзыв успешно отправлен', 'The review has been sent successfully'),
+                   ('get_feedback', 'Дорогой друг! Если тебе понравился этот бот или у тебя есть предложение, '
+                                    'как сделать его еще лучше - напиши и отправь нам сообщение в этот чат',
+                    'Dear friend! If you liked this bot, or you have suggestions on how to make it even better, '
+                    'write and send us a message to this chat'),
+                   ('feedback_done', 'Отзыв успешно отправлен. Благодарим за обратную связь 🤝',
+                    'The review has been sent successfully. Thanks for the feedback. 🤝'),
                    ('administration_role', 'Администрация', 'Administration'))
-
-print(TEXT)
