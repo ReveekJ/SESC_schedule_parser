@@ -1,4 +1,9 @@
-# порядок ввода: tuple(краткое имя, русское вариант, англиский вариант) ......
+import googletrans
+from googletrans import Translator
+
+
+# Порядок ввода: tuple(краткое имя, русское вариант) ......
+# Перевод на англ, автоматический
 class TextMessage:
     __instance = None
 
@@ -17,13 +22,12 @@ class TextMessage:
 
     @text.setter
     def text(self, value):
-        raise 'You can not change this attribute'
+        raise ValueError('You can not change this attribute')
 
     @classmethod
     def __args_to_dict(cls, arguments: tuple):
         res = {'ru': {},
-               'en': {}
-               }
+               'en': {}}
 
         for i in arguments:
             for index, value in enumerate(i):
@@ -36,38 +40,25 @@ class TextMessage:
         return res
 
     def __call__(self, short_name_text_mes: str, lang: str):
-        # session = DB()
-        # await session.connect()
-        # lang = await session.select_user_by_id(user_id)
-        # lang = lang[columns_json[3]]
         return self.__text[lang][short_name_text_mes]
 
 
-TEXT = TextMessage(('hello', '''Осторожно 🐌 расписание СУНЦ УрФУ!
-Этот бот может:
-🎓 Быстро найти актуальное расписание по твоему запросу
-🎓 Оперативно уведомить о любых изменениях в твоем школьном расписании
-
-✅ Пройди регистрацию в пару кликов:''',
-                    '''Watch out for the SESC URFU 🐌  schedule!
-This bot can:
-🎓 Quickly find the current schedule according to your request
-🎓 Promptly notify you of any changes in your school schedule
-
-✅ Register in a couple of clicks:'''),
-                   ('choose_role',  'Выбери свою роль', 'Choose your role'),
-                   ('choose_sub_info_group', 'Выбери свой класс', 'Choose your class'),
-                   ('choose_sub_info_teacher', 'Выбери ФИО учителя', 'Choose your name'),
+TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, '),
+                   ('hello', '✅ Пройди регистрацию в пару кликов', '✅ Register in a couple of clicks:'),
+                   ('choose_role', 'Выбери роль', 'Choose your role'),
+                   ('choose_sub_info_group', 'Выбери класс', 'Choose your class'),
+                   ('choose_sub_info_teacher', 'Выбери ФИО', "Choose the teacher's full name"),
                    ('choose_sub_info_auditory', 'Выбери аудиторию', 'Choose auditory'),
-                   ('student', 'Ученик', 'Student'),
-                   ('teacher', 'Преподаватель', 'Teacher'),
-                   ('parent', 'Родитель', 'Parent'),
+                   ('student', '👨‍🎓Ученик', '👨‍🎓Student'),
+                   ('teacher', '👩‍🎓Преподаватель', '👩‍🎓Teacher'),
+                   ('parent', '👨‍👩‍👧Родитель', '👨‍👩‍👧Parent'),
                    ('auditory', 'Аудитория', 'Auditory'),
                    ('group', 'Класс', 'Group'),
-                   ('today', 'Расписание на сегодня', 'Schedule for today'),
-                   ('tomorrow', 'Расписание на завтра', 'Schedule for tomorrow'),
+                   ('registration_done', '✅ Регистрация прошла успешно', '✅ Registration was successful'),
+                   ('today', 'На сегодня', 'Today'),
+                   ('tomorrow', 'На завтра', 'Tomorrow'),
                    ('all', 'Все расписание', 'All schedule'),
-                   ('main', 'Расписание на', 'Schedule for'),
+                   ('main', 'Расписание', 'Schedule'),
                    ('month', ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь',
                               'Октябрь', 'Ноябрь', 'Декабрь'],
                     ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
@@ -113,8 +104,8 @@ This bot can:
                    ('choose_day', 'Выбери день недели', 'Choose a day of the week'),
                    ('no_schedule', 'Занятий нет', 'There are no classes'),
                    ('all_days', 'Конкретный день недели', 'A specific day of the week'),
-                   ('choose_letter', 'Выбери первую букву фамилии учителя',
-                    "Choose the first letter of the teacher's last name"),
+                   ('choose_letter', 'Выбери первую букву фамилии',
+                    "Choose the first letter of last name"),
                    ('back', '⬅ Назад', '⬅ Back'),
                    ('changed_schedule', 'Изменения в расписании на', 'Schedule changes for'),
                    ('yes', 'Да', 'Yes'),
@@ -125,3 +116,5 @@ This bot can:
                     'Write and send your feedback right here'),
                    ('feedback_done', 'Отзыв успешно отправлен', 'The review has been sent successfully'),
                    ('administration_role', 'Администрация', 'Administration'))
+
+print(TEXT)
