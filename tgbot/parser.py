@@ -71,9 +71,6 @@ class Parser:
                 if schedule.get('diffs') is not None:
                     await self.changes.append(ChangesType('group', group, day, schedule))
 
-                # передышка для сервака urfu
-                await asyncio.sleep(0.1)
-
     async def __check_for_changes_teacher(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
             for teacher in SESC_Info.TEACHER.values():
@@ -81,8 +78,6 @@ class Parser:
 
                 if schedule.get('diffs'):
                     await self.changes.append(ChangesType('teacher', teacher, day, schedule))
-                # передышка для сервака urfu
-                await asyncio.sleep(0.1)
 
     async def check_for_changes(self) -> ChangesList:
         await self.__check_for_changes_student()
@@ -214,11 +209,7 @@ class Parser:
 
                     lesson_info_subgroup2 = get_text_of_lesson(lesson2)
                 elif lesson['subgroup'] == 2:
-                    # skipped_rows += 1
-                    # continue
-                    # lesson_info_subgroup1 = -1
                     lesson_info_subgroup2 = get_text_of_lesson(lesson)
-                    # lesson_info_subgroup1 = 'Нет, Нет, Нет'
 
                     if lesson.get('date') is not None:
                         color = (252, 132, 3)
@@ -251,37 +242,33 @@ class Parser:
                           fill=color)
                 draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), lesson_info_subgroup1, font=font,
                           fill=color)
-                #
-                # lesson_info_subgroup1 = f"{lesson2['subject']}, {lesson2['teacher']}, {lesson2['auditory']}"
-
-                # lesson_info_subgroup2_width = font.getbbox(lesson_info_subgroup2)[2] - \
-                #                               font.getbbox(lesson_info_subgroup2)[0]
-                #
-                # lesson_info_subgroup2_x = column_width1 + column_width2 // 2 + (
-                #         column_width2 // 2 - lesson_info_subgroup2_width) // 2
-                # lesson_info_subgroup2_y = start_y + (row_height - text_height) // 2
-                # draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), "Нет, Нет, Нет", font=font,
-                #           fill=(0, 0, 0))
-                # draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), "Нет, Нет, Нет", font=font,
-                #           fill=(255, 255, 255))
-
-                # if lesson_info_subgroup2 != -1:
-
-                # lesson_info_subgroup1_width = (
-                #             font.getbbox(lesson_info_subgroup1)[2] - font.getbbox(lesson_info_subgroup1)[0])
-                # lesson_info_subgroup1_x = column_width1 + (column_width2 // 2 - lesson_info_subgroup1_width) // 2
-                # lesson_info_subgroup1_y = start_y + (row_height - text_height) // 2
-                #
-                # draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), "Нет, Нет, Нет", font=font,
-                #           fill=(0, 0, 0))
-                # draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), "Нет, Нет, Нет", font=font,
-                #           fill=(255, 255, 255))
 
             # рисуем номер урока
             draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
 
         # Сохраняем изображение в файл
         image.save(path)
+
+    @staticmethod
+    async def get_free_auditories(weekday: int, lesson: int):
+        async def get_table():
+            ext = []
+            async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+                async with session.get(
+                        f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType=all&{weekday=}',
+                ) as resp:
+                    data = await resp.text()
+                    data = json.loads(data)['auditories']
+                    for aud in data:
+                        if not data[aud][lesson] and aud not in ('Нет', 'Библиотека', 'Общежитие'):
+                            ext += [aud]
+            return ext
+
+        lesson %= 7
+        weekday %= 7
+        if not weekday:
+            return None
+        return await get_table()
 
 
 PARSER = Parser(PATH_TO_FONT)

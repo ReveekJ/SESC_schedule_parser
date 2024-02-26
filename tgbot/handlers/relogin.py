@@ -35,14 +35,10 @@ async def relogin_confirmation(message: Message, state: FSMContext):
 async def clear_user_data(callback: CallbackQuery, state: FSMContext):
     session = await get_async_session()
     user_id = callback.message.chat.id
-    lang = callback.from_user.language_code
 
     await DB().delete_user(session, user_id)
     await callback.message.delete()
 
-    await bot.send_message(user_id,
-                           TEXT('hello', lang),
-                           disable_notification=True)
     await func_start_registration(callback, state)
     await callback.answer()
 
@@ -51,12 +47,13 @@ async def clear_user_data(callback: CallbackQuery, state: FSMContext):
 async def cancel_deletion(callback: CallbackQuery):
     lang = callback.from_user.language_code
     user_id = callback.message.chat.id
+    message_id = callback.message.message_id
 
-    await callback.message.delete()
     # отправка основного сообщения
-    await bot.send_message(user_id,
-                           TEXT('main', lang),
-                           reply_markup=get_choose_schedule(lang),
-                           disable_notification=True)
+    await bot.edit_message_text(chat_id=user_id,
+                                message_id=message_id,
+                                text=TEXT('main', lang),
+                                reply_markup=get_choose_schedule(lang),
+                                disable_notification=True)
 
     await callback.answer()

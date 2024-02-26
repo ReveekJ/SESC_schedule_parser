@@ -4,12 +4,11 @@ from tgbot.parser import PARSER
 from models.db import DB
 from models.database import get_async_session
 import datetime
-from tgbot.sesc_info import SESC_Info
 
 from tgbot.text import TEXT
 from tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
 
-from tgbot.handlers.auxiliary import send_schedule
+from tgbot.handlers.auxiliary import send_schedule, bot
 
 router = Router()
 
@@ -36,7 +35,7 @@ async def send_schedule_for_today(callback: CallbackQuery):
                             role=user_data['role'],
                             sub_info=user_data['sub_info'],
                             schedule=schedule,
-                            short_name_text_mes='main',
+                            short_name_text_mes='main_schedule',
                             weekday=int(day))
 
     await callback.message.answer(TEXT('main', lang),
@@ -52,7 +51,7 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
     lang = callback.from_user.language_code
 
     await callback.message.delete()
-    today_to_tomorrow = {0: '2', 1: '3', 2: '4', 3: '5', 4: '6', 5: '1'}
+    today_to_tomorrow = {0: '2', 1: '3', 2: '4', 3: '5', 4: '6', 5: '1', 6: '1'}
     day = today_to_tomorrow[datetime.date.today().weekday()]
 
     file = await PARSER.parse(user_data['role'], user_data['sub_info'], day)
@@ -68,7 +67,7 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
                             role=user_data['role'],
                             sub_info=user_data['sub_info'],
                             schedule=schedule,
-                            short_name_text_mes='main',
+                            short_name_text_mes='main_schedule',
                             weekday=int(day))
 
     await callback.message.answer(TEXT('main', lang),
@@ -80,11 +79,13 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
 @router.callback_query(F.data == 'all_days')
 async def get_all_days_sch(callback: CallbackQuery):
     lang = callback.from_user.language_code
+    chat_id = callback.message.chat.id
+    message_id = callback.message.message_id
 
-    await callback.message.delete()
-    await callback.message.answer(TEXT('choose_day', lang),
-                                  reply_markup=get_choose_weekday_kb(lang, back=False),
-                                  disable_notification=True)
+    await bot.edit_message_text(chat_id=chat_id,
+                                message_id=message_id,
+                                text=TEXT('choose_day', lang),
+                                reply_markup=get_choose_weekday_kb(lang, back=False))
 
     await callback.answer()
 
@@ -109,7 +110,7 @@ async def get_sch_for_this_day(callback: CallbackQuery):
         schedule = FSInputFile(file)
         await send_schedule(chat_id=callback.message.chat.id,
                             schedule=schedule,
-                            short_name_text_mes='main',
+                            short_name_text_mes='main_schedule',
                             role=user_data['role'],
                             sub_info=user_data['sub_info'],
                             weekday=int(callback.data),
