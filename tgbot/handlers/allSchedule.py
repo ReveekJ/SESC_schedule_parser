@@ -26,24 +26,6 @@ router = Router()
 '''-------- ФУНКЦИИ ОТПРАВКИ СООБЩЕНИЙ -------------'''
 
 
-async def func_get_type(callback: CallbackQuery, state: FSMContext):
-    lang = callback.from_user.language_code
-    user_id = callback.message.chat.id
-    message_id = callback.message.message_id
-
-    # если нажата назад, то отправится mainPage
-    await state.clear()
-    await state.set_state(AllScheduleMachine.type)
-    await state.update_data(prev=func_start_registration)
-
-    await bot.edit_message_text(chat_id=user_id,
-                                message_id=message_id,
-                                text=TEXT('choose_type', lang),
-                                reply_markup=get_choose_type_kb(lang))
-
-    await callback.answer()
-
-
 async def func_get_group(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     data = callback.data.split('_')[-1]
@@ -53,7 +35,7 @@ async def func_get_group(callback: CallbackQuery, state: FSMContext):
     p = [get_choose_auditory_kb, get_letter_of_teacher_kb, get_choose_group_kb]
     keyboards = {e: p[i] for i, e in enumerate(SESC_Info.TYPE.values()) if e != 'all'}
 
-    await state.update_data(prev=func_get_type)
+    await state.update_data(prev=func_start_registration)
 
     await state.update_data(type=data)
     await state.set_state(AllScheduleMachine.second)
@@ -71,7 +53,7 @@ async def func_second_teacher(callback: CallbackQuery, state: FSMContext):
     user_id = callback.message.chat.id
     message_id = callback.message.message_id
 
-    await state.update_data(prev=func_get_type)
+    await state.update_data(prev=func_start_registration)
 
     await bot.edit_message_text(chat_id=user_id,
                                 message_id=message_id,
@@ -87,7 +69,7 @@ async def func_second(callback: CallbackQuery, state: FSMContext):
     user_id = callback.message.chat.id
     message_id = callback.message.message_id
 
-    await state.update_data(prev=func_get_type)
+    await state.update_data(prev=func_start_registration)
     await state.update_data(second=data)
     await state.set_state(AllScheduleMachine.weekday)
 
@@ -139,13 +121,9 @@ async def func_weekday(callback: CallbackQuery, state: FSMContext):
 
 '''-------- ХЭНДЛЕРЫ -------------'''
 
-
-@router.callback_query(F.data == 'see_all')
-async def get_type(callback: CallbackQuery, state: FSMContext):
-    await func_get_type(callback, state)
-
-
-@router.callback_query(AllScheduleMachine.type)
+@router.callback_query(F.data == 'type_group')
+@router.callback_query(F.data == 'type_teacher')
+@router.callback_query(F.data == 'type_auditory')
 async def get_group(callback: CallbackQuery, state: FSMContext):
     await func_get_group(callback, state)
 

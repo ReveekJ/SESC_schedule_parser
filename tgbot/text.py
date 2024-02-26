@@ -1,5 +1,4 @@
-import googletrans
-from googletrans import Translator
+
 
 
 # Порядок ввода: tuple(краткое имя, русское вариант) ......

@@ -64,25 +64,14 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
     kb.button(text=TEXT('today', lang), callback_data='today')
     kb.button(text=TEXT('tomorrow', lang), callback_data='tomorrow')
     kb.button(text=TEXT('all_days', lang), callback_data='all_days')
-    kb.button(text=TEXT('all', lang), callback_data='see_all')
-    kb.adjust(1)
-    return kb.as_markup()
-
-
-def get_choose_type_kb(lang: str) -> InlineKeyboardMarkup:
-    kb = InlineKeyboardBuilder()
-
     for i, j in SESC_Info.TYPE.items():
         # ignore all schedule
         if j in ['all']:
             continue
         # если это преподаватель, то убираем смайлик (убираем только у препода, потому что у других его нет)
         kb.button(text=TEXT(j, lang) if j != 'teacher' else TEXT(j, lang)[3:], callback_data='type_' + j)
-    add_back_btn(kb, lang)
-
     kb.adjust(1)
     return kb.as_markup()
-
 
 def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
