@@ -68,10 +68,12 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
         # ignore all schedule
         if j in ['all']:
             continue
-        # если это преподаватель, то убираем смайлик (убираем только у препода, потому что у других его нет)
-        kb.button(text=TEXT(j, lang) if j != 'teacher' else TEXT(j, lang)[3:], callback_data='type_' + j)
+        # если это преподаватель, то берем специальный текст, так как мы имеем похожий текст при регистрации с этим
+        # short_name
+        kb.button(text=TEXT(j, lang) if j != 'teacher' else TEXT('teacher_kb', lang), callback_data='type_' + j)
     kb.adjust(1)
     return kb.as_markup()
+
 
 def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()

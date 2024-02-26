@@ -35,7 +35,7 @@ async def send_schedule_for_today(callback: CallbackQuery):
                             role=user_data['role'],
                             sub_info=user_data['sub_info'],
                             schedule=schedule,
-                            short_name_text_mes='main',
+                            short_name_text_mes='main_schedule',
                             weekday=int(day))
 
     await callback.message.answer(TEXT('main', lang),
@@ -67,7 +67,7 @@ async def send_schedule_for_tomorrow(callback: CallbackQuery):
                             role=user_data['role'],
                             sub_info=user_data['sub_info'],
                             schedule=schedule,
-                            short_name_text_mes='main',
+                            short_name_text_mes='main_schedule',
                             weekday=int(day))
 
     await callback.message.answer(TEXT('main', lang),
@@ -110,7 +110,7 @@ async def get_sch_for_this_day(callback: CallbackQuery):
         schedule = FSInputFile(file)
         await send_schedule(chat_id=callback.message.chat.id,
                             schedule=schedule,
-                            short_name_text_mes='main',
+                            short_name_text_mes='main_schedule',
                             role=user_data['role'],
                             sub_info=user_data['sub_info'],
                             weekday=int(callback.data),

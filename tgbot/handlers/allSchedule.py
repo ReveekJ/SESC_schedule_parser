@@ -6,7 +6,7 @@ from aiogram.exceptions import TelegramBadRequest
 
 from tgbot.parser import PARSER
 from tgbot.text import TEXT
-from tgbot.keyboard import (get_choose_type_kb, get_choose_group_kb, get_choose_weekday_kb, get_choose_auditory_kb,
+from tgbot.keyboard import (get_choose_group_kb, get_choose_weekday_kb, get_choose_auditory_kb,
                             get_choose_teacher_kb, get_choose_schedule, get_letter_of_teacher_kb)
 from tgbot.sesc_info import SESC_Info
 from tgbot.handlers.auxiliary import Form, bot
@@ -104,7 +104,7 @@ async def func_weekday(callback: CallbackQuery, state: FSMContext):
         schedule = FSInputFile(file)
         await callback.message.delete()
         await send_schedule(chat_id=user_id,
-                            short_name_text_mes='main',
+                            short_name_text_mes='main_schedule',
                             role=_type,
                             sub_info=_second,
                             weekday=int(_weekday),

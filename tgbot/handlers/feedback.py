@@ -95,5 +95,6 @@ async def feedback_photo(message: Message, state: FSMContext):
                                    disable_notification=True)
 
     await bot.send_message(user_id,
-                           TEXT('feedback_done', lang))
+                           TEXT('feedback_done', lang),
+                           disable_notification=True)
     await func_start_registration(message, state)

@@ -1,6 +1,3 @@
-
-
-
 # Порядок ввода: tuple(краткое имя, русское вариант) ......
 # Перевод на англ, автоматический
 class TextMessage:
@@ -49,15 +46,17 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                    ('choose_sub_info_teacher', 'Выбери ФИО', "Choose the teacher's full name"),
                    ('choose_sub_info_auditory', 'Выбери аудиторию', 'Choose auditory'),
                    ('student', '👨‍🎓Ученик', '👨‍🎓Student'),
-                   ('teacher', '👩‍🎓Преподаватель', '👩‍🎓Teacher'),
+                   ('teacher', '👨‍🏫Преподаватель', '👨‍🏫Teacher'),
                    ('parent', '👨‍👩‍👧Родитель', '👨‍👩‍👧Parent'),
-                   ('auditory', 'Аудитория', 'Auditory'),
-                   ('group', 'Класс', 'Group'),
+                   ('teacher_kb', 'Для преподавателя', 'For a teacher'),
+                   ('auditory', 'Для аудитории', 'For an auditory'),
+                   ('group', 'Для класса', 'For a group'),
                    ('registration_done', '✅ Регистрация прошла успешно', '✅ Registration was successful'),
                    ('today', 'На сегодня', 'For today'),
                    ('tomorrow', 'На завтра', 'For tomorrow'),
                    ('all', 'Все расписание', 'All schedule'),
-                   ('main', 'Расписание', 'Schedule'),
+                   ('main', 'Показать расписание', 'Show the schedule'),  # ЗАМЕТЬТЕ РАЗНИЦУ
+                   ('main_schedule', 'Расписание на', 'Schedule for'),
                    ('month', ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь',
                               'Октябрь', 'Ноябрь', 'Декабрь'],
                     ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
@@ -101,7 +100,7 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                    ('choose_type', 'Для кого/чего ищешь расписание?',
                     'Who/what are you looking for a schedule for?'),
                    ('choose_day', 'Выбери день недели', 'Choose a day of the week'),
-                   ('no_schedule', 'Занятий нет', 'There are no classes'),
+                   ('no_schedule', '❎ Занятий нет', '❎ There are no classes'),
                    ('all_days', 'На конкретный день недели', 'For a specific day of the week'),
                    ('choose_letter', 'Выбери первую букву фамилии',
                     "Choose the first letter of last name"),
