@@ -13,6 +13,7 @@ from tgbot.handlers.auxiliary import send_schedule, bot
 router = Router()
 
 
+@router.callback_query(F.data == 'tomorrow')
 @router.callback_query(F.data == 'today')
 async def send_schedule_for_today(callback: CallbackQuery):
     session = await get_async_session()
@@ -21,38 +22,11 @@ async def send_schedule_for_today(callback: CallbackQuery):
 
     await callback.message.delete()
 
-    day = str((datetime.date.today().weekday()) % 6 + 1)
-    file = await PARSER.parse(user_data['role'], user_data['sub_info'], day)
-
-    # проверка на присутствие расписания
-    if file == 'NO_SCHEDULE':
-        await callback.message.answer(TEXT('no_schedule', lang),
-                                      disable_notification=True)
+    if callback.data == 'tomorrow':
+        today_to_tomorrow = {0: '2', 1: '3', 2: '4', 3: '5', 4: '6', 5: '1', 6: '1'}
+        day = today_to_tomorrow[datetime.date.today().weekday()]
     else:
-        schedule = FSInputFile(file)
-        await send_schedule(chat_id=callback.message.chat.id,
-                            lang=lang,
-                            role=user_data['role'],
-                            sub_info=user_data['sub_info'],
-                            schedule=schedule,
-                            short_name_text_mes='main_schedule',
-                            weekday=int(day))
-
-    await callback.message.answer(TEXT('main', lang),
-                                  reply_markup=get_choose_schedule(lang),
-                                  disable_notification=True)
-    await callback.answer()
-
-
-@router.callback_query(F.data == 'tomorrow')
-async def send_schedule_for_tomorrow(callback: CallbackQuery):
-    session = await get_async_session()
-    user_data = await DB().select_user_by_id(session, callback.message.chat.id)
-    lang = callback.from_user.language_code
-
-    await callback.message.delete()
-    today_to_tomorrow = {0: '2', 1: '3', 2: '4', 3: '5', 4: '6', 5: '1', 6: '1'}
-    day = today_to_tomorrow[datetime.date.today().weekday()]
+        day = str((datetime.date.today().weekday()) % 6 + 1)
 
     file = await PARSER.parse(user_data['role'], user_data['sub_info'], day)
 
