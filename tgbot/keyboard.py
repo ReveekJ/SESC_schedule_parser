@@ -64,6 +64,7 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
     kb.button(text=TEXT('today', lang), callback_data='today')
     kb.button(text=TEXT('tomorrow', lang), callback_data='tomorrow')
     kb.button(text=TEXT('all_days', lang), callback_data='all_days')
+
     for i, j in SESC_Info.TYPE.items():
         # ignore all schedule
         if j in ['all']:
@@ -71,6 +72,8 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
         # если это преподаватель, то берем специальный текст, так как мы имеем похожий текст при регистрации с этим
         # short_name
         kb.button(text=TEXT(j, lang) if j != 'teacher' else TEXT('teacher_kb', lang), callback_data='type_' + j)
+    kb.button(text=TEXT('optional_func', lang), callback_data='optional_func')
+
     kb.adjust(1)
     return kb.as_markup()
 
@@ -112,5 +115,29 @@ def hard_choice(lang: str):
 def back_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     add_back_btn(kb, lang)
+
+    return kb.as_markup()
+
+
+def options_kb(lang: str) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+
+    kb.button(text=TEXT('free_auditory', lang), callback_data='free_auditory')
+    kb.button(text=TEXT('official_site', lang), url='https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii')
+
+    add_back_btn(kb, lang)
+    kb.adjust(1)
+
+    return kb.as_markup()
+
+
+def choose_lessons_kb(lang: str) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+
+    for i in range(1, 8):
+        kb.button(text=str(i) + ' ' + TEXT('lesson', lang), callback_data=str(i))
+
+    add_back_btn(kb, lang)
+    kb.adjust(1)
 
     return kb.as_markup()
