@@ -1,21 +1,15 @@
-from datetime import datetime
-
 from aiogram import Router, F
-from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import CommandStart
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.state import State
+from aiogram.types import CallbackQuery, Message
 
-from models.db import DB
-from tgbot.text import TEXT
-from tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
-                            get_letter_of_teacher_kb, options_kb, get_choose_weekday_kb, choose_lessons_kb)
-from models.database import get_async_session
 from tgbot.handlers.auxiliary import Form, bot
-from tgbot.sesc_info import SESC_Info
 from tgbot.handlers.registration import func_start_registration
+from tgbot.keyboard import (get_choose_schedule,
+                            options_kb, get_choose_weekday_kb, choose_lessons_kb)
 from tgbot.parser import PARSER
+from tgbot.text import TEXT
 
 router = Router()
 
@@ -25,20 +19,30 @@ class OptionalMenuMachine(Form):
     lesson_for_free_auditory = State()
 
 
-@router.callback_query(F.data == 'optional_func')
-async def optional_func(callback: CallbackQuery, state: FSMContext):
-    chat_id = callback.message.chat.id
-    message_id = callback.message.message_id
-    lang = callback.from_user.language_code
+@router.message(Command('optional'))
+async def optional_func(message: Message | CallbackQuery, state: FSMContext):
+    lang = message.from_user.language_code
 
     await state.clear()
     await state.update_data(prev=func_start_registration)
 
-    await bot.edit_message_text(text=TEXT('choose_optional_function', lang),
-                                chat_id=chat_id,
-                                message_id=message_id,
-                                reply_markup=options_kb(lang))
-    await callback.answer()
+    # произойдет в том случае, если нажали на кнопку назад
+    if isinstance(message, CallbackQuery):
+        chat_id = message.message.chat.id
+        message_id = message.message.message_id
+
+        await bot.edit_message_text(text=TEXT('choose_optional_function', lang),
+                                    chat_id=chat_id,
+                                    message_id=message_id,
+                                    reply_markup=options_kb(lang))
+        await message.answer()
+    else:
+        chat_id = message.chat.id
+
+        await message.delete()
+        await bot.send_message(text=TEXT('choose_optional_function', lang),
+                               chat_id=chat_id,
+                               reply_markup=options_kb(lang))
 
 
 @router.callback_query(F.data == 'free_auditory')
