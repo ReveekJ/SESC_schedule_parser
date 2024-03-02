@@ -2,16 +2,15 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import CallbackQuery, FSInputFile
-from aiogram.exceptions import TelegramBadRequest
 
-from tgbot.parser import PARSER
-from tgbot.text import TEXT
+from tgbot.handlers.auxiliary import Form, bot
+from tgbot.handlers.auxiliary import send_schedule
+from tgbot.handlers.registration import func_start_registration
 from tgbot.keyboard import (get_choose_group_kb, get_choose_weekday_kb, get_choose_auditory_kb,
                             get_choose_teacher_kb, get_choose_schedule, get_letter_of_teacher_kb)
+from tgbot.parser import PARSER
 from tgbot.sesc_info import SESC_Info
-from tgbot.handlers.auxiliary import Form, bot
-from tgbot.handlers.registration import func_start_registration
-from tgbot.handlers.auxiliary import send_schedule
+from tgbot.text import TEXT
 
 
 class AllScheduleMachine(Form):
@@ -120,6 +119,7 @@ async def func_weekday(callback: CallbackQuery, state: FSMContext):
 
 
 '''-------- ХЭНДЛЕРЫ -------------'''
+
 
 @router.callback_query(F.data == 'type_group')
 @router.callback_query(F.data == 'type_teacher')

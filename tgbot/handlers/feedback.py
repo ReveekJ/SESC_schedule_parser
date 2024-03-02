@@ -1,16 +1,16 @@
-from aiogram import Router, F
-from aiogram.types import Message, ContentType
 from typing import Union
+
+from aiogram import Router
 from aiogram.filters import BaseFilter, Command
-from config import ADMINS
-from tgbot.handlers.auxiliary import bot, Form
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
-from aiogram.filters import CommandStart
-from tgbot.handlers.registration import func_start_registration, RegistrationMachine
-from tgbot.text import TEXT
-from tgbot.keyboard import back_kb
+from aiogram.types import Message, ContentType
 
+from config import ADMINS
+from tgbot.handlers.auxiliary import bot, Form
+from tgbot.handlers.registration import func_start_registration
+from tgbot.keyboard import back_kb
+from tgbot.text import TEXT
 
 router = Router()
 

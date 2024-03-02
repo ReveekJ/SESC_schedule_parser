@@ -1,10 +1,9 @@
-import asyncio
+import json
 
-from models.database import get_async_session
-from models.model import users, changes, columns_json
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
-import json
+
+from models.model import users, changes, columns_json
 
 
 # продублировано из my_types
@@ -105,6 +104,7 @@ class DB:
     def __convert_from_id_type(_id) -> int:
         return int(_id)
 
+
 # SAMPLE USAGE
 # async def main():
 #     session = await get_async_session()
@@ -119,7 +119,7 @@ class ChangesDB:
     @staticmethod
     async def add_changes(session: AsyncSession, changed_schedule: ChangesType):
         stmt = insert(changes).values((changed_schedule.type, changed_schedule.second, changed_schedule.weekday,
-                                      json.dumps(changed_schedule.schedule)))
+                                       json.dumps(changed_schedule.schedule)))
 
         await session.execute(stmt)
         await session.commit()

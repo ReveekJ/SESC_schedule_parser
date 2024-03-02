@@ -1,16 +1,14 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, CallbackQuery
 
-from models.db import DB
 from models.database import get_async_session
-
-from tgbot.handlers.registration import func_start_registration, RegistrationMachine
-
-from tgbot.text import TEXT
-from tgbot.keyboard import hard_choice, get_choose_schedule
+from models.db import DB
 from tgbot.handlers.auxiliary import bot
+from tgbot.handlers.registration import func_start_registration, RegistrationMachine
+from tgbot.keyboard import hard_choice, get_choose_schedule
+from tgbot.text import TEXT
 
 router = Router()
 

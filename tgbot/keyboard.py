@@ -1,7 +1,8 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from tgbot.text import TEXT
+
 from sesc_info import SESC_Info
+from tgbot.text import TEXT
 
 
 def add_back_btn(keyboard: InlineKeyboardBuilder, lang: str):
@@ -72,7 +73,6 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
         # если это преподаватель, то берем специальный текст, так как мы имеем похожий текст при регистрации с этим
         # short_name
         kb.button(text=TEXT(j, lang) if j != 'teacher' else TEXT('teacher_kb', lang), callback_data='type_' + j)
-    kb.button(text=TEXT('optional_func', lang), callback_data='optional_func')
 
     kb.adjust(1)
     return kb.as_markup()

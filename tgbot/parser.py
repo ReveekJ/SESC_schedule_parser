@@ -1,11 +1,10 @@
-import asyncio
-
 import aiohttp
 import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
-from tgbot.sesc_info import SESC_Info
-from my_typing import ChangesList, ChangesType
+
 from config import PATH_TO_FONT
+from my_typing import ChangesList, ChangesType
+from tgbot.sesc_info import SESC_Info
 
 
 class Parser:

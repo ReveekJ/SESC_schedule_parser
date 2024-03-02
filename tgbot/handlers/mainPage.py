@@ -1,14 +1,14 @@
-from aiogram import Router, F
-from aiogram.types import CallbackQuery, FSInputFile
-from tgbot.parser import PARSER
-from models.db import DB
-from models.database import get_async_session
 import datetime
 
-from tgbot.text import TEXT
-from tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
+from aiogram import Router, F
+from aiogram.types import CallbackQuery, FSInputFile
 
+from models.database import get_async_session
+from models.db import DB
 from tgbot.handlers.auxiliary import send_schedule, bot
+from tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
+from tgbot.parser import PARSER
+from tgbot.text import TEXT
 
 router = Router()
 

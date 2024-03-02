@@ -1,17 +1,15 @@
 from aiogram import Router, F
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import Message, CallbackQuery
 
+from models.database import get_async_session
 from models.db import DB
-from tgbot.text import TEXT
+from tgbot.handlers.auxiliary import Form, bot
 from tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
                             get_letter_of_teacher_kb)
-from models.database import get_async_session
-from tgbot.handlers.auxiliary import Form, bot
-from tgbot.sesc_info import SESC_Info
+from tgbot.text import TEXT
 
 
 class RegistrationMachine(Form):
