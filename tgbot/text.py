@@ -116,4 +116,11 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                     'write and send us a message to this chat'),
                    ('feedback_done', 'Отзыв успешно отправлен. Благодарим за обратную связь 🤝',
                     'The review has been sent successfully. Thanks for the feedback. 🤝'),
-                   ('administration_role', 'Администрация', 'Administration'))
+                   ('administration_role', 'Администрация', 'Administration'),
+                   ('optional_func', 'Дополнительные функции', 'Optional functions'),
+                   ('choose_optional_function', 'Выбери дополнительную функцию', 'Select additional function'),
+                   ('free_auditory', 'Свободные аудитории', 'Free audiences'),
+                   ('official_site', 'Официальный сайт расписания СУНЦ УрФУ',
+                    'Official website of the schedule of the SESC of UrFU'),
+                   ('choose_lesson', 'Выбери урок', 'Choose a lesson'),
+                   ('lesson', 'Урок', 'Lesson'))

@@ -1,15 +1,12 @@
-import asyncio
-
 from aiogram import Router, F, Bot
-from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
-from config import TOKEN
-from tgbot.parser import PARSER
-from models.db import DB
-from models.database import get_async_session
-import datetime
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.types import CallbackQuery, FSInputFile
 
+from config import TOKEN
+from models.database import get_async_session
+from models.db import DB
+from tgbot.parser import PARSER
 from tgbot.sesc_info import SESC_Info
 from tgbot.text import TEXT
 
