@@ -1,3 +1,5 @@
+import datetime
+
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
@@ -89,8 +91,12 @@ def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def get_choose_weekday_kb(lang: str, back: bool = True) -> InlineKeyboardMarkup:
+def get_choose_weekday_kb(lang: str, back: bool = True, today_btn: bool = True) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
+
+    if today_btn:
+        today = datetime.date.today().weekday() + 1
+        kb.button(text=TEXT('today_btn', lang), callback_data=str(today if today != 7 else 1))
 
     for callback_data, text in TEXT('weekdays_kb', lang).items():
         if callback_data == 7:
