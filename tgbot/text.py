@@ -124,4 +124,5 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                     'Official website of the schedule of the SESC of UrFU'),
                    ('choose_lesson', 'Выбери урок', 'Choose a lesson'),
                    ('lesson', 'Урок', 'Lesson'),
-                   ('today_btn', 'Сегодня', 'Today'))
+                   ('today_btn', 'Сегодня', 'Today'),
+                   ('bell_schedule', 'Расписание звонков', 'Bell schedule'))

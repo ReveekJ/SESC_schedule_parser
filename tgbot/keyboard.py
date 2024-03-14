@@ -129,6 +129,7 @@ def options_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
 
     kb.button(text=TEXT('free_auditory', lang), callback_data='free_auditory')
+    kb.button(text=TEXT('bell_schedule', lang), callback_data='bell_schedule')
     kb.button(text=TEXT('official_site', lang), url='https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii')
 
     add_back_btn(kb, lang)

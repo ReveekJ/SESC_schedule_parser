@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, FSInputFile
 
 from tgbot.handlers.auxiliary import Form, bot
 from tgbot.handlers.registration import func_start_registration
@@ -10,11 +10,13 @@ from tgbot.keyboard import (get_choose_schedule,
                             options_kb, get_choose_weekday_kb, choose_lessons_kb)
 from tgbot.parser import PARSER
 from tgbot.text import TEXT
+from config import PATH_TO_PROJECT
+
 
 router = Router()
 
 
-class OptionalMenuMachine(Form):
+class FreeAuditoryMachine(Form):
     weekday_for_free_auditory = State()
     lesson_for_free_auditory = State()
 
@@ -52,7 +54,7 @@ async def free_auditory(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
 
     await state.update_data(prev=optional_func)
-    await state.set_state(OptionalMenuMachine.weekday_for_free_auditory)
+    await state.set_state(FreeAuditoryMachine.weekday_for_free_auditory)
 
     await bot.edit_message_text(text=TEXT('choose_day', lang),
                                 chat_id=chat_id,
@@ -61,14 +63,14 @@ async def free_auditory(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(OptionalMenuMachine.weekday_for_free_auditory)
+@router.callback_query(FreeAuditoryMachine.weekday_for_free_auditory)
 async def weekday_for_free_auditory(callback: CallbackQuery, state: FSMContext):
     chat_id = callback.message.chat.id
     message_id = callback.message.message_id
     lang = callback.from_user.language_code
 
     await state.update_data(weekday_for_free_auditory=callback.data)
-    await state.set_state(OptionalMenuMachine.lesson_for_free_auditory)
+    await state.set_state(FreeAuditoryMachine.lesson_for_free_auditory)
     await state.update_data(prev=free_auditory)
 
     await bot.edit_message_text(text=TEXT('choose_lesson', lang),
@@ -79,7 +81,7 @@ async def weekday_for_free_auditory(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(OptionalMenuMachine.lesson_for_free_auditory)
+@router.callback_query(FreeAuditoryMachine.lesson_for_free_auditory)
 async def send_free_auditory(callback: CallbackQuery, state: FSMContext):
     chat_id = callback.message.chat.id
     message_id = callback.message.message_id
@@ -110,4 +112,22 @@ async def send_free_auditory(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),
                                   disable_notification=True)
+    await callback.answer()
+
+
+@router.callback_query(F.data == 'bell_schedule')
+async def bell_schedule(callback: CallbackQuery):
+    chat_id = callback.message.chat.id
+    message_id = callback.message.message_id
+    lang = callback.from_user.language_code
+    path = PATH_TO_PROJECT + 'schedules/bell_schedule.png'
+
+    await bot.delete_message(chat_id, message_id)
+    await bot.send_photo(chat_id=chat_id,
+                         photo=FSInputFile(path),
+                         disable_notification=True)
+    await callback.message.answer(TEXT('main', lang),
+                                  reply_markup=get_choose_schedule(lang),
+                                  disable_notification=True)
+
     await callback.answer()
