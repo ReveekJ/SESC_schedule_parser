@@ -1,6 +1,6 @@
 # created by virtualenv automatically
 .idea/
-*.png
+schedule*.png
 *.log
 venv/
 __pycache__/
