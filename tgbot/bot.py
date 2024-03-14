@@ -5,7 +5,8 @@ from aiogram import Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from handlers import registration, mainPage, allSchedule, auxiliary, relogin, admin, feedback, optional_menu
+from handlers import registration, mainPage, allSchedule, auxiliary, relogin, admin, feedback, optional_menu, \
+    administration_work
 from tgbot.handlers.auxiliary import bot
 from tgbot.handlers.auxiliary import sending_schedule_changes
 
@@ -37,7 +38,7 @@ def set_tasks(scheduler: AsyncIOScheduler):
 async def main():
     dp = Dispatcher()
     # порядок роутеров невероятно важен, желательно его не менять
-    dp.include_routers(auxiliary.router, registration.router, allSchedule.router, optional_menu.router,
+    dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router, optional_menu.router,
                        mainPage.router, relogin.router, admin.router, feedback.router)
 
     # ставим выполняться проверку изменений

@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -79,3 +81,5 @@ async def sending_schedule_changes():
                                 lang=user_data['lang'],
                                 schedule=schedule,
                                 disable_notifications=False)
+            await asyncio.sleep(1)
+

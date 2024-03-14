@@ -2,7 +2,7 @@ import aiohttp
 import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
 
-from config import PATH_TO_FONT
+from config import PATH_TO_FONT, PATH_TO_PROJECT
 from my_typing import ChangesList, ChangesType
 from tgbot.sesc_info import SESC_Info
 
@@ -14,8 +14,7 @@ class Parser:
 
     @staticmethod
     def get_path(_second):
-        return (__file__[:__file__.rfind('/', 0, __file__.rfind('/'))] + '/' +
-                f'schedules/schedule{_second}.png')
+        return PATH_TO_PROJECT + f'schedules/schedule{_second}.png'
 
     @staticmethod
     def merge_schedule(lessons: list[dict], diffs: list[dict]) -> list[dict]:

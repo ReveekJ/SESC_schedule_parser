@@ -1,3 +1,5 @@
+import datetime
+
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
@@ -89,8 +91,12 @@ def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def get_choose_weekday_kb(lang: str, back: bool = True) -> InlineKeyboardMarkup:
+def get_choose_weekday_kb(lang: str, back: bool = True, today_btn: bool = True) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
+
+    if today_btn:
+        today = datetime.date.today().weekday() + 1
+        kb.button(text=TEXT('today_btn', lang), callback_data=str(today if today != 7 else 1))
 
     for callback_data, text in TEXT('weekdays_kb', lang).items():
         if callback_data == 7:
@@ -123,6 +129,7 @@ def options_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
 
     kb.button(text=TEXT('free_auditory', lang), callback_data='free_auditory')
+    kb.button(text=TEXT('bell_schedule', lang), callback_data='bell_schedule')
     kb.button(text=TEXT('official_site', lang), url='https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii')
 
     add_back_btn(kb, lang)
@@ -139,5 +146,18 @@ def choose_lessons_kb(lang: str) -> InlineKeyboardMarkup:
 
     add_back_btn(kb, lang)
     kb.adjust(1)
+
+    return kb.as_markup()
+
+
+def all_lessons_kb(lang) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    lessons = {'Право', 'ИстФилософии', 'Информатика', 'Литература', 'ТеорПознания', 'АнглЯзык', 'Химия', 'Новейшая история', 'История', 'ЗарЛитература', 'Астрономия', 'ВсИстория', 'Алгебра', 'ХимПрактикум', 'ЭконГеография', 'География', 'Обществознание', 'Русский', 'Французский язык', 'Экономика', 'МХК', 'Музыка', 'Математика', 'Биология', 'ИстРоссии', 'Технология', 'Геометрия', 'ИнЯзык2', 'Политология', 'БиоЭлектив', 'ИМК', 'РоднЛитература', 'Физкультура', 'История русской культуры', 'РоднЯзык', 'Социология', 'АКС', 'ИнжГрафика', 'Естествознание', 'Риторика', 'Физика'}
+
+    for i in lessons:
+        kb.button(text=i, callback_data=i)
+
+    add_back_btn(kb, lang)
+    kb.adjust(3)
 
     return kb.as_markup()
