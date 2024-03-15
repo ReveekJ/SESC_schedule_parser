@@ -42,7 +42,7 @@ class Parser:
 
         info = await self.__get_json(_type, int(_second), int(_weekday))
 
-        if not info['lessons']:
+        if not info['lessons'] and not info['diffs']:
             return 'NO_SCHEDULE'
 
         self.create_table(_type, self.merge_schedule(info['lessons'], info['diffs']), path)
