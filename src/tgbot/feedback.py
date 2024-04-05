@@ -7,10 +7,10 @@ from aiogram.fsm.state import State
 from aiogram.types import Message, ContentType
 
 from config import ADMINS
-from tgbot.handlers.auxiliary import bot, Form
-from tgbot.handlers.registration import func_start_registration
-from tgbot.keyboard import back_kb
-from tgbot.text import TEXT
+from src.tgbot.auxiliary import bot, Form
+from src.tgbot.main_work.registration import func_start_registration
+from src.tgbot.keyboard import back_kb
+from src.tgbot.text import TEXT
 
 router = Router()
 

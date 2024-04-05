@@ -5,10 +5,11 @@ from aiogram import Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from handlers import registration, mainPage, allSchedule, auxiliary, relogin, admin, feedback, optional_menu, \
-    administration_work
-from tgbot.handlers.auxiliary import bot
-from tgbot.handlers.auxiliary import sending_schedule_changes
+from src.tgbot import feedback, auxiliary, admin
+from src.tgbot.for_administration import administration_work
+from src.tgbot.auxiliary import bot
+from src.tgbot.changes.changes import sending_schedule_changes
+from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
 
 
 def set_tasks(scheduler: AsyncIOScheduler):
@@ -38,8 +39,8 @@ def set_tasks(scheduler: AsyncIOScheduler):
 async def main():
     dp = Dispatcher()
     # порядок роутеров невероятно важен, желательно его не менять
-    dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router, optional_menu.router,
-                       mainPage.router, relogin.router, admin.router, feedback.router)
+    dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
+                       optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router)
 
     # ставим выполняться проверку изменений
     scheduler = AsyncIOScheduler()

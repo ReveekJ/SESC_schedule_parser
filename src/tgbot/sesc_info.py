@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 from bs4 import NavigableString
 
-from my_typing import UnchangeableType
+from src.my_typing import UnchangeableType
 
 
 class SESCInfo:

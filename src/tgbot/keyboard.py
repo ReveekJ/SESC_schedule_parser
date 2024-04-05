@@ -4,12 +4,17 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from sesc_info import SESC_Info
-from tgbot.text import TEXT
+from src.tgbot.text import TEXT
 
 
 def add_back_btn(keyboard: InlineKeyboardBuilder, lang: str):
     keyboard.button(text=TEXT('back', lang), callback_data='back')
 
+
+def admin_functions(lang: str) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text=TEXT("change_schedule", lang), callback_data="change_schedule")
+    return kb.as_markup()
 
 def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
@@ -17,7 +22,7 @@ def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
     kb.button(text=TEXT('teacher', lang), callback_data='teacher')
     # The Illusion of choice
     kb.button(text=TEXT('parent', lang), callback_data='group')
-    # kb.button(text=TEXT('administration_role', lang), callback_data='administration')
+    kb.button(text=TEXT('administration_role', lang), callback_data='administration')
 
     kb.adjust(1)
 
@@ -117,6 +122,11 @@ def hard_choice(lang: str):
     kb.button(text=TEXT('no', lang), callback_data='reloginf')
     return kb.as_markup()
 
+def aprove(lang: str, user_id: str):
+    kb = InlineKeyboardBuilder()
+    kb.button(text=TEXT('yes', lang), callback_data='adminNew_'+user_id+'_yes')
+    kb.button(text=TEXT('no', lang), callback_data='adminNew_'+user_id+'_no')
+    return kb.as_markup()
 
 def back_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()

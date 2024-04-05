@@ -1,6 +1,6 @@
 from unittest import TestCase, main
-from models.db import DB
-from models.database import get_async_session
+from src.tgbot.user_models import DB
+from src.database import get_async_session
 
 
 class TestDB(TestCase):

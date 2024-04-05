@@ -4,12 +4,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import Message, CallbackQuery
 
-from models.database import get_async_session
-from models.db import DB
-from tgbot.handlers.auxiliary import Form, bot
-from tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
-                            get_letter_of_teacher_kb)
-from tgbot.text import TEXT
+from config import ADMINS
+from src.database import get_async_session
+from src.tgbot.auxiliary import Form, bot
+from src.tgbot.for_administration.administration_page import administration_page
+from src.tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
+                                get_letter_of_teacher_kb, aprove)
+from src.tgbot.text import TEXT
+from src.tgbot.user_models.db import DB
 
 
 class RegistrationMachine(Form):
@@ -18,6 +20,7 @@ class RegistrationMachine(Form):
     sub_info = State()
     lang = State()
     start_message_id = State()
+    get_prove = State()
 
 
 router = Router()
@@ -33,10 +36,13 @@ async def func_start_registration(message: Message | CallbackQuery, state: FSMCo
     lang = message.from_user.language_code
     user_id = message.chat.id if isinstance(message, Message) else message.message.chat.id
     message_id = message.message_id if isinstance(message, Message) else message.message.message_id
+    current_user = await DB().select_user_by_id(session, user_id)
 
-    if await DB().select_user_by_id(session, user_id) is not None:
+    if current_user is not None:
         await state.clear()
-        if isinstance(message, CallbackQuery):
+        if current_user['role'] == 'administrator':
+            await administration_page(message)
+        elif isinstance(message, CallbackQuery):
             await bot.edit_message_text(chat_id=user_id,
                                         message_id=message_id,
                                         text=TEXT('main', lang=lang),
@@ -105,6 +111,69 @@ async def func_set_role_teacher(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+# фунция запрос на отправку фото пропуска(не уверен насчет перевода approve)
+async def func_approve_admin(callback: CallbackQuery, state: FSMContext):
+    lang = callback.from_user.language_code
+    user_id = callback.message.chat.id
+    message_id = callback.message.message_id
+
+    await state.update_data(prev=start_registration)
+    await state.set_state(RegistrationMachine.get_prove)
+
+    await bot.edit_message_text(chat_id=user_id,
+                                message_id=message_id,
+                                text=TEXT('send_your_pass', lang))
+
+    await callback.answer()
+
+
+# отсылаем фотку действующим администраторам
+async def func_send_verification_for_admins(message: Message, state: FSMContext):
+    user_id = message.chat.id
+    data = await state.get_data()
+    lang = data['lang']
+    for admin in ADMINS:
+        await bot.send_photo(admin, message.photo[-1].file_id,
+                             caption=message.caption,
+                             disable_notification=True,
+                             reply_markup=aprove(lang, str(user_id)))
+    await bot.send_message(user_id, text=TEXT('confirmation', lang))
+    await func_start_registration(message, state)
+    await state.clear()
+
+
+# уведомляем администратора об одобрении, меняем роль или заканчиваем регистрацию
+async def func_pozdravlenie(message: CallbackQuery):
+    session = await get_async_session()
+    lang = message.from_user.language_code
+    user_id = int(message.data.split('_')[1])
+    user_data = await DB().select_user_by_id(session, user_id)
+
+    if user_data:
+        sub_role = user_data['sub_info']
+        await DB().update_user_info(session,
+                                    _id=user_id,
+                                    role='administrator',
+                                    sub_info=sub_role,
+                                    lang=lang)
+    else:
+        await DB().create_user(session,
+                               id=user_id,
+                               role='administrator',
+                               sub_info='any',
+                               lang=lang)
+    await bot.send_message(user_id, text=TEXT("new_administrator_text", lang), disable_notification=True)
+    await administration_page(message)
+    await message.answer()
+
+
+async def func_reject(callback: CallbackQuery):
+    lang = callback.from_user.language_code
+    user_id = int(callback.data.split('_')[1])
+    await bot.send_message(user_id, text=TEXT("administrator_dismissed", lang), disable_notification=True)
+    await callback.answer()
+
+
 async def func_set_letter_of_teacher(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     user_id = callback.message.chat.id
@@ -140,9 +209,7 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
                            id=chat_id,
                            role=role,
                            sub_info=sub_role,
-                           lang=lang)
-
-    # отправляем приветственное и основное сообщения
+                           lang=lang)  # отправляем приветственное и основное сообщения
     await bot.edit_message_text(chat_id=user_id,
                                 message_id=start_message_id,
                                 text=TEXT('registration_done', lang=lang))
@@ -173,6 +240,11 @@ async def set_role_teacher(callback: CallbackQuery, state: FSMContext):
     await func_set_role_teacher(callback, state)
 
 
+@router.callback_query(RegistrationMachine.role, F.data.casefold() == 'administration')
+async def start_verification(callback: CallbackQuery, state: FSMContext):
+    await func_approve_admin(callback, state)
+
+
 @router.callback_query(RegistrationMachine.letter_of_teacher)
 async def set_letter_of_teacher(callback: CallbackQuery, state: FSMContext):
     await func_set_letter_of_teacher(callback, state)
@@ -181,3 +253,18 @@ async def set_letter_of_teacher(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(RegistrationMachine.sub_info)
 async def set_sub_info(callback: CallbackQuery, state: FSMContext):
     await func_set_sub_info(callback, state)
+
+
+@router.message(RegistrationMachine.get_prove)
+async def send_verification_for_admins(message: Message, state: FSMContext):
+    await func_send_verification_for_admins(message, state)
+
+
+@router.callback_query(F.data.split('_')[2] == 'yes')
+async def pozdravlenie(message: CallbackQuery):
+    await func_pozdravlenie(message)
+
+
+@router.callback_query(F.data.split('_')[2] == 'no')
+async def rejected(message: CallbackQuery):
+    await func_reject(message)

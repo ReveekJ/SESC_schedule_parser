@@ -4,14 +4,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import CallbackQuery, Message, FSInputFile
 
-from tgbot.handlers.auxiliary import Form, bot
-from tgbot.handlers.registration import func_start_registration
-from tgbot.keyboard import (get_choose_schedule,
-                            options_kb, get_choose_weekday_kb, choose_lessons_kb)
-from tgbot.parser import PARSER
-from tgbot.text import TEXT
 from config import PATH_TO_PROJECT
-
+from src.tgbot.auxiliary import Form, bot
+from src.tgbot.main_work.registration import func_start_registration
+from src.tgbot.keyboard import (get_choose_schedule,
+                                options_kb, get_choose_weekday_kb, choose_lessons_kb)
+from src.tgbot.parser import PARSER
+from src.tgbot.text import TEXT
 
 router = Router()
 

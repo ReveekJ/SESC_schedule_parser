@@ -1,8 +1,9 @@
 import asyncio
 import sys
 
-from models.database import get_async_session
-from models.db import ChangesDB
+from src.database import get_async_session
+from src.tgbot.changes.changes_db import ChangesDB
+from src.tgbot.changes.schemas import ChangesType
 
 
 class UnchangeableType:
@@ -21,14 +22,6 @@ class UnchangeableType:
 
     def __get__(self, instance, owner):
         return getattr(instance, self.name)
-
-
-class ChangesType:
-    def __init__(self, _type: str, _second: str, _weekday: str, _schedule: dict):
-        self.type = _type
-        self.second = _second
-        self.weekday = _weekday
-        self.schedule = _schedule
 
 
 # при попытке например пройтись по этому типу данных будет выполнен проход по self как в массиве

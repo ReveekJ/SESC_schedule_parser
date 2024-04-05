@@ -3,8 +3,8 @@ import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
 
 from config import PATH_TO_FONT, PATH_TO_PROJECT
-from my_typing import ChangesList, ChangesType
-from tgbot.sesc_info import SESC_Info
+from src.my_typing import ChangesList, ChangesType
+from src.tgbot.sesc_info import SESC_Info
 
 
 class Parser:
@@ -66,8 +66,8 @@ class Parser:
             for group in SESC_Info.GROUP.values():
                 schedule = await self.__get_json('group', int(group), int(day))
 
-                if schedule.get('diffs') is not None:
-                    await self.changes.append(ChangesType('group', group, day, schedule))
+                if schedule.get('diffs'):
+                    await self.changes.append(ChangesType(type='group', second=group, weekday=day, schedule=schedule))
 
     async def __check_for_changes_teacher(self) -> None:
         for day in SESC_Info.WEEKDAY.values():
@@ -75,7 +75,8 @@ class Parser:
                 schedule = await self.__get_json('teacher', int(teacher), int(day))
 
                 if schedule.get('diffs'):
-                    await self.changes.append(ChangesType('teacher', teacher, day, schedule))
+                    await self.changes.append(ChangesType(type='teacher', second=teacher, weekday=day,
+                                                          schedule=schedule))
 
     async def check_for_changes(self) -> ChangesList:
         await self.__check_for_changes_student()
