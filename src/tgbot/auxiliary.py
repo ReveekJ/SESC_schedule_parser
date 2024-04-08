@@ -36,7 +36,7 @@ async def send_schedule(chat_id: int, short_name_text_mes: str, role: str, sub_i
             caption = TEXT(short_name_text_mes, lang) + ' ' + TEXT('weekdays', lang)[weekday] + ' ' + \
                       SESC_Info.GROUP_REVERSE[sub_info]
         case 'auditory':
-            caption = (TEXT('main', lang) + ' ' + TEXT('weekdays', lang)[weekday] + ' ' +
+            caption = (TEXT('main_schedule', lang) + ' ' + TEXT('weekdays', lang)[weekday] + ' ' +
                        SESC_Info.AUDITORY_REVERSE[sub_info])
         case _:
             caption = TEXT(short_name_text_mes, lang) + ' ' + TEXT('weekdays', lang)[weekday]
