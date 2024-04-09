@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from config import *
-from src.database import Base
+from src.database import Base, metadata
 from src.tgbot.user_models.models import *
 from src.tgbot.changes.models import *
 from src.tgbot.elective_course.models import *
