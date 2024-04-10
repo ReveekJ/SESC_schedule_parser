@@ -7,6 +7,7 @@ from src.database import get_async_session
 from src.tgbot.auxiliary import send_schedule, bot
 from src.tgbot.parser import PARSER
 from src.tgbot.user_models.db import DB
+from aiogram.exceptions import TelegramForbiddenError
 
 
 async def sending_schedule_changes():
@@ -31,15 +32,19 @@ async def sending_schedule_changes():
                                                              sub_info=sub_info)
         # рассылаем изменения по юзерам
         for user_data in users:
-            await send_schedule(chat_id=user_data.id,
-                                short_name_text_mes='changed_schedule',
-                                role=role,
-                                sub_info=sub_info,
-                                weekday=int(weekday),
-                                lang=user_data.lang,
-                                schedule=schedule,
-                                disable_notifications=False)
-            await asyncio.sleep(1)
-            await bot.send_message(chat_id=ADMINS[0], text=str(user_data.id) + ' ' + role + ' ' + sub_info)
-            await asyncio.sleep(1)
+            try:
+                await send_schedule(chat_id=user_data.id,
+                                    short_name_text_mes='changed_schedule',
+                                    role=role,
+                                    sub_info=sub_info,
+                                    weekday=int(weekday),
+                                    lang=user_data.lang,
+                                    schedule=schedule,
+                                    disable_notifications=False)
+                await asyncio.sleep(1)
+                await bot.send_message(chat_id=ADMINS[0], text=str(user_data.id) + ' ' + role + ' ' + sub_info)
+                await asyncio.sleep(1)
+            except TelegramForbiddenError:
+                pass  # возникает когда пользователь заблокировал бота
+                # TODO: как то удалять пользователей из базы, если оно заблокал бота
 
