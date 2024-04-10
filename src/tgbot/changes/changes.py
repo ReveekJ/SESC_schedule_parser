@@ -39,5 +39,7 @@ async def sending_schedule_changes():
                                 lang=user_data.lang,
                                 schedule=schedule,
                                 disable_notifications=False)
-            await bot.send_message(chat_id=ADMINS[0], text=str(user_data['id']) + ' ' + role + ' ' + sub_info)
             await asyncio.sleep(1)
+            await bot.send_message(chat_id=ADMINS[0], text=str(user_data.id) + ' ' + role + ' ' + sub_info)
+            await asyncio.sleep(1)
+
