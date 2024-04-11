@@ -8,13 +8,14 @@ from src.tgbot.auxiliary import send_schedule, bot
 from src.tgbot.parser import PARSER
 from src.tgbot.user_models.db import DB
 from aiogram.exceptions import TelegramForbiddenError
+import logging
 
 
 async def sending_schedule_changes():
     # получаем измения
-    print('чекаю')
+    logging.debug('начинаю проверку изменений')
     changes = await PARSER.check_for_changes()
-    print('чекнул')
+    logging.debug('получил изменения')
 
     for elem in changes:
         role = elem.type
@@ -47,4 +48,5 @@ async def sending_schedule_changes():
             except TelegramForbiddenError:
                 pass  # возникает когда пользователь заблокировал бота
                 # TODO: как то удалять пользователей из базы, если оно заблокал бота
-
+            except Exception as e:
+                logging.error(f'|changes| {e} \n{str(user_data.id) + " " + role + " " + sub_info}')

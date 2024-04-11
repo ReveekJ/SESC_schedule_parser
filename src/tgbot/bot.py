@@ -10,6 +10,7 @@ from src.tgbot.for_administration import administration_work
 from src.tgbot.auxiliary import bot
 from src.tgbot.changes.changes import sending_schedule_changes
 from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
+import logging
 
 
 def set_tasks(scheduler: AsyncIOScheduler):
@@ -34,6 +35,9 @@ def set_tasks(scheduler: AsyncIOScheduler):
     scheduler.add_job(sending_schedule_changes, CronTrigger(hour=times[-1].hour, minute=times[-1].minute,
                                                             second=times[-1].second),
                       next_run_time=datetime.datetime.now())
+
+
+logging.basicConfig(level=logging.DEBUG, filename='log.log', filemode='w')
 
 
 async def main():
