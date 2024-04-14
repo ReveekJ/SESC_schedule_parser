@@ -1,3 +1,6 @@
+import datetime
+import logging
+
 from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
@@ -12,6 +15,8 @@ from src.tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_cho
                                 get_letter_of_teacher_kb, aprove)
 from src.tgbot.text import TEXT
 from src.tgbot.user_models.db import DB
+from src.tgbot.user_models.schemas import User
+from pydantic import ValidationError
 
 
 class RegistrationMachine(Form):
@@ -143,7 +148,7 @@ async def func_send_verification_for_admins(message: Message, state: FSMContext)
 
 
 # уведомляем администратора об одобрении, меняем роль или заканчиваем регистрацию
-async def func_pozdravlenie(message: CallbackQuery):
+async def func_pozdravlenie(message: CallbackQuery, state: FSMContext):
     session = await get_async_session()
     lang = message.from_user.language_code
     user_id = int(message.data.split('_')[1])
@@ -157,11 +162,16 @@ async def func_pozdravlenie(message: CallbackQuery):
                                     sub_info=sub_role,
                                     lang=lang)
     else:
-        await DB().create_user(session,
-                               id=user_id,
-                               role='administrator',
-                               sub_info='any',
-                               lang=lang)
+        try:
+            await DB().create_user(session,
+                                   User(id=user_id,
+                                        role='administrator',
+                                        sub_info='any',
+                                        lang=lang))
+        except ValidationError as e:
+            logging.warning(str(datetime.datetime.now()) + ' ' + str(e))
+            await bot.send_message(user_id, TEXT('reg_error', lang))
+            await func_start_registration(message, state)
     await bot.send_message(user_id, text=TEXT("new_administrator_text", lang), disable_notification=True)
     await administration_page(message)
     await message.answer()
@@ -205,19 +215,26 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
     start_message_id = data['start_message_id']
 
     # сохраняем пользователя в базу данных
-    await DB().create_user(session,
-                           id=chat_id,
-                           role=role,
-                           sub_info=sub_role,
-                           lang=lang)  # отправляем приветственное и основное сообщения
-    await bot.edit_message_text(chat_id=user_id,
-                                message_id=start_message_id,
-                                text=TEXT('registration_done', lang=lang))
-
-    await bot.edit_message_text(chat_id=user_id,
-                                message_id=current_message_id,
-                                text=TEXT('main', lang=lang),
-                                reply_markup=get_choose_schedule(lang))
+    try:
+        await DB().create_user(session,
+                               User(id=chat_id,
+                                    role=role,
+                                    sub_info=sub_role,
+                                    lang=lang))
+    except Exception as e:
+        logging.warning(str(datetime.datetime.now()) + ' ' + str(e))
+        await callback.message.delete()
+        await bot.send_message(chat_id, TEXT('reg_error', lang))
+    else:
+        #  сообщение о том что регистрация завершена
+        await bot.edit_message_text(chat_id=user_id,
+                                    message_id=start_message_id,
+                                    text=TEXT('registration_done', lang=lang))
+        # отправляем основное сообщения
+        await bot.edit_message_text(chat_id=user_id,
+                                    message_id=current_message_id,
+                                    text=TEXT('main', lang=lang),
+                                    reply_markup=get_choose_schedule(lang))
 
     await callback.answer()
 
