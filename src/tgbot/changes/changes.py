@@ -43,8 +43,6 @@ async def sending_schedule_changes():
                                     schedule=schedule,
                                     disable_notifications=False)
                 await asyncio.sleep(1)
-                await bot.send_message(chat_id=ADMINS[0], text=str(user_data.id) + ' ' + role + ' ' + sub_info)
-                await asyncio.sleep(1)
             except TelegramForbiddenError:
                 pass  # возникает когда пользователь заблокировал бота
                 # TODO: как то удалять пользователей из базы, если оно заблокал бота
