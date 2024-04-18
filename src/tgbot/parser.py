@@ -65,7 +65,7 @@ class Parser:
         for day in SESC_Info.WEEKDAY.values():
             for group in SESC_Info.GROUP.values():
                 schedule = await self.__get_json('group', int(group), int(day))
-
+                print(group, day)
                 if schedule.get('diffs'):
                     await self.changes.append(ChangesType(type='group', second=group, weekday=day, schedule=schedule))
 
@@ -73,6 +73,7 @@ class Parser:
         for day in SESC_Info.WEEKDAY.values():
             for teacher in SESC_Info.TEACHER.values():
                 schedule = await self.__get_json('teacher', int(teacher), int(day))
+                print(teacher, day)
 
                 if schedule.get('diffs'):
                     await self.changes.append(ChangesType(type='teacher', second=teacher, weekday=day,

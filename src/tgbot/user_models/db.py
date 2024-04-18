@@ -4,13 +4,14 @@ import logging
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.tgbot.elective_course.schemas import ElectiveCourse
 from src.tgbot.user_models.models import UsersModel, columns_json
 from src.tgbot.user_models.schemas import User
+from src.tgbot.elective_course.elective_course import ElectiveCourseDB
 
 
 class DB:
     # Возвращает None если запись не найдется, иначе вернется dict
-    # TODO: сделать чтобы возвращалась схема данных
     async def select_user_by_id(self, session: AsyncSession, _id: int) -> User | None:
         _id = self.__convert_to_id_type(_id)
         query = select(UsersModel).where(UsersModel.id == _id)
@@ -33,12 +34,6 @@ class DB:
         final_result = []
         for user in res.all():
             final_result.append(User(**user[0].__dict__))
-            # final_result.append(**user)
-            # final_result.append({})
-            # for index, elem in enumerate(user):
-            #     if index == 0:
-            #         elem = self.__convert_from_id_type(elem)
-            #     final_result[i][columns_json[index]] = elem
 
         await session.commit()
         return final_result
@@ -78,6 +73,18 @@ class DB:
 
         await session.execute(stmt)
         await session.commit()
+
+    async def get_elective_courses(self, session: AsyncSession, user_id: int) -> list[ElectiveCourse]:
+        user = await self.select_user_by_id(session, user_id)
+        if user is None:
+            raise ValueError('Incorrect user_id')
+
+        result = []
+        for course in user.elective_courses:
+            temp = await ElectiveCourseDB.get_course(session, course)
+            result.append(temp)
+
+        return result
 
     @staticmethod
     def __convert_to_id_type(_id) -> str:

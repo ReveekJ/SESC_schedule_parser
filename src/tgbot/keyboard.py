@@ -16,13 +16,14 @@ def admin_functions(lang: str) -> InlineKeyboardMarkup:
     kb.button(text=TEXT("change_schedule", lang), callback_data="change_schedule")
     return kb.as_markup()
 
+
 def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=TEXT('student', lang), callback_data='group')
     kb.button(text=TEXT('teacher', lang), callback_data='teacher')
     # The Illusion of choice
     kb.button(text=TEXT('parent', lang), callback_data='group')
-    kb.button(text=TEXT('administration_role', lang), callback_data='administration')
+    # kb.button(text=TEXT('administration_role', lang), callback_data='administration')
 
     kb.adjust(1)
 
@@ -122,11 +123,13 @@ def hard_choice(lang: str):
     kb.button(text=TEXT('no', lang), callback_data='reloginf')
     return kb.as_markup()
 
+
 def aprove(lang: str, user_id: str):
     kb = InlineKeyboardBuilder()
-    kb.button(text=TEXT('yes', lang), callback_data='adminNew_'+user_id+'_yes')
-    kb.button(text=TEXT('no', lang), callback_data='adminNew_'+user_id+'_no')
+    kb.button(text=TEXT('yes', lang), callback_data='adminNew_' + user_id + '_yes')
+    kb.button(text=TEXT('no', lang), callback_data='adminNew_' + user_id + '_no')
     return kb.as_markup()
+
 
 def back_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
@@ -162,7 +165,12 @@ def choose_lessons_kb(lang: str) -> InlineKeyboardMarkup:
 
 def all_lessons_kb(lang) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    lessons = {'Право', 'ИстФилософии', 'Информатика', 'Литература', 'ТеорПознания', 'АнглЯзык', 'Химия', 'Новейшая история', 'История', 'ЗарЛитература', 'Астрономия', 'ВсИстория', 'Алгебра', 'ХимПрактикум', 'ЭконГеография', 'География', 'Обществознание', 'Русский', 'Французский язык', 'Экономика', 'МХК', 'Музыка', 'Математика', 'Биология', 'ИстРоссии', 'Технология', 'Геометрия', 'ИнЯзык2', 'Политология', 'БиоЭлектив', 'ИМК', 'РоднЛитература', 'Физкультура', 'История русской культуры', 'РоднЯзык', 'Социология', 'АКС', 'ИнжГрафика', 'Естествознание', 'Риторика', 'Физика'}
+    lessons = {'Право', 'ИстФилософии', 'Информатика', 'Литература', 'ТеорПознания', 'АнглЯзык', 'Химия',
+               'Новейшая история', 'История', 'ЗарЛитература', 'Астрономия', 'ВсИстория', 'Алгебра', 'ХимПрактикум',
+               'ЭконГеография', 'География', 'Обществознание', 'Русский', 'Французский язык', 'Экономика', 'МХК',
+               'Музыка', 'Математика', 'Биология', 'ИстРоссии', 'Технология', 'Геометрия', 'ИнЯзык2', 'Политология',
+               'БиоЭлектив', 'ИМК', 'РоднЛитература', 'Физкультура', 'История русской культуры', 'РоднЯзык',
+               'Социология', 'АКС', 'ИнжГрафика', 'Естествознание', 'Риторика', 'Физика'}
 
     for i in lessons:
         kb.button(text=i, callback_data=i)
