@@ -47,9 +47,9 @@ async def main():
                        optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router)
 
     # ставим выполняться проверку изменений
-    # scheduler = AsyncIOScheduler()
-    # set_tasks(scheduler)
-    # scheduler.start()
+    scheduler = AsyncIOScheduler()
+    set_tasks(scheduler)
+    scheduler.start()
 
     print('запуск')
 
