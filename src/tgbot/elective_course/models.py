@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Text
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from src.database import Base
 
@@ -6,8 +6,15 @@ from src.database import Base
 class ElectiveCourseModel(Base):
     __tablename__ = "elective_course"
 
-    name = Column(Text, primary_key=True, nullable=False)
-    pulpit = Column(Text, nullable=False)
-    subject = Column(Text, nullable=False)
-    timetable = Column(Text, nullable=False)  # в виде json
-    teacher_name = Column(Text, nullable=False)  # TODO: add foreign key
+    subject: Mapped[str] = mapped_column(unique=True, primary_key=True, onupdate='CASCADE')
+    pulpit: Mapped[str]
+    timetable: Mapped[str]  # Просто строчка со временем (e.g. 8:20-9:00)
+    teacher_name: Mapped[str]
+
+    users_replied: Mapped[list['UsersModel']] = relationship(
+        back_populates='elective_course_replied',
+        secondary='elective_transactions'
+    )
+
+
+from src.tgbot.user_models.models import UsersModel

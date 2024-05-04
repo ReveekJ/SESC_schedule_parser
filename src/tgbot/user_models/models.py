@@ -1,4 +1,7 @@
-from sqlalchemy import Column, Text
+from typing import Optional
+
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+
 from src.database import Base
 
 columns_json = {0: 'id',
@@ -10,10 +13,17 @@ columns_json = {0: 'id',
 class UsersModel(Base):
     __tablename__ = 'users'
 
-    id = Column(Text, primary_key=True)
-    role = Column(Text)
-    sub_info = Column(Text)
-    lang = Column(Text)
-    login = Column(Text, nullable=True)
-    password = Column(Text, nullable=True)
-    elective_courses = Column(Text, nullable=True)
+    id: Mapped[str] = mapped_column(unique=True, primary_key=True, onupdate='CASCADE')
+    role: Mapped[str]
+    sub_info: Mapped[str]
+    lang: Mapped[str]
+    login: Mapped[Optional[str]]
+    password: Mapped[Optional[str]]
+
+    elective_course_replied: Mapped[list['ElectiveCourseModel']] = relationship(
+        back_populates='users_replied',
+        secondary='elective_transactions'
+    )
+
+
+from src.tgbot.elective_course.models import ElectiveCourseModel
