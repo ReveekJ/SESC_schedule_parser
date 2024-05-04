@@ -11,3 +11,4 @@ docker-compose.yaml
 *.mp4
 *.mp3
 log.log
+*.http
