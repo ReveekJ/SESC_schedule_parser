@@ -18,7 +18,7 @@ class ElectiveCourseDB:
 
     @staticmethod
     async def delete_course(session: AsyncSession, course_name: str):
-        stmt = delete(ElectiveCourseModel).where(ElectiveCourseModel.name == course_name)
+        stmt = delete(ElectiveCourseModel).where(ElectiveCourseModel.subject == course_name)
         await session.execute(stmt)
         await session.commit()
 
@@ -33,7 +33,7 @@ class ElectiveCourseDB:
 
     @staticmethod
     async def get_course(session: AsyncSession, course_name: str) -> ElectiveCourse:
-        query = select(ElectiveCourseModel).where(ElectiveCourseModel.name == course_name)
+        query = select(ElectiveCourseModel).where(ElectiveCourseModel.subject == course_name)
         res = await session.execute(query)
         res = res.first()[0]
         res.__dict__['timetable'] = json.loads(res.__dict__['timetable'])
