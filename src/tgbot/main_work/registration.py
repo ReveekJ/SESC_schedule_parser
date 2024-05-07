@@ -278,8 +278,8 @@ async def send_verification_for_admins(message: Message, state: FSMContext):
 
 
 @router.callback_query(F.data.split('_')[2] == 'yes')
-async def pozdravlenie(message: CallbackQuery):
-    await func_pozdravlenie(message)
+async def pozdravlenie(message: CallbackQuery, state: FSMContext):
+    await func_pozdravlenie(message, state)
 
 
 @router.callback_query(F.data.split('_')[2] == 'no')
