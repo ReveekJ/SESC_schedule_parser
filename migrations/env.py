@@ -10,6 +10,7 @@ from src.database import Base, metadata
 from src.tgbot.user_models.models import *
 from src.tgbot.changes.models import *
 from src.tgbot.elective_course.models import *
+from src.tgbot.elective_course.elective_transactions.models import *
 
 
 # this is the Alembic Config object, which provides
