@@ -8,6 +8,6 @@ class ElectiveCourseTransactionsModel(Base):
     __tablename__ = 'elective_transactions'
 
     course_name: Mapped[str] = mapped_column(ForeignKey('elective_course.subject'),
-                                             primary_key=True)
+                                             primary_key=True) 
     user_id: Mapped[str] = mapped_column(ForeignKey('users.id'),
                                          primary_key=True)

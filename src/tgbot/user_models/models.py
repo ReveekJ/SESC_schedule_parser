@@ -20,7 +20,7 @@ class UsersModel(Base):
     login: Mapped[Optional[str]]
     password: Mapped[Optional[str]]
 
-    elective_course_replied: Mapped[list['ElectiveCourseModel']] = relationship(
+    elective_course_replied: Mapped[Optional[list['ElectiveCourseModel']]] = relationship(
         back_populates='users_replied',
         secondary='elective_transactions'
     )
