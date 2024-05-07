@@ -15,7 +15,6 @@ class CryptorEncryptor:
         return ''.join([chr(i ^ j) for i, j in zip(self.__text, self.__key)])
 
 
-@app.get('/encrypt/')
 @app.get('/crypt/')
 async def crypt(crypto_string: str):
     try:
