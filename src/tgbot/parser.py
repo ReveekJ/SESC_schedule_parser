@@ -1,20 +1,24 @@
+from abc import ABC, abstractmethod
+
 import aiohttp
 import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
 
 from config import PATH_TO_FONT, PATH_TO_PROJECT
+from src.database import get_async_session
 from src.my_typing import ChangesList, ChangesType
 from src.tgbot.sesc_info import SESC_Info
+from src.tgbot.user_models.db import DB
 
 
-class Parser:
-    def __init__(self, font_path):
-        self.changes = ChangesList()
+class AbstractParser(ABC):
+    def __init__(self, font_path: str):
         self.font_path = font_path
 
     @staticmethod
-    def get_path(_second):
-        return PATH_TO_PROJECT + f'schedules/schedule{_second}.png'
+    @abstractmethod
+    def get_path(name: str):
+        pass
 
     @staticmethod
     def merge_schedule(lessons: list[dict], diffs: list[dict]) -> list[dict]:
@@ -36,54 +40,26 @@ class Parser:
 
         return merged_schedule
 
-    # Преобразование информации и управление процессом создания таблицы
+    @abstractmethod
     async def parse(self, _type: str, _second: str, _weekday: str):
-        path = self.get_path(_second)
+        pass
 
-        info = await self.__get_json(_type, int(_second), int(_weekday))
-
-        if not info['lessons'] and not info['diffs']:
-            return 'NO_SCHEDULE'
-
-        self.create_table(_type, self.merge_schedule(info['lessons'], info['diffs']), path)
-
-        return path
-
-    @staticmethod  # Отправление запроса учителя
-    async def __get_json(_type: str, _second: int, weekday: int):
-        while True:
-            try:
-                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-                    async with session.get(
-                            f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType={_type}&{weekday=}'
-                            f'&{_type}={_second}') as resp:
-                        return json.loads(await resp.text())
-            except Exception as e:
-                pass
-
-    async def __check_for_changes_student(self) -> None:
-        for day in SESC_Info.WEEKDAY.values():
-            for group in SESC_Info.GROUP.values():
-                schedule = await self.__get_json('group', int(group), int(day))
-                print(group, day)
-                if schedule.get('diffs'):
-                    await self.changes.append(ChangesType(type='group', second=group, weekday=day, schedule=schedule))
-
-    async def __check_for_changes_teacher(self) -> None:
-        for day in SESC_Info.WEEKDAY.values():
-            for teacher in SESC_Info.TEACHER.values():
-                schedule = await self.__get_json('teacher', int(teacher), int(day))
-                print(teacher, day)
-
-                if schedule.get('diffs'):
-                    await self.changes.append(ChangesType(type='teacher', second=teacher, weekday=day,
-                                                          schedule=schedule))
-
-    async def check_for_changes(self) -> ChangesList:
-        await self.__check_for_changes_student()
-        await self.__check_for_changes_teacher()
-
-        return self.changes
+    # @staticmethod  # Отправление запроса учителя
+    # @abstractmethod
+    # async def __get_json(_type: str, _second: int, weekday: int):
+    #     pass
+    #
+    # @abstractmethod
+    # async def __check_for_changes_student(self) -> None:
+    #     pass
+    #
+    # @abstractmethod
+    # async def __check_for_changes_teacher(self) -> None:
+    #     pass
+    #
+    # @abstractmethod
+    # async def check_for_changes(self):
+    #     pass
 
     # Создание таблицы
     def create_table(self, _type: str, info: list, path: str):
@@ -188,6 +164,7 @@ class Parser:
                 # TODO: доюавить разделительную полоску между расписаниеми для subgroup
                 lesson_info_subgroup1 = ''
                 lesson_info_subgroup2 = ''
+                color = (0, 0, 0)
 
                 # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
                 if lesson['subgroup'] == 1:
@@ -249,6 +226,65 @@ class Parser:
         # Сохраняем изображение в файл
         image.save(path)
 
+
+class Parser(AbstractParser):
+    def __init__(self, font_path):
+        super().__init__(font_path)
+        self.changes = ChangesList()
+
+    @staticmethod
+    def get_path(name: str):
+        return PATH_TO_PROJECT + f'schedules/schedule{name}.png'
+
+    # Преобразование информации и управление процессом создания таблицы
+    async def parse(self, _type: str, _second: str, _weekday: str):
+        path = self.get_path(_second)
+
+        info = await self.__get_json(_type, int(_second), int(_weekday))
+
+        if not info['lessons'] and not info['diffs']:
+            return 'NO_SCHEDULE'
+
+        self.create_table(_type, self.merge_schedule(info['lessons'], info['diffs']), path)
+
+        return path
+
+    @staticmethod  # Отправление запроса учителя
+    async def __get_json(_type: str, _second: int, weekday: int):
+        while True:
+            try:
+                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+                    async with session.get(
+                            f'https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii?type=11&scheduleType={_type}&{weekday=}'
+                            f'&{_type}={_second}') as resp:
+                        return json.loads(await resp.text())
+            except Exception as e:
+                pass
+
+    async def __check_for_changes_student(self) -> None:
+        for day in SESC_Info.WEEKDAY.values():
+            for group in SESC_Info.GROUP.values():
+                schedule = await self.__get_json('group', int(group), int(day))
+                print(group, day)
+                if schedule.get('diffs'):
+                    await self.changes.append(ChangesType(type='group', second=group, weekday=day, schedule=schedule))
+
+    async def __check_for_changes_teacher(self) -> None:
+        for day in SESC_Info.WEEKDAY.values():
+            for teacher in SESC_Info.TEACHER.values():
+                schedule = await self.__get_json('teacher', int(teacher), int(day))
+                print(teacher, day)
+
+                if schedule.get('diffs'):
+                    await self.changes.append(ChangesType(type='teacher', second=teacher, weekday=day,
+                                                          schedule=schedule))
+
+    async def check_for_changes(self) -> ChangesList:
+        await self.__check_for_changes_student()
+        await self.__check_for_changes_teacher()
+
+        return self.changes
+
     @staticmethod
     async def get_free_auditories(weekday: int, lesson: int):
         async def get_table():
@@ -269,6 +305,16 @@ class Parser:
         if not weekday:
             return None
         return await get_table()
+
+
+class ElectiveParser(AbstractParser):
+    @staticmethod
+    def get_path(name: str):
+        return PATH_TO_PROJECT + f'schedules/schedule{name}.png'
+
+    async def parse(self, user_id: int, **kwargs):
+        session = await get_async_session()
+        courses = await DB().get_elective_courses(session, user_id)
 
 
 PARSER = Parser(PATH_TO_FONT)
