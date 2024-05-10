@@ -16,7 +16,8 @@ class ElectiveCourseModel(Base):
     pulpit: Mapped[str]
     teacher_name: Mapped[str]
     weekday: Mapped[int]
-    time: Mapped[datetime.time]
+    time_from: Mapped[datetime.time]
+    time_to: Mapped[datetime.time]
 
     users_replied: Mapped[Optional[list['UsersModel']]] = relationship(
         back_populates='elective_course_replied',
