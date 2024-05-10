@@ -8,4 +8,5 @@ class ElectiveCourse(BaseModel):
     pulpit: str
     teacher_name: str
     weekday: int
-    time: datetime.time
+    time_from: datetime.time
+    time_to: datetime.time
