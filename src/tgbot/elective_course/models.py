@@ -1,5 +1,7 @@
+import datetime
 from typing import Optional
 
+from sqlalchemy import BigInteger
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from src.database import Base
@@ -8,10 +10,13 @@ from src.database import Base
 class ElectiveCourseModel(Base):
     __tablename__ = "elective_course"
 
-    subject: Mapped[str] = mapped_column(unique=True, primary_key=True, onupdate='CASCADE')
+    id: Mapped[BigInteger] = mapped_column(type_=BigInteger, unique=True, primary_key=True, onupdate='CASCADE',
+                                           autoincrement=True)
+    subject: Mapped[str]
     pulpit: Mapped[str]
-    timetable: Mapped[str]  # Просто строчка со временем (e.g. 8:20-9:00)
     teacher_name: Mapped[str]
+    weekday: Mapped[int]
+    time: Mapped[datetime.time]
 
     users_replied: Mapped[Optional[list['UsersModel']]] = relationship(
         back_populates='elective_course_replied',

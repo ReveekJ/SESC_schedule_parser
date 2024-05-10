@@ -1,5 +1,6 @@
 from typing import Optional
 
+from sqlalchemy import BigInteger
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from src.database import Base
@@ -13,7 +14,7 @@ columns_json = {0: 'id',
 class UsersModel(Base):
     __tablename__ = 'users'
 
-    id: Mapped[str] = mapped_column(unique=True, primary_key=True, onupdate='CASCADE')
+    id: Mapped[BigInteger] = mapped_column(type_=BigInteger, unique=True, primary_key=True, onupdate='CASCADE')
     role: Mapped[str]
     sub_info: Mapped[str]
     lang: Mapped[str]

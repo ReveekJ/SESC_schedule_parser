@@ -43,7 +43,6 @@ class DB:
     # Возвращает None если запись не найдется, иначе вернется User
     @__login_password_decrypt
     async def select_user_by_id(self, session: AsyncSession, _id: int) -> User | None:
-        _id = self.__convert_to_id_type(_id)
         query = select(UsersModel).options(selectinload(UsersModel.elective_course_replied)).where(UsersModel.id == _id)
 
         try:
@@ -78,7 +77,6 @@ class DB:
         final_result = []
 
         for i, user in enumerate(res.all()):
-            user[0].id = self.__convert_to_id_type(user[0].id)
             final_result.append(User(**user[0].__dict__))
 
         await session.commit()
@@ -86,23 +84,18 @@ class DB:
 
     async def create_user(self, session: AsyncSession, user: User):
         # преобразование id в тип id, который находится в бд
-        user.id = self.__convert_to_id_type(user.id)
         user = await self.__encrypt_decrypt_login_password(user)
 
         session.add(UsersModel(**user.model_dump()))
         await session.commit()
 
     async def delete_user(self, session: AsyncSession, _id: int):
-        _id = self.__convert_to_id_type(_id)
-
         stmt = delete(UsersModel).where(UsersModel.id == _id)
         await session.execute(stmt)
         await session.commit()
 
     # TODO: check is it working now
     async def update_user_info(self, session: AsyncSession, _id: int, **kwargs):
-        _id = self.__convert_to_id_type(_id)
-
         stmt = update(UsersModel).where(UsersModel.id == _id).values(**kwargs)
 
         await session.execute(stmt)
@@ -119,14 +112,6 @@ class DB:
     #         result.append(temp)
     #
     #     return result
-
-    @staticmethod
-    def __convert_to_id_type(_id) -> str:
-        return str(_id)
-
-    @staticmethod
-    def __convert_from_id_type(_id) -> int:
-        return int(_id)
 
 # SAMPLE USAGE
 # async def main():
