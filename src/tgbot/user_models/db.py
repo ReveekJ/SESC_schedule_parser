@@ -8,6 +8,8 @@ from sqlalchemy import select, insert, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.tgbot.elective_course.models import ElectiveCourseModel
+from src.tgbot.elective_course.schemas import ElectiveCourse
 from src.tgbot.user_models.models import UsersModel
 from src.tgbot.user_models.schemas import User
 
@@ -89,18 +91,31 @@ class DB:
         session.add(UsersModel(**user.model_dump()))
         await session.commit()
 
-    async def delete_user(self, session: AsyncSession, _id: int):
+    @staticmethod
+    async def delete_user(session: AsyncSession, _id: int):
         stmt = delete(UsersModel).where(UsersModel.id == _id)
         await session.execute(stmt)
         await session.commit()
 
     # TODO: check is it working now
-    async def update_user_info(self, session: AsyncSession, _id: int, **kwargs):
+    @staticmethod
+    async def update_user_info(session: AsyncSession, _id: int, **kwargs):
         stmt = update(UsersModel).where(UsersModel.id == _id).values(**kwargs)
 
         await session.execute(stmt)
         await session.commit()
 
+    async def get_elective_courses_for_day(self, session: AsyncSession, user_id: int, weekday: int) \
+            -> list[ElectiveCourse]:
+        user = await self.select_user_by_id(session, user_id)
+        query = select(ElectiveCourseModel).join(ElectiveCourseModel.users_replied).filter(
+            UsersModel.id == user.id, ElectiveCourseModel.weekday == weekday
+        ).options(selectinload(ElectiveCourseModel.users_replied))
+
+        res = await session.execute(query)
+        res = [ElectiveCourse(**course.__dict__) for course in res.scalars().all()]
+
+        return res
     # async def get_elective_courses(self, session: AsyncSession, user_id: int) -> list[ElectiveCourse]:
     #     user = await self.select_user_by_id(session, user_id)
     #     if user is None:
