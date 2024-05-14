@@ -39,7 +39,7 @@ class ElectiveTransactions:
 
         user_model.elective_course_replied.append(course_model)
         # course_model.users_replied.append(user_model)
-        transaction = ElectiveCourseTransactionsModel(course_name=course_model.subject, user_id=str(user_model.id))
+        transaction = ElectiveCourseTransactionsModel(course_name=course_model.id, user_id=user_model.id)
         session.add(transaction)
 
         await session.commit()

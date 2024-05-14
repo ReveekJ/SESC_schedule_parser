@@ -10,10 +10,7 @@ from src.tgbot.elective_course.schemas import ElectiveCourse
 class ElectiveCourseDB:
     @staticmethod
     async def add_course(session: AsyncSession, course: ElectiveCourse):
-        course.timetable = json.dumps(course.timetable)
-        stmt = insert(ElectiveCourseModel).values(dict(course))
-
-        await session.execute(stmt)
+        session.add(ElectiveCourseModel(**course.model_dump()))
         await session.commit()
 
     @staticmethod
