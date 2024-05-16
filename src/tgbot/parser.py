@@ -312,9 +312,38 @@ class ElectiveParser(AbstractParser):
     def get_path(name: str):
         return PATH_TO_PROJECT + f'schedules/schedule{name}.png'
 
-    async def parse(self, user_id: int, **kwargs):
+    @staticmethod
+    def __convert_number(func):
+        def wrapper(*args, **kwargs):
+            origin: list[dict] = func(*args, **kwargs)
+            schedule = sorted(origin, key=lambda x: x.get('number'))
+            for num, lesson in enumerate(schedule):
+                lesson['number'] = num + 1
+
+            return schedule
+        return wrapper
+
+    @__convert_number
+    def merge_schedule(self, lessons: list[dict], diffs: list[dict]) -> list[dict]:
+        return super().merge_schedule(lessons, diffs)
+
+    async def parse(self, user_id: int, **kwargs) -> str:
+        weekday = kwargs['weekday']
+        _type = kwargs['type'] if kwargs.get('type') else 'group'
         session = await get_async_session()
-        courses = await DB().get_elective_courses(session, user_id)
+        courses = await DB().get_elective_courses_for_day(session, user_id, weekday)
+        await session.close()
+
+        dumped_courses = courses.model_dump(mode='timetable')
+        path = self.get_path(str(user_id))
+
+        if not courses.lessons and not courses.diffs:
+            return 'NO_SCHEDULE'
+
+        self.create_table(_type, self.merge_schedule(dumped_courses['lessons'], dumped_courses['diffs']), path)
+
+        return path
 
 
 PARSER = Parser(PATH_TO_FONT)
+ELECTIVE_PARSER = ElectiveParser(PATH_TO_FONT)

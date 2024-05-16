@@ -1,15 +1,14 @@
 import datetime
 import json
 import logging
-from os import urandom
 
 import aiohttp
-from sqlalchemy import select, insert, delete, update
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.tgbot.elective_course.models import ElectiveCourseModel
-from src.tgbot.elective_course.schemas import ElectiveCourse
+from src.tgbot.elective_course.schemas import ElectiveCourse, ElectiveCourseTimetable
 from src.tgbot.user_models.models import UsersModel
 from src.tgbot.user_models.schemas import User
 
@@ -106,7 +105,7 @@ class DB:
         await session.commit()
 
     async def get_elective_courses_for_day(self, session: AsyncSession, user_id: int, weekday: int) \
-            -> list[ElectiveCourse]:
+            -> ElectiveCourseTimetable:
         user = await self.select_user_by_id(session, user_id)
         query = select(ElectiveCourseModel).join(ElectiveCourseModel.users_replied).filter(
             UsersModel.id == user.id, ElectiveCourseModel.weekday == weekday
@@ -115,7 +114,15 @@ class DB:
         res = await session.execute(query)
         res = [ElectiveCourse(**course.__dict__) for course in res.scalars().all()]
 
-        return res
+        elective_lst = ElectiveCourseTimetable(lessons=[], diffs=[])
+        for course in res:
+            if course.is_diffs:
+                elective_lst.diffs.append(course)
+            else:
+                elective_lst.lessons.append(course)
+        del res
+
+        return elective_lst
     # async def get_elective_courses(self, session: AsyncSession, user_id: int) -> list[ElectiveCourse]:
     #     user = await self.select_user_by_id(session, user_id)
     #     if user is None:
