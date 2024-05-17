@@ -1,14 +1,13 @@
 import asyncio
+import logging
 
+from aiogram.exceptions import TelegramForbiddenError
 from aiogram.types import FSInputFile
 
-from config import ADMINS
 from src.database import get_async_session
-from src.tgbot.auxiliary import send_schedule, bot
+from src.tgbot.auxiliary import send_schedule
 from src.tgbot.parser import PARSER
 from src.tgbot.user_models.db import DB
-from aiogram.exceptions import TelegramForbiddenError
-import logging
 
 
 async def sending_schedule_changes():
@@ -31,6 +30,8 @@ async def sending_schedule_changes():
         users = await DB().select_users_by_role_and_sub_info(session,
                                                              role=role,
                                                              sub_info=sub_info)
+        await session.close()
+
         # рассылаем изменения по юзерам
         for user_data in users:
             try:
