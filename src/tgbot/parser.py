@@ -328,7 +328,7 @@ class ElectiveParser(AbstractParser):
         return super().merge_schedule(lessons, diffs)
 
     async def parse(self, user_id: int, **kwargs) -> str:
-        weekday = kwargs['weekday']
+        weekday = int(kwargs['weekday'])
         _type = kwargs['type'] if kwargs.get('type') else 'group'
         session = await get_async_session()
         courses = await DB().get_elective_courses_for_day(session, user_id, weekday)
