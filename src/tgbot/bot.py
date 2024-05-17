@@ -10,6 +10,7 @@ from src.tgbot.for_administration import administration_work
 from src.tgbot.auxiliary import bot
 from src.tgbot.changes.changes import sending_schedule_changes
 from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
+from src.tgbot.elective_course.router import router
 import logging
 
 
@@ -44,7 +45,8 @@ async def main():
     dp = Dispatcher()
     # порядок роутеров невероятно важен, желательно его не менять
     dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
-                       optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router)
+                       optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
+                       router)
 
     # ставим выполняться проверку изменений
     scheduler = AsyncIOScheduler()

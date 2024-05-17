@@ -107,4 +107,5 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                                                                                      "using the /start command) and "
                                                                                      "if the error persists, "
                                                                                      "please write to us about it at "
-                                                                                     "/feedback"))
+                                                                                     "/feedback"),
+                   ('to_elective', 'На факультативы', 'To elective courses'))
