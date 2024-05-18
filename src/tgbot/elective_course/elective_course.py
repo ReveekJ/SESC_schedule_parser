@@ -37,3 +37,15 @@ class ElectiveCourseDB:
         await session.commit()
 
         return ElectiveCourse(**res.__dict__)
+
+    @staticmethod
+    async def get_courses_by_pulpit(session: AsyncSession, pulpit: str) -> list[ElectiveCourse]:
+        query = select(ElectiveCourseModel).where(ElectiveCourseModel.pulpit == pulpit)
+        query_res = await session.execute(query)
+        result = []
+
+        for course in query_res.scalars().all():
+            result.append(ElectiveCourse(**course.__dict__))
+
+        return result
+

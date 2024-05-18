@@ -44,6 +44,16 @@ class SESCInfo:
         # {'Аудитория': 'auditory', 'Учитель/преподаватель': 'teacher', 'Класс': 'group', 'Все аудитории': 'all'}
         self.TYPE = self.__parse_type_info()
 
+        # важно чтобы порядок в одном и другом языке был одинаков
+        self.PULPIT = {
+            'ru': ['Гуманитарное образование', 'Иностранные языков', 'Математика',
+                   'Психофизическая культура', 'Филология', 'Химия и биология', 'Информатика',
+                   'Отдел воспитательной работы'],
+            'en': ['Humanitarian education', 'Foreign languages', 'Mathematics',
+                   'Physical education', 'Philology', 'Chemistry and biology', 'Computer science',
+                   'Department of educational work']
+        }
+
     @classmethod
     def __parse(cls, options: list, exceptions: list):
         res = {}

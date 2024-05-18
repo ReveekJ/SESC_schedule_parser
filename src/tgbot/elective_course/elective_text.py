@@ -10,3 +10,10 @@ class ElectiveText(Enum):
                'en': 'To main'}
     main_page = {'ru': 'Факультативы',
                  'en': 'Elective courses'}
+    register_to_new_course = {'ru': 'Зарегистрироваться на новый факультатив',
+                              'en': 'Register for a new elective'}
+    choose_pulpit = {'ru': 'Выберите кафедру',
+                     'en': 'Choose a pulpit'}
+
+    choose_elective = {'ru': 'Выберите факультатив',
+                       'en': 'Choose an elective'}

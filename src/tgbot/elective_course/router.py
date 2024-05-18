@@ -7,14 +7,20 @@ from aiogram.types import CallbackQuery, FSInputFile
 
 from src.tgbot.auxiliary import Form, send_schedule
 from src.tgbot.elective_course.elective_text import ElectiveText
-from src.tgbot.elective_course.keyboard import get_elective_course_main_page_user_kb, get_choose_weekday_elective_kb
+from src.tgbot.elective_course.keyboard import get_elective_course_main_page_user_kb, get_choose_weekday_elective_kb, \
+    get_pulpit_kb, get_elective_kb
 from src.tgbot.keyboard import get_choose_schedule
 from src.tgbot.parser import ELECTIVE_PARSER
 from src.tgbot.text import TEXT
+from src.tgbot.elective_course.elective_course import ElectiveCourseDB
+from src.database import get_async_session
 
 
-class AddCourseMachine(Form):
+class ElectiveCourseMachine(Form):
     all_days = State()
+    choose_pulpit = State()
+    choose_page = State()
+    choose_elective = State()
 
 
 router = Router()
@@ -73,18 +79,57 @@ async def all_days_elective_course(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     await state.update_data(prev=to_elective)
 
-    await state.set_state(AddCourseMachine.all_days)
+    await state.set_state(ElectiveCourseMachine.all_days)
     await callback.message.edit_text(text=TEXT('choose_day', lang),
                                      reply_markup=get_choose_weekday_elective_kb(lang))
 
     await callback.answer()
 
 
-@router.callback_query(AddCourseMachine.all_days)
+@router.callback_query(ElectiveCourseMachine.all_days)
 async def elective(callback: CallbackQuery, state: FSMContext):
     await get_elective_course(callback, state, weekday=callback.data[9:])
     await callback.answer()
 
+
+@router.callback_query(F.data == 'register_to_new_course')
+async def register_to_new_course(callback: CallbackQuery, state: FSMContext):
+    lang = callback.from_user.language_code
+
+    await state.update_data(prev=to_elective)
+    await state.set_state(ElectiveCourseMachine.choose_pulpit)
+
+    await callback.message.edit_text(text=ElectiveText.choose_pulpit.value[lang],
+                                     reply_markup=get_pulpit_kb(lang))
+
+    await callback.answer()
+
+
+@router.callback_query(ElectiveCourseMachine.choose_pulpit)
+async def choose_pulpit(callback: CallbackQuery, state: FSMContext):
+    lang = callback.from_user.language_code
+    session = await get_async_session()
+
+    await state.update_data(prev=register_to_new_course)
+    await state.set_state(ElectiveCourseMachine.choose_elective)
+    courses_from_the_pulpit = await ElectiveCourseDB.get_courses_by_pulpit(session, pulpit=callback.data)
+
+    if len(courses_from_the_pulpit) >= 63:  # всего можно прикрепить 63 кнопки + 1 кнопка назад, но если
+        # факультативов больше, то они все не влезут
+        return None  # TODO: добавить обработку этого случая
+
+    await callback.message.edit_text(text=ElectiveText.choose_elective.value[lang],
+                                     reply_markup=get_elective_kb(lang, courses_from_the_pulpit))
+
+    await session.close()
+    await callback.answer()
+
+
+# @router.callback_query(ElectiveCourseMachine.choose_elective)
+# async def choose_elective(callback: CallbackQuery, state: FSMContext):
+#     lang = callback.from_user.language_code
+#     session = await get_async_session()
+#
 
 @router.callback_query(F.data == 'to_main')
 async def to_main(callback: CallbackQuery):
