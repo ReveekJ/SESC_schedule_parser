@@ -20,6 +20,9 @@ class ElectiveCourseModel(Base):
     time_to: Mapped[datetime.time]
     auditory: Mapped[Optional[str]] = mapped_column(default='')
     is_diffs: Mapped[bool] = mapped_column(default=False)
+    diffs_teacher: Mapped[Optional[str]]
+    diffs_auditory: Mapped[Optional[str]]
+    is_cancelled: Mapped[Optional[bool]] = mapped_column(default=False)
 
     users_replied: Mapped[Optional[list['UsersModel']]] = relationship(
         back_populates='elective_course_replied',
