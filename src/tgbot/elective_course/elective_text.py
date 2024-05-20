@@ -17,3 +17,5 @@ class ElectiveText(Enum):
 
     choose_elective = {'ru': 'Выберите факультатив',
                        'en': 'Choose an elective'}
+    successfully_register = {'ru': 'Ты успешно зарегистрировался на факультатив',
+                             'en': 'You have successfully registered for an elective'}

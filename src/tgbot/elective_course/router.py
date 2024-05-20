@@ -14,6 +14,8 @@ from src.tgbot.parser import ELECTIVE_PARSER
 from src.tgbot.text import TEXT
 from src.tgbot.elective_course.elective_course import ElectiveCourseDB
 from src.database import get_async_session
+from src.tgbot.elective_course.elective_transactions.elective_transactions import ElectiveTransactions
+from src.tgbot.user_models.db import DB
 
 
 class ElectiveCourseMachine(Form):
@@ -125,11 +127,25 @@ async def choose_pulpit(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-# @router.callback_query(ElectiveCourseMachine.choose_elective)
-# async def choose_elective(callback: CallbackQuery, state: FSMContext):
-#     lang = callback.from_user.language_code
-#     session = await get_async_session()
-#
+@router.callback_query(ElectiveCourseMachine.choose_elective)
+async def choose_elective(callback: CallbackQuery, state: FSMContext):
+    lang = callback.from_user.language_code
+    session = await get_async_session()
+    courses = await ElectiveCourseDB.get_courses_by_subject(session, callback.data)
+    user = await DB().select_user_by_id(session, callback.from_user.id)
+
+    for course in courses:
+        await ElectiveTransactions.add_elective_transaction(session, user, course)
+
+    await callback.message.edit_text(text=ElectiveText.successfully_register.value[lang])
+    await callback.message.answer(ElectiveText.main_page.value[lang],
+                                  reply_markup=get_elective_course_main_page_user_kb(lang),
+                                  disable_notification=True)
+
+    await state.clear()
+
+    await callback.answer()
+
 
 @router.callback_query(F.data == 'to_main')
 async def to_main(callback: CallbackQuery):

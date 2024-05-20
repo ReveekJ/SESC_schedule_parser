@@ -64,7 +64,7 @@ def get_elective_kb(lang: str, courses: list[ElectiveCourse]) -> InlineKeyboardM
     kb = InlineKeyboardBuilder()
 
     for i in courses:
-        kb.button(text=i.subject, callback_data=i.id)
+        kb.button(text=i.subject, callback_data=i.subject)
 
     kb.adjust(2)
     add_back_btn(kb, lang)
