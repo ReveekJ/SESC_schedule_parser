@@ -1,7 +1,8 @@
 from typing import Optional, Any
+from typing_extensions import Literal
 
 from pydantic import BaseModel
-from pydantic.functional_validators import field_validator, model_validator
+from pydantic.functional_validators import field_validator
 from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse
 
@@ -37,6 +38,26 @@ class User(BaseModel):
         for i in value:
             res.append(ElectiveCourse(**i.__dict__))
         return res
+
+    def model_dump(
+        self,
+        *,
+        mode: Literal['json', 'python', 'elective_transaction'] | str = 'python',
+        include: Any = None,
+        exclude: Any = None,
+        by_alias: bool = False,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        round_trip: bool = False,
+        warnings: bool = True,
+    ) -> dict[str, Any]:
+        dct = super().model_dump()
+
+        if mode == 'elective_transaction':
+            for index, elem in enumerate(dct.get('elective_course_replied')):
+                dct['elective_course_replied'][index] = ElectiveCourseModel(**elem)
+        return dct
 
     # @model_validator(mode='before')
     # @classmethod

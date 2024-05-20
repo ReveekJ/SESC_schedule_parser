@@ -34,11 +34,11 @@ class ElectiveTransactions:
 
     @staticmethod
     async def add_elective_transaction(session: AsyncSession, user: User, course: ElectiveCourse) -> None:
-        user_model = UsersModel(**user.model_dump())
+        user_model = UsersModel(**user.model_dump(mode='elective_transaction'))
         course_model = ElectiveCourseModel(**course.model_dump())
 
-        user_model.elective_course_replied.append(course_model)
-        # course_model.users_replied.append(user_model)
+        user_model.elective_course_replied.append(course_model)  # добавлять к course не нужно так как при добавлении
+        # в user в course добавляется автоматически
         transaction = ElectiveCourseTransactionsModel(course_name=course_model.id, user_id=user_model.id)
         session.add(transaction)
 

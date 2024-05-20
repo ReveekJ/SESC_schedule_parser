@@ -28,19 +28,20 @@ class ElectiveCourseDB:
     #     await session.execute(stmt)
     #     await session.commit()
 
-    @staticmethod
-    async def get_course(session: AsyncSession, course_name: str) -> ElectiveCourse:
-        query = select(ElectiveCourseModel).where(ElectiveCourseModel.subject == course_name)
-        res = await session.execute(query)
-        res = res.first()[0]
-        res.__dict__['timetable'] = json.loads(res.__dict__['timetable'])
-        await session.commit()
+    @classmethod
+    async def get_courses_by_subject(cls, session: AsyncSession, subject: str) -> list[ElectiveCourse]:
+        query = select(ElectiveCourseModel).where(ElectiveCourseModel.subject == subject)
+        result = await cls.__query_to_list_of_elective(session, query)
+        return result
 
-        return ElectiveCourse(**res.__dict__)
-
-    @staticmethod
-    async def get_courses_by_pulpit(session: AsyncSession, pulpit: str) -> list[ElectiveCourse]:
+    @classmethod
+    async def get_courses_by_pulpit(cls, session: AsyncSession, pulpit: str) -> list[ElectiveCourse]:
         query = select(ElectiveCourseModel).where(ElectiveCourseModel.pulpit == pulpit)
+        result = await cls.__query_to_list_of_elective(session, query)
+        return result
+
+    @staticmethod
+    async def __query_to_list_of_elective(session: AsyncSession, query) -> list[ElectiveCourse]:
         query_res = await session.execute(query)
         result = []
 
@@ -48,4 +49,3 @@ class ElectiveCourseDB:
             result.append(ElectiveCourse(**course.__dict__))
 
         return result
-
