@@ -24,6 +24,7 @@ def get_elective_course_main_page_user_kb(lang: str) -> InlineKeyboardMarkup:
     kb.button(text=TEXT('tomorrow', lang), callback_data='tomorrow_elective_course')
     kb.button(text=TEXT('all_days', lang), callback_data='all_days_elective_course')
     kb.button(text=ElectiveText.register_to_new_course.value[lang], callback_data='register_to_new_course')
+    kb.button(text=ElectiveText.unsubscribe.value[lang], callback_data='unsubscribe')
     kb.button(text=ElectiveText.to_main.value[lang], callback_data='to_main')
 
     kb.adjust(1)

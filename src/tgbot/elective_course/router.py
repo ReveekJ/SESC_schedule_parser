@@ -20,6 +20,7 @@ from src.tgbot.user_models.db import DB
 
 class ElectiveCourseMachine(Form):
     all_days = State()
+    register_or_unsubscribe = State()
     choose_pulpit = State()
     choose_page = State()
     choose_elective = State()
@@ -95,8 +96,14 @@ async def elective(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == 'register_to_new_course')
-async def register_to_new_course(callback: CallbackQuery, state: FSMContext):
+@router.callback_query(F.data == 'unsubscribe')
+async def register_or_unsubscribe_to_new_course(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
+
+    if callback.data == 'register_to_new_course':
+        await state.update_data(register_or_unsubscribe='register')
+    else:
+        await state.update_data(register_or_unsubscribe='unsubscribe')
 
     await state.update_data(prev=to_elective)
     await state.set_state(ElectiveCourseMachine.choose_pulpit)
@@ -112,7 +119,7 @@ async def choose_pulpit(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     session = await get_async_session()
 
-    await state.update_data(prev=register_to_new_course)
+    await state.update_data(prev=register_or_unsubscribe_to_new_course)
     await state.set_state(ElectiveCourseMachine.choose_elective)
     courses_from_the_pulpit = await ElectiveCourseDB.get_courses_by_pulpit(session, pulpit=callback.data)
 
@@ -133,11 +140,17 @@ async def choose_elective(callback: CallbackQuery, state: FSMContext):
     session = await get_async_session()
     courses = await ElectiveCourseDB.get_courses_by_subject(session, callback.data)
     user = await DB().select_user_by_id(session, callback.from_user.id)
+    data = await state.get_data()
 
-    for course in courses:
-        await ElectiveTransactions.add_elective_transaction(session, user, course)
+    if data.get('register_or_unsubscribe') == 'register':
+        for course in courses:
+            await ElectiveTransactions.add_elective_transaction(session, user, course)
+        await callback.message.edit_text(text=ElectiveText.successfully_register.value[lang])
 
-    await callback.message.edit_text(text=ElectiveText.successfully_register.value[lang])
+    else:
+        await ElectiveTransactions.delete_elective_transaction(session, user.id, courses)
+        await callback.message.edit_text(text=ElectiveText.successfully_unsubscribe.value[lang])
+
     await callback.message.answer(ElectiveText.main_page.value[lang],
                                   reply_markup=get_elective_course_main_page_user_kb(lang),
                                   disable_notification=True)

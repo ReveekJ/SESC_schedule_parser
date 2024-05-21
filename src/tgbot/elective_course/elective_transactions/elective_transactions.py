@@ -44,8 +44,15 @@ class ElectiveTransactions:
 
         await session.commit()
 
-    # @staticmethod
-    # async def delete_elective_transaction(session: AsyncSession, user_id: int, course: ElectiveCourse) -> None:
-    #     stmt = delete(ElectiveCourseTransactionsModel).where(user_id=user_id, course_name=course.subject)
-    #     await session.execute(stmt)
-    #     await session.commit()
+    @staticmethod
+    async def delete_elective_transaction(session: AsyncSession, user_id: int, courses: list[ElectiveCourse]) -> None:
+        for course in courses:
+            if isinstance(course, ElectiveCourse):
+                course = ElectiveCourseModel(**course.model_dump())
+
+            stmt = delete(ElectiveCourseTransactionsModel).where(
+                ElectiveCourseTransactionsModel.user_id == user_id,
+                ElectiveCourseTransactionsModel.course_name == course.id)
+            await session.execute(stmt)
+
+        await session.commit()
