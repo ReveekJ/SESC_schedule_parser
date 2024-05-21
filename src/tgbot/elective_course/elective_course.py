@@ -1,6 +1,4 @@
-import json
-
-from sqlalchemy import select, insert, delete
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.tgbot.elective_course.models import ElectiveCourseModel
