@@ -122,13 +122,15 @@ async def choose_pulpit(callback: CallbackQuery, state: FSMContext):
     await state.update_data(prev=register_or_unsubscribe_to_new_course)
     await state.set_state(ElectiveCourseMachine.choose_elective)
     courses_from_the_pulpit = await ElectiveCourseDB.get_courses_by_pulpit(session, pulpit=callback.data)
+    user_courses = await DB().select_user_by_id(session, callback.from_user.id)
 
     if len(courses_from_the_pulpit) >= 63:  # всего можно прикрепить 63 кнопки + 1 кнопка назад, но если
         # факультативов больше, то они все не влезут
         return None  # TODO: добавить обработку этого случая
 
     await callback.message.edit_text(text=ElectiveText.choose_elective.value[lang],
-                                     reply_markup=get_elective_kb(lang, courses_from_the_pulpit))
+                                     reply_markup=get_elective_kb(lang, courses_from_the_pulpit,
+                                                                  user_courses.elective_course_replied))
 
     await session.close()
     await callback.answer()

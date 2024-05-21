@@ -61,11 +61,12 @@ def get_pulpit_kb(lang: str) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def get_elective_kb(lang: str, courses: list[ElectiveCourse]) -> InlineKeyboardMarkup:
+def get_elective_kb(lang: str, courses: list[ElectiveCourse], users_elective_courses: list[ElectiveCourse]) -> (
+        InlineKeyboardMarkup):
     kb = InlineKeyboardBuilder()
 
     for i in courses:
-        kb.button(text=i.subject, callback_data=i.subject)
+        kb.button(text='✅ ' + i.subject if i in users_elective_courses else i.subject, callback_data=i.subject)
 
     kb.adjust(2)
     add_back_btn(kb, lang)
