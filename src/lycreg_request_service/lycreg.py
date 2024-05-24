@@ -7,6 +7,7 @@ import simplejson as json
 
 from fastapi import APIRouter
 
+
 class LycregAPI:
     SESC_JSON = {
         "subject_list": {},
@@ -349,3 +350,20 @@ class LycregAPI:
             f'📙 <b>Домашнее задание</b> <i>({_day})</i>\n\n{_render}'
             if _render else f'{"<b>Нет домашнего задания</b>"} <i>({_day})</i>'
         )
+
+
+router = APIRouter(
+    prefix='/lycreg'
+)
+
+
+@router.get('/check_auth_data/')
+async def check_auth_data(login: str, password: str) -> dict:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+        api = LycregAPI(session)
+        auth_res = await api.lycreg_authorise(login, password)
+
+        if auth_res.get('error') is not None:
+            return {'status': 400, 'error': auth_res.get('error')}
+        else:
+            return {'status': 200}
