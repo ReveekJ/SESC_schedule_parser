@@ -4,7 +4,7 @@ import aiohttp
 import simplejson as json
 from PIL import Image, ImageDraw, ImageFont
 
-from config import PATH_TO_FONT, PATH_TO_PROJECT
+from src.config import PATH_TO_FONT, PATH_TO_PROJECT
 from src.database import get_async_session
 from src.my_typing import ChangesList, ChangesType
 from src.tgbot.sesc_info import SESC_Info

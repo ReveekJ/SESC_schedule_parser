@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from config import ADMINS
+from src.config import ADMINS
 from src.database import get_async_session
 from src.tgbot.auxiliary import bot
 from src.tgbot.text import TEXT

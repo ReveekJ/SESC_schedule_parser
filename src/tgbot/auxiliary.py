@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, FSInputFile
 
-from config import TOKEN
+from ..config import TOKEN
 from src.tgbot.sesc_info import SESC_Info
 from src.tgbot.text import TEXT
 

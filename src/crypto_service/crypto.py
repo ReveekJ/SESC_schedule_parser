@@ -1,9 +1,8 @@
-from fastapi import FastAPI
-from crypto_config import CRYPTO_KEY
+from fastapi import APIRouter
 
-app = FastAPI(
-    title='crypto_service'
-)
+from src.crypto_service.crypto_config import CRYPTO_KEY
+
+router = APIRouter(prefix='/crypt', tags=['crypto'])
 
 
 class CryptorEncryptor:
@@ -15,7 +14,7 @@ class CryptorEncryptor:
         return ''.join([chr(i ^ j) for i, j in zip(self.__text, self.__key)])
 
 
-@app.get('/crypt/')
+@router.get('/')
 async def crypt(crypto_string: str):
     try:
         return {'status': 200,

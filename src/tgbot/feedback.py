@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import Message, ContentType
 
-from config import ADMINS
+from src.config import ADMINS
 from src.tgbot.auxiliary import bot, Form
 from src.tgbot.main_work.registration import func_start_registration
 from src.tgbot.keyboard import back_kb

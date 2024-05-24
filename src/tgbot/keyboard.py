@@ -3,7 +3,7 @@ import datetime
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from sesc_info import SESC_Info
+from src.tgbot.sesc_info import SESC_Info
 from src.tgbot.text import TEXT
 
 

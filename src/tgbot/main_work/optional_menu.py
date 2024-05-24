@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import CallbackQuery, Message, FSInputFile
 
-from config import PATH_TO_PROJECT
+from src.config import PATH_TO_PROJECT
 from src.tgbot.auxiliary import Form, bot
 from src.tgbot.main_work.registration import func_start_registration
 from src.tgbot.keyboard import (get_choose_schedule,

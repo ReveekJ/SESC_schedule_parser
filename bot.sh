@@ -7,9 +7,9 @@ chmod +x ./docker.sh
 
 ./docker.sh &
 
-cd src/crypto_service/ || exit
-uvicorn crypto:app --reload &
-cd ../.. || exit
+cd src/ || exit
+uvicorn services:app --reload &
+cd .. || exit
 
 #cd "$dir" || exit
 exec python3 "$(pwd)"/src/tgbot/bot.py

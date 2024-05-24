@@ -6,12 +6,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from src.tgbot import feedback, auxiliary, admin
-from src.tgbot.for_administration import administration_work
 from src.tgbot.auxiliary import bot
 from src.tgbot.changes.changes import sending_schedule_changes
-from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
 from src.tgbot.elective_course import user_work
-import logging
+from src.tgbot.for_administration import administration_work
+from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
 
 
 def set_tasks(scheduler: AsyncIOScheduler):
@@ -38,16 +37,14 @@ def set_tasks(scheduler: AsyncIOScheduler):
                       next_run_time=datetime.datetime.now())
 
 
-logging.basicConfig(level=logging.DEBUG, filename='log.log', filemode='w')
-
-
 async def main():
+
     dp = Dispatcher()
     # порядок роутеров невероятно важен, желательно его не менять
     dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
                        optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
-                       user_work.router, )
-
+                       user_work.router)
+    # app.include_router()
     # ставим выполняться проверку изменений
     scheduler = AsyncIOScheduler()
     set_tasks(scheduler)

@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import Message, CallbackQuery
 
-from config import ADMINS
+from src.config import ADMINS
 from src.database import get_async_session
 from src.tgbot.auxiliary import Form, bot
 from src.tgbot.for_administration.administration_page import administration_page
