@@ -7,7 +7,7 @@ from src.database import Base
 class ElectiveCourseTransactionsModel(Base):
     __tablename__ = 'elective_transactions'
 
-    course_name: Mapped[BigInteger] = mapped_column(ForeignKey('elective_course.id'), type_=BigInteger,
+    course_name: Mapped[BigInteger] = mapped_column(ForeignKey('elective_course.id', ondelete='CASCADE'), type_=BigInteger,
                                                     primary_key=True)
-    user_id: Mapped[BigInteger] = mapped_column(ForeignKey('users.id'), type_=BigInteger,
+    user_id: Mapped[BigInteger] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), type_=BigInteger,
                                                 primary_key=True)

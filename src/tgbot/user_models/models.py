@@ -23,7 +23,8 @@ class UsersModel(Base):
 
     elective_course_replied: Mapped[Optional[list['ElectiveCourseModel']]] = relationship(
         back_populates='users_replied',
-        secondary='elective_transactions'
+        secondary='elective_transactions',
+        cascade="delete"
     )
 
 

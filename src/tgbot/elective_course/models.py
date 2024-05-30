@@ -11,7 +11,7 @@ class ElectiveCourseModel(Base):
     __tablename__ = "elective_course"
 
     id: Mapped[BigInteger] = mapped_column(Sequence('elective_course_id_seq'), type_=BigInteger,
-                                           unique=True, primary_key=True, onupdate='CASCADE')
+                                           unique=True, primary_key=True)
     subject: Mapped[str]
     pulpit: Mapped[str]
     teacher_name: Mapped[str]
@@ -26,7 +26,8 @@ class ElectiveCourseModel(Base):
 
     users_replied: Mapped[Optional[list['UsersModel']]] = relationship(
         back_populates='elective_course_replied',
-        secondary='elective_transactions'
+        secondary='elective_transactions',
+        cascade="delete"
     )
 
 
