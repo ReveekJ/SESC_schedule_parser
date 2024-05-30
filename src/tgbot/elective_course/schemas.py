@@ -5,7 +5,8 @@ from pydantic import BaseModel, field_validator
 
 
 class ElectiveCourse(BaseModel):
-    id: Optional[int]  # опционально так как при создании курса id не указывается, а определяется автоматически на sql
+    id: Optional[int] = 0  # опционально так как при создании курса id не указывается, а определяется автоматически
+    # на sql
     subject: str
     pulpit: str
     teacher_name: str
@@ -14,6 +15,9 @@ class ElectiveCourse(BaseModel):
     time_to: datetime.time
     auditory: Optional[str] = ''
     is_diffs: bool = False
+    diffs_teacher: Optional[str] = ''
+    diffs_auditory: Optional[str] = ''
+    is_cancelled: Optional[bool] = False
 
     def model_dump(
             self,
@@ -35,10 +39,18 @@ class ElectiveCourse(BaseModel):
                     'group': '',
                     'subgroup': 0,
                     'number': self.time_from}
-        return super().model_dump()
+        return super().model_dump(mode=mode,
+                                  include=include,
+                                  exclude=exclude,
+                                  by_alias=by_alias,
+                                  exclude_unset=exclude_unset,
+                                  exclude_defaults=exclude_defaults,
+                                  exclude_none=exclude_none,
+                                  round_trip=round_trip,
+                                  warnings=warnings)
 
     @field_validator('auditory')
-    @classmethod
+    # @classmethod
     def auditory_validator(cls, v):
         if v is None:
             return ''
