@@ -1,3 +1,3 @@
 #!/bin/bash
-trap "sudo docker-compose down" SIGINT
-sudo docker-compose up
+trap "docker-compose down" SIGINT
+docker-compose up
