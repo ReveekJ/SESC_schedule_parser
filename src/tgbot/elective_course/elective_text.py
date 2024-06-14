@@ -6,6 +6,10 @@ class ElectiveText(Enum):
            'en': 'Add an elective'}
     remove = {'ru': 'Удалить факультатив',
               'en': 'Remove optional'}
+    edit_permanently = {'ru': 'Изменить на постоянной основе',
+                        'en': 'Change permanently'}
+    edit_from_one_day = {'ru': 'Изменить на непостоянной основе',
+                         'en': 'Change on a non-permanent basis'}
     to_main = {'ru': 'На главную',
                'en': 'To main'}
     main_page = {'ru': 'Факультативы',
@@ -22,3 +26,31 @@ class ElectiveText(Enum):
                                 'en': 'You have successfully unsubscribe for an elective'}
     unsubscribe = {'ru': 'Отписаться от факультатива',
                    'en': 'Unsubscribe from an elective'}
+    enter_a_name = {'ru': 'Введите название факультатива',
+                    'en': 'Enter the name of the elective'}
+    are_you_sure_remove = {'ru': 'Ты уверен, что хочешь удалить этот факультатив. Это действие нельзя отменить. Все '
+                                 'ученики, записанные на этот курс, автоматически отпишутся от него',
+                           'en': 'Are you sure you want to remove this elective? This action cannot be undone. All '
+                                 'students enrolled in this course will automatically unsubscribe from it'}
+    yes = {'ru': 'Да я уверен',
+           'en': "Yes I'm sure"}
+    no = {'ru': 'Нет, оставить все как есть',
+          'en': 'No, leave everything as it is'}
+    remove_done = {'ru': 'Успешно удален факультатив',
+                   'en': 'Successfully removed elective course'}
+    done = {'ru': '✅ Готово',
+            'en': '✅ Done'}
+    time_from = {'ru': 'Выберите время начала факультатива',
+                 'en': 'Select the start time of the elective'}
+    time_to = {'ru': 'Выберите время конца факультатива',
+               'en': 'Select the end time of the elective'}
+    cancel_elective = {'ru': 'Отменить факультатив',
+                       'en': 'Cancel an elective'}
+    error = {'ru': 'Произошла ошибка! Попробуй нажать на /start и повторить еще раз. Если ошибка сохраняется, '
+                   'то напишите об этом нам в /feedback (приложите описание ваших дейтсвий, чтобы мы могли '
+                   'воспроизвести ошибку и исправить её)',
+             'en': 'An error has occurred! Try clicking start and repeating again. If the error persists, write about '
+                   'it to us in feedback (attach a description of your actions so that we can reproduce the error and '
+                   'fix it)'}
+    same = {'ru': 'Оставить как раньше',
+            'en': 'Leave as before'}
