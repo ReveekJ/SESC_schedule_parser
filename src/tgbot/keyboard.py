@@ -1,6 +1,6 @@
 import datetime
 
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from src.tgbot.sesc_info import SESC_Info
@@ -8,7 +8,7 @@ from src.tgbot.text import TEXT
 
 
 def add_back_btn(keyboard: InlineKeyboardBuilder, lang: str):
-    keyboard.button(text=TEXT('back', lang), callback_data='back')
+    keyboard.row(InlineKeyboardButton(text=TEXT('back', lang), callback_data='back'), width=1)
 
 
 def admin_functions(lang: str) -> InlineKeyboardMarkup:
@@ -44,15 +44,19 @@ def get_choose_group_kb(lang: str) -> InlineKeyboardMarkup:
 
 def get_letter_of_teacher_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У',
-               'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
+    letters = SESC_Info.TEACHER_LETTERS
 
-    [kb.button(text=i, callback_data='letter_' + i) for i in letters]
+    for i in range(0, min(len(letters), len(letters) - (len(letters) % 3)), 3):
+        kb.row(*[InlineKeyboardButton(text=letters[i + j], callback_data='letter_' + letters[i + j])
+                 for j in range(3)], width=3)
+
+    if len(letters) % 3 != 0:
+        kb.row(*[InlineKeyboardButton(text=letters[-i - 1], callback_data='letter_' + letters[-i - 1]) for
+                 i in range(len(letters) % 3 + 1, -1, -1)], width=3)
+
     add_back_btn(kb, lang)
 
-    kb.adjust(3)
-
-    return kb.as_markup()
+    return kb.as_markup(row_width=3)
 
 
 def get_choose_teacher_kb(letter: str, lang: str) -> InlineKeyboardMarkup:
@@ -61,9 +65,9 @@ def get_choose_teacher_kb(letter: str, lang: str) -> InlineKeyboardMarkup:
     for key, value in SESC_Info.TEACHER.items():
         if key[0] == letter:
             kb.button(text=key, callback_data=value)
-    add_back_btn(kb, lang)
 
     kb.adjust(2)
+    add_back_btn(kb, lang)
 
     return kb.as_markup()
 
@@ -92,9 +96,10 @@ def get_choose_auditory_kb(lang: str) -> InlineKeyboardMarkup:
 
     for i, j in SESC_Info.AUDITORY.items():
         kb.button(text=i, callback_data=j)
-    add_back_btn(kb, lang)
 
     kb.adjust(3)
+    add_back_btn(kb, lang)
+
     return kb.as_markup()
 
 
@@ -176,7 +181,7 @@ def all_lessons_kb(lang) -> InlineKeyboardMarkup:
     for i in lessons:
         kb.button(text=i, callback_data=i)
 
-    add_back_btn(kb, lang)
     kb.adjust(3)
+    add_back_btn(kb, lang)
 
     return kb.as_markup()
