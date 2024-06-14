@@ -1,9 +1,9 @@
-import datetime
 import json
 import logging
 
 import aiohttp
 from sqlalchemy import select, delete, update
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -22,23 +22,35 @@ class DB:
                     as login:
                 user.password = json.loads(await password.text())['crypto_string']
                 user.login = json.loads(await login.text())['crypto_string']
-        return user
+            # async with session.get(f'http://localhost:8000/lycreg/check_auth_data/?login={user.login}&password={user.
+            # password}') as resp:
+            #     if json.loads(await resp.text()).get('status') == 200:  # если пароль подходит
+            #         return user
+            #     else:
+            #         pass  # TODO: если пароль не подходит, то нужно придумать что делать
+            # raise ValueError('Login or password is incorrect')
+            return user
 
     @staticmethod
     def __login_password_decrypt(func):
         async def inner(*args, **kwargs):
-            original_result = await func(*args, **kwargs)
-            if original_result is None:
-                return None
+            try:
+                original_result = await func(*args, **kwargs)
+                if original_result is None:
+                    return None
 
-            if isinstance(original_result, list):
-                for i in range(len(original_result)):
-                    original_result[i] = await DB.__encrypt_decrypt_login_password(original_result[i])
-                return original_result
+                if isinstance(original_result, list):
+                    for i in range(len(original_result)):
+                        original_result[i] = await DB.__encrypt_decrypt_login_password(original_result[i])
+                    return original_result
 
-            if isinstance(original_result, User):
-                res = await DB.__encrypt_decrypt_login_password(original_result)
-                return res
+                if isinstance(original_result, User):
+                    res = await DB.__encrypt_decrypt_login_password(original_result)
+                    return res
+            except Exception as e:
+                logging.error(f"Error in decryption: {str(e)}")
+                raise
+
         return inner
 
     # Возвращает None если запись не найдется, иначе вернется User
@@ -52,15 +64,19 @@ class DB:
             await session.commit()
             return User(**temp.first()[0].__dict__)
         except IndexError:
+            logging.error("User not found for the given ID")
             await session.commit()
             return None
+        except SQLAlchemyError as e:
+            logging.error(f"An error occurred in SQLAlchemy: {e}")
         except Exception as e:
-            logging.error(str(datetime.datetime.now()) + str(e))
+            logging.error(f"An unexpected error occurred: {e}")
 
     @staticmethod
     @__login_password_decrypt
     async def select_users_by_role_and_sub_info(session: AsyncSession, role: str, sub_info: str) -> list[User]:
-        query = select(UsersModel).options(selectinload(UsersModel.elective_course_replied)).where(UsersModel.role == role, UsersModel.sub_info == sub_info)
+        query = select(UsersModel).options(selectinload(UsersModel.elective_course_replied)).where(
+            UsersModel.role == role, UsersModel.sub_info == sub_info)
 
         res = await session.execute(query)
         final_result = []
@@ -123,17 +139,6 @@ class DB:
         del res
 
         return elective_lst
-    # async def get_elective_courses(self, session: AsyncSession, user_id: int) -> list[ElectiveCourse]:
-    #     user = await self.select_user_by_id(session, user_id)
-    #     if user is None:
-    #         raise ValueError('Incorrect user_id')
-    #
-    #     result = []
-    #     for course in user.elective_courses:
-    #         temp = await ElectiveCourseDB.get_course(session, course)
-    #         result.append(temp)
-    #
-    #     return result
 
 # SAMPLE USAGE
 # async def main():
