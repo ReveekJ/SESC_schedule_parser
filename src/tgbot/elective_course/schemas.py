@@ -3,6 +3,8 @@ from typing import Optional, Literal, Any
 
 from pydantic import BaseModel, field_validator
 
+from src.tgbot.sesc_info import SESC_Info
+
 
 class ElectiveCourse(BaseModel):
     id: Optional[int] = 0  # опционально так как при создании курса id не указывается, а определяется автоматически
@@ -34,11 +36,12 @@ class ElectiveCourse(BaseModel):
     ) -> dict[str, Any]:
         if mode == 'timetable':
             return {'subject': self.subject,
-                    'auditory': self.auditory,
-                    'teacher': self.teacher_name,
+                    'auditory': SESC_Info.AUDITORY_REVERSE[self.auditory if not self.is_diffs else self.diffs_auditory],
+                    'teacher': SESC_Info.TEACHER_REVERSE[self.teacher_name if not self.is_diffs else self.diffs_teacher],
                     'group': '',
                     'subgroup': 0,
-                    'number': self.time_from}
+                    'number': self.time_from,
+                    'date': 1 if self.is_diffs else None}  # для выделения желтым
         return super().model_dump(mode=mode,
                                   include=include,
                                   exclude=exclude,
