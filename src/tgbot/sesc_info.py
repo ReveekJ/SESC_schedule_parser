@@ -54,6 +54,8 @@ class SESCInfo:
                    'Department of educational work']
         }
 
+        self.TEACHER_LETTERS = sorted(list(set(i[0] for i in self.TEACHER.keys())))
+
     @classmethod
     def __parse(cls, options: list, exceptions: list):
         res = {}
