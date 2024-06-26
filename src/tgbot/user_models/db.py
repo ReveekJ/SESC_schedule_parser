@@ -11,15 +11,16 @@ from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse, ElectiveCourseTimetable
 from src.tgbot.user_models.models import UsersModel
 from src.tgbot.user_models.schemas import User
+from src.config import CRYPTO_KEY
 
 
 class DB:
     @staticmethod
     async def __encrypt_decrypt_login_password(user: User) -> User:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'http://localhost:8000/crypt/?crypto_string={user.password}') \
-                    as password, session.get(f'http://localhost:8000/crypt/?crypto_string={user.login}') \
-                    as login:
+            async with session.get(f'http://localhost:8000/crypt/?crypto_string={user.password}&key={CRYPTO_KEY}') \
+                    as password, \
+                    session.get(f'http://localhost:8000/crypt/?crypto_string={user.login}&key={CRYPTO_KEY}') as login:
                 user.password = json.loads(await password.text())['crypto_string']
                 user.login = json.loads(await login.text())['crypto_string']
             # async with session.get(f'http://localhost:8000/lycreg/check_auth_data/?login={user.login}&password={user.

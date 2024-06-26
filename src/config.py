@@ -1,4 +1,5 @@
 import os
+from random import randint
 
 from dotenv import load_dotenv
 
@@ -13,3 +14,4 @@ TOKEN = os.environ.get('TOKEN')
 PATH_TO_FONT = os.environ.get('PATH_TO_FONT')
 ADMINS = list(map(int, os.environ.get('ADMINS').split('_')))
 PATH_TO_PROJECT = os.environ.get('PATH_TO_PROJECT')
+CRYPTO_KEY = ''.join([chr(i) for i in [randint(1, 100_000) for i in range(512)]])

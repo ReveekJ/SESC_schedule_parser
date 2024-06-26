@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from src.crypto_service.crypto_config import CRYPTO_KEY
 
 router = APIRouter(prefix='/crypt', tags=['crypto'])
 
@@ -15,10 +14,11 @@ class CryptorEncryptor:
 
 
 @router.get('/')
-async def crypt(crypto_string: str):
+async def crypt(crypto_string: str, key: str):
+    key = [ord(i) for i in key]
     try:
         return {'status': 200,
-                'crypto_string': CryptorEncryptor(crypto_string, CRYPTO_KEY).xor()}
+                'crypto_string': CryptorEncryptor(crypto_string, key).xor()}
     except Exception as e:
         return {'status': 500,
                 'error': str(e)}
