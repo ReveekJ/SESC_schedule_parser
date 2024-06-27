@@ -39,6 +39,7 @@ class AdminMachine(Form):
     day_of_week = State()  # список
     current_weekday_index = State()  # этот стейт используется только для хранения
     time_from = State()  # list
+    is_canceled = State()  # list
     time_to = State()  # list
     teacher_letter = State()  # ничего нового, как при регистрации
     teacher = State()
@@ -123,7 +124,7 @@ async def name_of_course_callback(callback: CallbackQuery, state: FSMContext):
 
     selected_days = state_data.get('days_of_week') if state_data.get('days_of_week') else []
     session = await get_async_session()
-    possible_days = [i.weekday for i in (await ElectiveCourseDB.get_courses_by_subject(session, name_of_course))]
+    possible_days = [i.weekday for i in (await ElectiveCourseDB.get_courses_by_subject(name_of_course))]
     possible_days_dct = {i: TEXT('weekdays_kb', lang)[i] for i in possible_days}
 
     await state.update_data(possible_days=possible_days_dct)
@@ -174,6 +175,17 @@ async def day_of_week_done(callback: CallbackQuery, state: FSMContext):
     # await state.update_data(day_of_week=iter((await state.get_data()).get('day_of_week')))
     state_data = await state.get_data()
 
+    if state_data.get('day_of_week') in [None, []]:
+        subject = state_data.get('name_of_course')
+        possible_days = [i.weekday for i in (await ElectiveCourseDB.get_courses_by_subject(subject))]
+        possible_days_dct = {i: TEXT('weekdays_kb', lang)[i] for i in possible_days}
+        await callback.message.delete()
+        await callback.message.answer(TEXT('choose_day', lang),
+                                      reply_markup=get_choose_weekday_kb_elective(lang,
+                                                                                  selected_days=[],
+                                                                                  possible_days=possible_days_dct))
+        return None
+
     action = state_data.get('action')
 
     if action == 'remove':
@@ -189,7 +201,7 @@ async def day_of_week_done(callback: CallbackQuery, state: FSMContext):
     #     time_from = (await ElectiveCourseDB.get_courses_by_subject(session, state_data.get('name_of_course')))[0].
     session = await get_async_session()
     try:
-        old_time = ((await ElectiveCourseDB.get_courses_by_subject(session, state_data.get('name_of_course')))[0]
+        old_time = ((await ElectiveCourseDB.get_courses_by_subject(state_data.get('name_of_course')))[0]
                     .time_from)
     except IndexError:  # возникает если action=add
         old_time = None
@@ -220,7 +232,12 @@ async def day_of_week_callback(callback: CallbackQuery, state: FSMContext):
     else:
         days_of_week.append(int(callback.data[9:]))  # callback вида 'elective_1'
 
-    await state.update_data(day_of_week=days_of_week)
+    if state_data.get('is_canceled') is None:
+        state_data['is_canceled'] = [False]
+    else:
+        state_data['is_canceled'].append(False)
+
+    await state.update_data(day_of_week=days_of_week, is_canceled=state_data['is_canceled'])
 
     await callback.message.edit_text(TEXT('choose_day', lang),
                                      reply_markup=get_choose_weekday_kb_elective(lang, days_of_week, possible_days))
@@ -228,7 +245,6 @@ async def day_of_week_callback(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-# TODO: настройка времени и аудитории для каждого дня
 @router.callback_query(AdminMachine.time_from)
 async def time_from_callback(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
@@ -237,7 +253,8 @@ async def time_from_callback(callback: CallbackQuery, state: FSMContext):
 
     if callback.data == 'cancel_elective':
         await state.set_state(AdminMachine.teacher_letter)
-        await state.update_data(time_from='cancel')
+        state_data['is_canceled'][-1] = True
+        await state.update_data(is_canceled=state_data.get('is_canceled'))
         # await ElectiveCourseDB.cancel_course(session, state_data.get('name_of_course'))
 
         await callback.message.edit_text(TEXT('choose_letter', lang),
@@ -245,7 +262,7 @@ async def time_from_callback(callback: CallbackQuery, state: FSMContext):
 
     else:
         try:
-            old_time = ((await ElectiveCourseDB.get_courses_by_subject(session, state_data.get('name_of_course')))[0]
+            old_time = ((await ElectiveCourseDB.get_courses_by_subject(state_data.get('name_of_course')))[0]
                         .time_to)
         except IndexError:  # возникает если action=add
             old_time = None
@@ -358,8 +375,9 @@ async def auditory_callback(callback: CallbackQuery, state: FSMContext):
                                                            'is_canceled')]
         courses: list[ElectiveCourse] = []
         old_courses: list[ElectiveCourse] = []
-        for _weekday, _time_from, _time_to, _teacher, _auditory in zip(day_of_week, time_from, time_to, teacher,
-                                                                       auditory):
+        for _weekday, _time_from, _time_to, _teacher, _auditory, _is_canceled in zip(day_of_week, time_from, time_to,
+                                                                                     teacher,
+                                                                                     auditory, is_canceled):
             try:
                 old_courses.append(
                     (await ElectiveCourseDB.get_course_by_subject_and_weekday(session, subject, int(_weekday))))
@@ -375,10 +393,10 @@ async def auditory_callback(callback: CallbackQuery, state: FSMContext):
                                           pulpit=pulpit,
                                           teacher_name=_teacher,
                                           weekday=_weekday,
-                                          time_from=old_courses[-1].time_from if is_canceled else _time_from,
-                                          time_to=old_courses[-1].time_to if is_canceled else _time_to,
+                                          time_from=old_courses[-1].time_from if _is_canceled else _time_from,
+                                          time_to=old_courses[-1].time_to if _is_canceled else _time_to,
                                           auditory=_auditory,
-                                          is_canceled=is_canceled if is_canceled else False,
+                                          is_canceled=is_canceled if _is_canceled else False,
                                           is_diffs=old_courses[-1].is_diffs,
                                           diffs_teacher=old_courses[-1].diffs_teacher,
                                           diffs_auditory=old_courses[-1].diffs_auditory))
@@ -422,6 +440,7 @@ async def auditory_callback(callback: CallbackQuery, state: FSMContext):
     await session.close()
     await callback.answer()
 
-# TODO: is_canceled должен быть списком
 # TODO: если действие - это изменить на один день, то добавить кнопку отменить изменения
 # TODO: автоуправление сессиями в бд
+# TODO: bug when start with crypto_key, when xor of passwd and crypto_key larger than utf-8 can contain
+# TODO: write to db task to remove changes
