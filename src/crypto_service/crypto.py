@@ -26,7 +26,8 @@ async def decrypt(crypto_string: str, key: str | bytes):
         return {'status': HTTPStatus.OK,
                 'crypto_string': decrypted_string}
     except InvalidToken:
-        return {'status': HTTPStatus.IM_A_TEAPOT}
+        return {'status': HTTPStatus.IM_A_TEAPOT,
+                'crypto_string': ''}
     except Exception as e:
         return {'status': HTTPStatus.INTERNAL_SERVER_ERROR,
                 'error': str(e)}

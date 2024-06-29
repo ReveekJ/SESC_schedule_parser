@@ -16,11 +16,11 @@ from src.config import CRYPTO_KEY
 
 class DB:
     @staticmethod
-    async def __encrypt_decrypt_login_password(user: User) -> User:
+    async def __decrypt_login_password(user: User) -> User:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'http://localhost:8000/crypt/?crypto_string={user.password}&key={CRYPTO_KEY}') \
+            async with session.post(f'http://localhost:8000/crypt/decrypt?crypto_string={user.password}&key={CRYPTO_KEY}') \
                     as password, \
-                    session.get(f'http://localhost:8000/crypt/?crypto_string={user.login}&key={CRYPTO_KEY}') as login:
+                    session.post(f'http://localhost:8000/crypt/decrypt?crypto_string={user.login}&key={CRYPTO_KEY}') as login:
                 user.password = json.loads(await password.text())['crypto_string']
                 user.login = json.loads(await login.text())['crypto_string']
             # async with session.get(f'http://localhost:8000/lycreg/check_auth_data/?login={user.login}&password={user.
@@ -33,6 +33,16 @@ class DB:
             return user
 
     @staticmethod
+    async def __encrypt_login_password(user: User) -> User:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(f'http://localhost:8000/crypt/encrypt?crypto_string={user.password}&key={CRYPTO_KEY}') \
+                    as password, \
+                    session.post(f'http://localhost:8000/crypt/encrypt?crypto_string={user.login}&key={CRYPTO_KEY}') as login:
+                user.password = json.loads(await password.text())['crypto_string']
+                user.login = json.loads(await login.text())['crypto_string']
+            return user
+
+    @staticmethod
     def __login_password_decrypt(func):
         async def inner(*args, **kwargs):
             try:
@@ -42,11 +52,11 @@ class DB:
 
                 if isinstance(original_result, list):
                     for i in range(len(original_result)):
-                        original_result[i] = await DB.__encrypt_decrypt_login_password(original_result[i])
+                        original_result[i] = await DB.__decrypt_login_password(original_result[i])
                     return original_result
 
                 if isinstance(original_result, User):
-                    res = await DB.__encrypt_decrypt_login_password(original_result)
+                    res = await DB.__decrypt_login_password(original_result)
                     return res
             except Exception as e:
                 logging.error(f"Error in decryption: {str(e)}")
@@ -101,8 +111,7 @@ class DB:
         return final_result
 
     async def create_user(self, session: AsyncSession, user: User):
-        # преобразование id в тип id, который находится в бд
-        user = await self.__encrypt_decrypt_login_password(user)
+        user = await self.__encrypt_login_password(user)
 
         session.add(UsersModel(**user.model_dump()))
         await session.commit()
@@ -140,12 +149,3 @@ class DB:
         del res
 
         return elective_lst
-
-# SAMPLE USAGE
-# async def main():
-#     session = await get_async_session()
-#     print(await DB().select_users_by_role_and_sub_info(session, 'group', '34'))
-#
-#
-# # Run the main function
-# asyncio.run(main())
