@@ -176,9 +176,7 @@ async def day_of_week_done(callback: CallbackQuery, state: FSMContext):
     state_data = await state.get_data()
 
     if state_data.get('day_of_week') in [None, []]:
-        subject = state_data.get('name_of_course')
-        possible_days = [i.weekday for i in (await ElectiveCourseDB.get_courses_by_subject(subject))]
-        possible_days_dct = {i: TEXT('weekdays_kb', lang)[i] for i in possible_days}
+        possible_days_dct = state_data.get('possible_days')
         await callback.message.delete()
         await callback.message.answer(TEXT('choose_day', lang),
                                       reply_markup=get_choose_weekday_kb_elective(lang,
@@ -381,7 +379,7 @@ async def auditory_callback(callback: CallbackQuery, state: FSMContext):
             try:
                 old_courses.append(
                     (await ElectiveCourseDB.get_course_by_subject_and_weekday(session, subject, int(_weekday))))
-            except IndexError as e:
+            except IndexError:
                 old_courses.append(ElectiveCourse(subject=name_of_course,
                                                   pulpit=pulpit,
                                                   teacher_name=_teacher,

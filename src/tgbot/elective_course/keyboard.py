@@ -2,6 +2,7 @@ import datetime
 from enum import Enum
 
 from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton as Button
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from src.tgbot.elective_course.elective_text import ElectiveText
@@ -80,7 +81,12 @@ def get_elective_kb(lang: str, courses: list[ElectiveCourse], users_elective_cou
         InlineKeyboardMarkup):
     kb = InlineKeyboardBuilder()
 
-    for i in courses:
+    # получение только уникальных курсов
+    unique_courses = {}
+    for course in courses:
+        unique_courses[course.subject] = course
+
+    for i in unique_courses.values():
         kb.button(text='✅ ' + i.subject if i in users_elective_courses else i.subject, callback_data=i.subject)
 
     kb.adjust(2)
@@ -134,40 +140,37 @@ def get_time_from_kb(lang: str, old_time: datetime.time | None = None) -> Inline
 
     if old_time is not None:
         # если старого времени нет, то факультатива еще не существует, отменять нечего
-        kb.button(text=ElectiveText.cancel_elective.value[lang], callback_data='cancel_elective')
         old_time = old_time.strftime(str(ElectiveInfo.date_format.value))
-        kb.button(text=old_time, callback_data=old_time)
+        kb.row(*(Button(text=ElectiveText.cancel_elective.value[lang], callback_data='cancel_elective'),
+                 Button(text=f'{ElectiveText.same.value[lang]} ({old_time})', callback_data=old_time)), width=1)
 
-    for time in times:
-        kb.button(text=time, callback_data=time)
-
+    num_times_in_row = 2
+    kb.row(*(Button(text=time, callback_data=time) for time in times), width=num_times_in_row)
     add_back_btn(kb, lang)
-    kb.adjust(1)
 
     return kb.as_markup()
 
 
-def get_time_to_kb(lang: str, time_from: datetime.time, old_time=None) -> InlineKeyboardMarkup:
+def get_time_to_kb(lang: str, time_from: datetime.time, old_time: datetime.time | None = None) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
+    times = [i.strftime(str(ElectiveInfo.date_format.value)) for i in ElectiveInfo.elective_times.value]
 
     if old_time is not None:
         old_time = old_time.strftime(str(ElectiveInfo.date_format.value))
-        kb.button(text=old_time, callback_data=old_time)
+        kb.row(Button(text=f'{ElectiveText.same.value[lang]} ({old_time})', callback_data=old_time), width=1)
 
+    num_times_in_row = 2
     time_from_index = ElectiveInfo.elective_times.value.index(time_from)
-    for time in ElectiveInfo.elective_times.value[time_from_index + 1:]:
-        time = time.strftime(str(ElectiveInfo.date_format.value))
-        kb.button(text=time, callback_data=time)
+    kb.row(*(Button(text=time, callback_data=time) for time in times[time_from_index + 1:]), width=num_times_in_row)
 
     add_back_btn(kb, lang)
-    kb.adjust(1)
     return kb.as_markup()
 
 
 def get_teacher_letter_kb(lang: str, old_teacher: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
 
-    kb.button(text=f'{ElectiveText.same.value[lang]} {old_teacher}', callback_data=old_teacher)
+    kb.button(text=f'{ElectiveText.same.value[lang]} ({old_teacher})', callback_data=old_teacher)
     letters = SESC_Info.TEACHER_LETTERS
 
     [kb.button(text=i, callback_data='letter_' + i) for i in letters]
