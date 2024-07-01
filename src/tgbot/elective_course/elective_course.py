@@ -58,9 +58,10 @@ class ElectiveCourseDB:
         await ElectiveCourseDB.update_course(session, new_course)
 
     @classmethod
-    async def get_courses_by_subject(cls, session: AsyncSession, subject: str) -> list[ElectiveCourse]:
+    async def get_courses_by_subject(cls, subject: str) -> list[ElectiveCourse]:
         query = select(ElectiveCourseModel).where(ElectiveCourseModel.subject == subject)
-        result = await cls.__query_to_list_of_elective(session, query)
+        async with await get_async_session() as session:
+            result = await cls.__query_to_list_of_elective(session, query)
         return result
 
     @classmethod
