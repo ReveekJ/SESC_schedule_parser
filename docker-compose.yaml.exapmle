@@ -23,7 +23,7 @@ services:
     depends_on:
       - postgres_db
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5433"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5433" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -50,6 +50,18 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+  tgbot:
+    container_name: tgbot
+    restart: "unless-stopped"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - postgres_db
+    networks:
+      - app_network
 
 volumes:
   postgres-data:

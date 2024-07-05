@@ -1,8 +1,3 @@
-import sys
-
-if sys.path[0] != '/home/user/PycharmProjects/SESC_parser':
-    sys.path.insert(0, sys.path[0][:sys.path[0].rfind('/')])
-
 from fastapi import FastAPI
 
 from crypto_service import crypto
