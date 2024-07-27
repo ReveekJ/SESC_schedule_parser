@@ -11,24 +11,26 @@ from src.tgbot.elective_course.schemas import ElectiveCourse
 
 class ElectiveCourseDB:
     @staticmethod
-    async def add_course(session: AsyncSession, course: ElectiveCourse):
-        session.add(ElectiveCourseModel(**course.model_dump(exclude={'id'})))
-        await session.commit()
+    async def add_course(course: ElectiveCourse):
+        async with get_async_session() as session:
+            session.add(ElectiveCourseModel(**course.model_dump(exclude={'id'})))
+            await session.commit()
 
     @staticmethod
-    async def delete_course(session: AsyncSession, course_name: str, weekdays: Optional[list[int]] = None):
-        if weekdays:
-            for weekday in weekdays:
-                stmt = delete(ElectiveCourseModel).where(ElectiveCourseModel.subject == course_name,
-                                                         ElectiveCourseModel.weekday == int(weekday))
+    async def delete_course(course_name: str, weekdays: Optional[list[int]] = None):
+        async with get_async_session() as session:
+            if weekdays:
+                for weekday in weekdays:
+                    stmt = delete(ElectiveCourseModel).where(ElectiveCourseModel.subject == course_name,
+                                                             ElectiveCourseModel.weekday == int(weekday))
+                    await session.execute(stmt)
+            else:
+                stmt = delete(ElectiveCourseModel).where(ElectiveCourseModel.subject == course_name)
                 await session.execute(stmt)
-        else:
-            stmt = delete(ElectiveCourseModel).where(ElectiveCourseModel.subject == course_name)
-            await session.execute(stmt)
-        await session.commit()
+            await session.commit()
 
     @staticmethod
-    async def update_course(session: AsyncSession, new_course: ElectiveCourse, weekday: Optional[int] = None):
+    async def update_course(new_course: ElectiveCourse, weekday: Optional[int] = None):
         course = new_course.model_dump(exclude={'id'})  # Exclude 'id' field
         if weekday:
             stmt = (update(ElectiveCourseModel)
@@ -40,12 +42,13 @@ class ElectiveCourseDB:
                     .where(ElectiveCourseModel.subject == new_course.subject)
                     .values(**course))
 
-        await session.execute(stmt)
-        await session.commit()
+        async with get_async_session() as session:
+            await session.execute(stmt)
+            await session.commit()
 
     @staticmethod
-    async def cancel_course(session: AsyncSession, course_name: str):
-        old_course = (await ElectiveCourseDB.get_courses_by_subject(session, course_name))[0]
+    async def cancel_course(course_name: str):
+        old_course = (await ElectiveCourseDB.get_courses_by_subject(course_name))[0]
         new_course = ElectiveCourse(subject=old_course.subject,
                                     teacher_name=old_course.teacher_name,
                                     pulpit=old_course.pulpit,
@@ -55,7 +58,7 @@ class ElectiveCourseDB:
                                     auditory=old_course.auditory,
                                     is_cancelled=True)
 
-        await ElectiveCourseDB.update_course(session, new_course)
+        await ElectiveCourseDB.update_course(new_course)
 
     @classmethod
     async def get_courses_by_subject(cls, subject: str) -> list[ElectiveCourse]:
@@ -65,22 +68,25 @@ class ElectiveCourseDB:
         return result
 
     @classmethod
-    async def get_courses_by_pulpit(cls, session: AsyncSession, pulpit: str) -> list[ElectiveCourse]:
+    async def get_courses_by_pulpit(cls, pulpit: str) -> list[ElectiveCourse]:
         query = select(ElectiveCourseModel).where(ElectiveCourseModel.pulpit == pulpit)
-        result = await cls.__query_to_list_of_elective(session, query)
+        async with await get_async_session() as session:
+            result = await cls.__query_to_list_of_elective(session, query)
         return result
 
     @staticmethod
-    async def get_course_by_subject_and_weekday(session: AsyncSession, subject: str, weekday: int) -> ElectiveCourse:
+    async def get_course_by_subject_and_weekday(subject: str, weekday: int) -> ElectiveCourse:
         query = select(ElectiveCourseModel).where(ElectiveCourseModel.subject == subject,
                                                   ElectiveCourseModel.weekday == int(weekday))
-        res = await session.execute(query)
+        async with await get_async_session() as session:
+            res = await session.execute(query)
 
         return ElectiveCourse(**res.scalars().all()[0].__dict__)
 
     @staticmethod
-    async def __query_to_list_of_elective(session: AsyncSession, query) -> list[ElectiveCourse]:
-        query_res = await session.execute(query)
+    async def __query_to_list_of_elective(query) -> list[ElectiveCourse]:
+        async with await get_async_session() as session:
+            query_res = await session.execute(query)
         result = []
 
         for course in query_res.scalars().all():
