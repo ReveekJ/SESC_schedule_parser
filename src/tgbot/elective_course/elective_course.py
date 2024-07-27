@@ -63,15 +63,13 @@ class ElectiveCourseDB:
     @classmethod
     async def get_courses_by_subject(cls, subject: str) -> list[ElectiveCourse]:
         query = select(ElectiveCourseModel).where(ElectiveCourseModel.subject == subject)
-        async with await get_async_session() as session:
-            result = await cls.__query_to_list_of_elective(session, query)
+        result = await cls.__query_to_list_of_elective(query)
         return result
 
     @classmethod
     async def get_courses_by_pulpit(cls, pulpit: str) -> list[ElectiveCourse]:
         query = select(ElectiveCourseModel).where(ElectiveCourseModel.pulpit == pulpit)
-        async with await get_async_session() as session:
-            result = await cls.__query_to_list_of_elective(session, query)
+        result = await cls.__query_to_list_of_elective(query)
         return result
 
     @staticmethod
