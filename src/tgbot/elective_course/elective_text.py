@@ -8,8 +8,8 @@ class ElectiveText(Enum):
               'en': 'Remove optional'}
     edit_permanently = {'ru': 'Изменить на постоянной основе',
                         'en': 'Change permanently'}
-    edit_from_one_day = {'ru': 'Изменить на непостоянной основе',
-                         'en': 'Change on a non-permanent basis'}
+    edit_for_one_day = {'ru': 'Изменить на непостоянной основе',
+                        'en': 'Change on a non-permanent basis'}
     to_main = {'ru': 'На главную',
                'en': 'To main'}
     main_page = {'ru': 'Факультативы',
@@ -54,3 +54,5 @@ class ElectiveText(Enum):
                    'fix it)'}
     same = {'ru': 'Оставить как раньше',
             'en': 'Leave as before'}
+    same_name_already_exist = {'ru': 'Факультатив с этим названием уже существует, попробуй другое',
+                               'en': 'An elective with this name already exists, try another one'}
