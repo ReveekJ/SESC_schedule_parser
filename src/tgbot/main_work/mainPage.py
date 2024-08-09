@@ -2,9 +2,11 @@ import datetime
 
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile
+from aiogram_dialog import DialogManager, StartMode
 
 from src.database import get_async_session
 from src.tgbot.auxiliary import send_schedule, bot
+from src.tgbot.elective_course import states
 from src.tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
 from src.tgbot.parser import PARSER
 from src.tgbot.text import TEXT
@@ -95,3 +97,30 @@ async def get_sch_for_this_day(callback: CallbackQuery):
                                   disable_notification=True)
 
     await callback.answer()
+
+
+@router.callback_query(F.data == 'to_elective')
+async def to_elective(callback: CallbackQuery, dialog_manager: DialogManager):
+
+    lang = callback.from_user.language_code
+    db_session = await get_async_session()
+    user = await DB().select_user_by_id(db_session, callback.from_user.id)
+
+    # is_auth_user = False
+
+    # url = 'http://localhost:8000/lycreg/check_auth_data/'
+    # params = {'login': user.login, 'password': user.password}
+    #
+    # async with aiohttp.ClientSession(trust_env=True) as session:
+    #     async with session.get(url, params=params) as response:
+    #         res = await response.text()
+    #         if json.loads(res).get('status') == 200:
+    #             is_auth_user = True
+
+    if user.role in ['teacher', 'admin']:  # TODO: добавить обратно проверку is_auth
+        await dialog_manager.start(states.AdminMachine.action, mode=StartMode.RESET_STACK)
+    else:
+        await dialog_manager.start(states.ElectiveCourseMachine.start, mode=StartMode.RESET_STACK)
+
+    await callback.answer()
+    await db_session.close()
