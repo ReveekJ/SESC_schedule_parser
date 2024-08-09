@@ -1,8 +1,6 @@
-import asyncio
 from typing import Optional
 
 from sqlalchemy import select, delete, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_async_session
 from src.tgbot.elective_course.models import ElectiveCourseModel
@@ -109,3 +107,11 @@ class ElectiveCourseDB:
         async with get_async_session() as session:
             await session.execute(stmt)
             await session.commit()
+
+    @staticmethod
+    async def get_exist_pulpits() -> list[str]:
+        query = select(ElectiveCourseModel.pulpit)
+
+        async with await get_async_session() as session:
+            res = await session.execute(query)
+        return list(res.scalars().unique())
