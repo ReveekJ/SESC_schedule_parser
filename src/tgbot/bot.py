@@ -1,14 +1,14 @@
-import asyncio
 import datetime
 
 from aiogram import Dispatcher
+from aiogram_dialog import setup_dialogs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from src.tgbot import feedback, auxiliary, admin
 from src.tgbot.auxiliary import bot
 from src.tgbot.changes.changes import sending_schedule_changes
-from src.tgbot.elective_course import user_work, admin_teacher_work
+from src.tgbot.elective_course import dialogs
 from src.tgbot.for_administration import administration_work
 from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
 
@@ -37,23 +37,17 @@ def set_tasks(scheduler: AsyncIOScheduler):
                       next_run_time=datetime.datetime.now())
 
 
-async def main():
+dp = Dispatcher()
 
-    dp = Dispatcher()
-    # порядок роутеров невероятно важен, желательно его не менять
-    dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
-                       optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
-                       user_work.router, admin_teacher_work.router)
-    # app.include_router()
+
+if __name__ == '__main__':
     # ставим выполняться проверку изменений
     scheduler = AsyncIOScheduler()
     set_tasks(scheduler)
     scheduler.start()
 
-    print('запуск')
-
-    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
+    dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
+                       optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
+                       dialogs.admin_work, dialogs.user_work)
+    setup_dialogs(dp)
+    dp.run_polling(bot)
