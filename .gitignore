@@ -1,5 +1,5 @@
 # created by virtualenv automatically
-.idea/*
+.idea/
 schedule*.png
 *.log
 venv/
