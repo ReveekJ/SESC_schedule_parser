@@ -1,6 +1,5 @@
 import datetime
 from enum import Enum
-from pprint import pprint
 
 from aiogram.types import User
 from aiogram_dialog import DialogManager
@@ -11,13 +10,6 @@ from src.tgbot.sesc_info import SESC_Info
 from src.tgbot.text import TEXT
 
 
-# class UniqueElectiveCourseList(list):
-#     def __init__(self):
-#         unique_names = []
-#         for i in self:
-#             if isinstance(i, ElectiveCourse):
-#
-#         super().__init__()
 class ElectiveInfo(Enum):
     elective_times = sorted([datetime.time(8, 10), datetime.time(11, 40), datetime.time(15, 30),
                              datetime.time(19, 0), datetime.time(19, 40), datetime.time(17, 0),
@@ -72,7 +64,8 @@ async def courses_by_pulpit_getter(event_from_user: User, dialog_manager: Dialog
             'courses': __list_to_select_format(courses)}
 
 
-async def __time_getter(event_from_user: User, dialog_manager: DialogManager, prev_time: datetime.time, **kwargs):
+async def __time_getter(event_from_user: User, dialog_manager: DialogManager, prev_time: datetime.time | None,
+                        **kwargs):
     lang = (await lang_getter(event_from_user)).get('lang')
     times = ElectiveInfo.elective_times.value.copy()
     time_from = dialog_manager.dialog_data.get('time_from')
@@ -82,8 +75,6 @@ async def __time_getter(event_from_user: User, dialog_manager: DialogManager, pr
         #              [0].time_from)
         # await dialog_manager.update({'prev_time': prev_time})
         times.remove(prev_time)
-    else:
-        prev_time = None
 
     if dialog_manager.current_context().state == AdminMachine.time_to:
         try:
@@ -108,32 +99,20 @@ async def __time_getter(event_from_user: User, dialog_manager: DialogManager, pr
 
 
 async def time_from_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
-    print(kwargs)
-    return await __time_getter(event_from_user, dialog_manager,
-                               dialog_manager.dialog_data.get('course').time_from)
+    # записываем в dialog_data то, что отправилось как data_for_next_dialog
+    start_data = dialog_manager.start_data
+    if start_data is not None:
+        dialog_manager.dialog_data.update(start_data)
+
+    prev_time = dialog_manager.dialog_data.get('course').time_from if (dialog_manager.dialog_data.get('course')
+                                                                       is not None) else None
+    return await __time_getter(event_from_user, dialog_manager, prev_time)
 
 
 async def time_to_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
-    return await __time_getter(event_from_user, dialog_manager,
-                               dialog_manager.dialog_data.get('course').time_to)
-    # lang = (await lang_getter(event_from_user)).get('lang')
-    # times = ElectiveInfo.elective_times.value
-    #
-    # if dialog_manager.dialog_data.get('action') != 'add':
-    #     prev_time = ((await ElectiveCourseDB.get_courses_by_subject(dialog_manager.dialog_data.get('name_of_course')))
-    #                  [0].time_from)
-    #     # await dialog_manager.update({'prev_time': prev_time})
-    #     times.remove(prev_time)
-    # else:
-    #     prev_time = None
-    #
-    # return {
-    #     'lang': lang,
-    #     'time_from': __list_to_select_format([i.strftime(ElectiveInfo.date_format.value) for i in times]),
-    #     'prev_time_from': prev_time.strftime(ElectiveInfo.date_format.value) if prev_time is not None else None,
-    #     # Pycharm gone crazy, but it works
-    #     'action_not_add': True if dialog_manager.dialog_data.get('action') != 'add' else False,
-    # }
+    prev_time = dialog_manager.dialog_data.get('course').time_to if (dialog_manager.dialog_data.get('course')
+                                                                     is not None) else None
+    return await __time_getter(event_from_user, dialog_manager, prev_time)
 
 
 async def teacher_letter_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
@@ -162,9 +141,11 @@ async def teacher_getter(event_from_user: User, dialog_manager: DialogManager, *
 
 
 async def auditory_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
+    old_auditory = dialog_manager.dialog_data.get('course').auditory if (dialog_manager.dialog_data.get('course')
+                                                                         is not None) else None
     return {
         'lang': (await lang_getter(event_from_user)).get('lang'),
         'auditory': __list_to_select_format(SESC_Info.AUDITORY.keys()),
-        'old_auditory': dialog_manager.dialog_data.get('course').auditory,
+        'old_auditory': old_auditory,
         'action_not_add': True if dialog_manager.dialog_data.get('action') != 'add' else False,
     }
