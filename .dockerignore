@@ -11,3 +11,5 @@ docker-compose.yaml
 *.mp3
 log.log
 *.http
+nats/
+nui/

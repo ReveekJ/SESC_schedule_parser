@@ -18,3 +18,4 @@ uvicorn
 cryptography
 redis
 aiogram-dialog
+nats-py

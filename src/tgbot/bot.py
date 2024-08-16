@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 
 from aiogram import Dispatcher
@@ -11,6 +12,13 @@ from src.tgbot.changes.changes import sending_schedule_changes
 from src.tgbot.elective_course import dialogs
 from src.tgbot.for_administration import administration_work
 from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
+
+from src.utils.nats_connect import connect_to_nats
+from src.utils.delayed_remove_elective_changes.start_delayed_consumer import start_delayed_consumer
+from src.utils.delayed_remove_elective_changes.create_stream import create_delayed_elective_changes_stream
+
+from src.config import (NATS_SERVER, NATS_DELAYED_CONSUMER_STREAM, NATS_DELAYED_CONSUMER_SUBJECT,
+                        NATS_DELAYED_CONSUMER_DURABLE_NAME)
 
 
 def set_tasks(scheduler: AsyncIOScheduler):
@@ -37,17 +45,41 @@ def set_tasks(scheduler: AsyncIOScheduler):
                       next_run_time=datetime.datetime.now())
 
 
-dp = Dispatcher()
-
-
-if __name__ == '__main__':
+async def main():
     # ставим выполняться проверку изменений
+    dp = Dispatcher()
+
     scheduler = AsyncIOScheduler()
     set_tasks(scheduler)
     scheduler.start()
+
+    nc, js = await connect_to_nats(servers=NATS_SERVER)
 
     dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
                        optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
                        dialogs.admin_work, dialogs.user_work)
     setup_dialogs(dp)
-    dp.run_polling(bot)
+    try:
+        await create_delayed_elective_changes_stream(js)
+        await asyncio.gather(
+            dp.start_polling(
+                bot,
+                js=js,
+                delay_subject=NATS_DELAYED_CONSUMER_SUBJECT
+            ),
+            start_delayed_consumer(
+                nc=nc,
+                js=js,
+                subject=NATS_DELAYED_CONSUMER_SUBJECT,
+                stream=NATS_DELAYED_CONSUMER_STREAM,
+                durable_name=NATS_DELAYED_CONSUMER_DURABLE_NAME
+            )
+        )
+    except Exception as e:
+        print(e)
+    finally:
+        await nc.close()
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

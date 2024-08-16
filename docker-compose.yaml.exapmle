@@ -52,7 +52,7 @@ services:
       - "5432:5432"
   tgbot:
     container_name: tgbot
-    restart: "unless-stopped"
+    restart: "no"
     build:
       context: .
       dockerfile: Dockerfile
@@ -60,13 +60,46 @@ services:
       - .env
     depends_on:
       - postgres_db
+      - nats
     networks:
       - app_network
+      - nats_network
+
+  nats:
+    image: nats:latest
+    container_name: nats
+    entrypoint: /nats-server
+    command: "-c /config/server.conf"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - ./nats/data:/data
+      - ./nats/config/server.conf:/config/server.conf
+    networks:
+      - nats_network
+
+  nats-nui:
+    image: ghcr.io/nats-nui/nui:latest
+    container_name: nats-nui
+    ports:
+      - "31311:31311"
+    volumes:
+      - ./nui/db:/db
+    depends_on:
+      - nats
+    networks:
+      - nats_network
 
 volumes:
   postgres-data:
   pgadmin-data:
+  nats_data:
+  nats_config:
+  nui_db:
 
 networks:
   app_network:
+    driver: bridge
+  nats_network:
     driver: bridge
