@@ -15,3 +15,8 @@ PATH_TO_FONT = os.environ.get('PATH_TO_FONT')
 ADMINS = list(map(int, os.environ.get('ADMINS').split('_')))
 PATH_TO_PROJECT = os.environ.get('PATH_TO_PROJECT')
 CRYPTO_KEY = Fernet.generate_key().decode('utf-8')
+
+NATS_SERVER = [os.environ.get('NATS_SERVER')]
+NATS_DELAYED_CONSUMER_SUBJECT = os.environ.get('NATS_DELAYED_CONSUMER_SUBJECT')
+NATS_DELAYED_CONSUMER_STREAM = os.environ.get('NATS_DELAYED_CONSUMER_STREAM')
+NATS_DELAYED_CONSUMER_DURABLE_NAME = os.environ.get('NATS_DELAYED_CONSUMER_DURABLE_NAME')
