@@ -80,6 +80,15 @@ class ElectiveCourseDB:
         return ElectiveCourse(**res.scalars().all()[0].__dict__)
 
     @staticmethod
+    async def get_course_by_id(course_id: int) -> ElectiveCourse:
+        query = select(ElectiveCourseModel).where(ElectiveCourseModel.id == course_id)
+
+        async with await get_async_session() as session:
+            res = await session.execute(query)
+
+        return ElectiveCourse(**res.scalars().all()[0].__dict__)
+
+    @staticmethod
     async def __query_to_list_of_elective(query) -> list[ElectiveCourse]:
         async with await get_async_session() as session:
             query_res = await session.execute(query)
@@ -104,7 +113,7 @@ class ElectiveCourseDB:
                        ElectiveCourseModel.weekday == course.weekday)
                 .values(**new_course.model_dump(exclude={'id'})))
 
-        async with get_async_session() as session:
+        async with await get_async_session() as session:
             await session.execute(stmt)
             await session.commit()
 
