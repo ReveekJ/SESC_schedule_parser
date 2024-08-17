@@ -34,8 +34,8 @@ async def pulpit_getter(event_from_user: User, dialog_manager: DialogManager, **
     if dialog_manager.dialog_data.get('action') == 'add':
         return {'pulpit': __list_to_select_format(pulpit),
                 'lang': lang}
-
-    return {'pulpit': __list_to_select_format((await ElectiveCourseDB.get_exist_pulpits())),
+    pulpits = await ElectiveCourseDB.get_exist_pulpits()
+    return {'pulpit': __list_to_select_format(pulpits.get(lang), pulpits.get('en')),
             'lang': lang}
 
 
@@ -43,10 +43,7 @@ async def possible_days_getter(event_from_user: User, dialog_manager: DialogMana
     lang = (await lang_getter(event_from_user)).get('lang')
     name_of_course = dialog_manager.dialog_data.get('name_of_course')
     possible_days = [i.weekday for i in (await ElectiveCourseDB.get_courses_by_subject(name_of_course))]
-    # print(possible_days)
-    # print((await ElectiveCourseDB.get_courses_by_subject(name_of_course)))
-    # print(name_of_course)
-    # print(dialog_manager.dialog_data)
+
     possible_days = [TEXT('weekdays_kb', lang)[i] for i in (possible_days if possible_days != [] else
                                                             [i for i in range(1, 8)])]
     return {
@@ -99,6 +96,15 @@ async def __time_getter(event_from_user: User, dialog_manager: DialogManager, pr
 
 
 async def time_from_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
+    #  получаем старый курс
+    try:
+        current_weekday = dialog_manager.dialog_data.get('days_of_week')[dialog_manager.dialog_data.get('cur_day_inx',
+                                                                                                        0)]
+        old_course = await ElectiveCourseDB.get_course_by_subject_and_weekday(dialog_manager.dialog_data.get('name_of_course'),
+                                                                              current_weekday)
+        dialog_manager.dialog_data.update({'course': old_course})
+    except Exception as e:
+        print(e)
     # записываем в dialog_data то, что отправилось как data_for_next_dialog
     start_data = dialog_manager.start_data
     if start_data is not None:
@@ -145,7 +151,7 @@ async def auditory_getter(event_from_user: User, dialog_manager: DialogManager, 
                                                                          is not None) else None
     return {
         'lang': (await lang_getter(event_from_user)).get('lang'),
-        'auditory': __list_to_select_format(SESC_Info.AUDITORY.keys()),
+        'auditory': __list_to_select_format(SESC_Info.AUDITORY.keys(), custom_index=SESC_Info.AUDITORY.values()),
         'old_auditory': old_auditory,
         'action_not_add': True if dialog_manager.dialog_data.get('action') != 'add' else False,
     }

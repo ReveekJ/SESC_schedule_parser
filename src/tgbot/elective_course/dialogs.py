@@ -15,7 +15,8 @@ from aiogram_dialog.widgets.text import Format, Case, Const
 
 from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, name_input_handler, days_of_week_saver, \
     name_select_handler, switch_to_time_from_handler, old_teacher_handler, old_time_from_handler, old_time_to_handler, \
-    time_handler, back_time_to_handler, back_teacher_letter_handler, cancel_elective_handler, auditory_handler
+    time_handler, back_time_to_handler, back_teacher_letter_handler, cancel_elective_handler, auditory_handler, \
+    back_time_from_handler, auditory_old_data_handler
 from .elective_text import ElectiveText
 from .getters import *
 from .states import *
@@ -177,7 +178,11 @@ admin_work = Dialog(
                 on_click=time_handler
             ),
             width=2),
-        Back(get_text_from_text_message('back')),
+        Button(
+            get_text_from_text_message('back'),
+            id='back_time_from',
+            on_click=back_time_from_handler
+        ),
         state=AdminMachine.time_from,
         getter=time_from_getter
     ),
@@ -239,12 +244,12 @@ admin_work = Dialog(
     ),
     Window(
         get_text_from_text_message('choose_sub_info_auditory'),
-        create_old_data_button(ElectiveText.same.value, 'old_auditory', auditory_handler),  # TODO: изменить хендлер
+        create_old_data_button(ElectiveText.same.value, 'old_auditory', auditory_old_data_handler),
         Group(
             Select(
                 Format('{item[1]}'),
                 id='auditory',
-                item_id_getter=lambda x: x[1],
+                item_id_getter=lambda x: x[0],
                 items='auditory',
                 on_click=auditory_handler
             ),
@@ -253,11 +258,17 @@ admin_work = Dialog(
         Back(get_text_from_text_message('back')),
         getter=auditory_getter,
         state=AdminMachine.auditory
-    )
+    ),
+    # Window(
+    #     get_text_from_enum(ElectiveText.are_you_sure.value)
+    #     Button(
+    #         get_text_from_enum(ElectiveText.yes.value),
+    #         id='yes',
+    #         on_click=,
+    #     ),
+    #     state
+    # )
 )
-
-user_work = Dialog(
-    Window(
-        state=ElectiveCourseMachine.start
-    )
-)
+# TODO: сделать окно ты уверен?
+# TODO: подписать на кокой день выполняется настройка
+# TODO: если действие - это изменить на один день, то добавить кнопку отменить изменения
