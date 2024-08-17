@@ -39,16 +39,16 @@ async def to_elective(callback: CallbackQuery, state: FSMContext, edit_messages:
     db_session = await get_async_session()
     user = await DB().select_user_by_id(db_session, callback.from_user.id)
 
-    is_auth_user = False
-
-    url = 'http://localhost:8000/lycreg/check_auth_data/'
-    params = {'login': user.login, 'password': user.password}
-
-    async with aiohttp.ClientSession(trust_env=True) as session:
-        async with session.get(url, params=params) as response:
-            res = await response.text()
-            if json.loads(res).get('status') == 200:
-                is_auth_user = True
+    # is_auth_user = False
+    #
+    # url = 'http://localhost:8000/lycreg/check_auth_data/'
+    # params = {'login': user.login, 'password': user.password}
+    #
+    # async with aiohttp.ClientSession(trust_env=True) as session:
+    #     async with session.get(url, params=params) as response:
+    #         res = await response.text()
+    #         if json.loads(res).get('status') == 200:
+    #             is_auth_user = True
 
     if user.role in ['teacher', 'admin']:  # TODO: добавить обратно проверку is_auth
         if edit_messages:
@@ -66,7 +66,7 @@ async def to_elective(callback: CallbackQuery, state: FSMContext, edit_messages:
                                           reply_markup=get_elective_course_main_page_user_kb(lang))
 
     await callback.answer()
-    await session.close()
+    # await session.close()
 
 
 @router.callback_query(F.data == 'today_elective_course')
@@ -151,7 +151,7 @@ async def choose_pulpit(callback: CallbackQuery, state: FSMContext):
 
     await state.update_data(prev=register_or_unsubscribe_to_new_course)
     await state.set_state(ElectiveCourseMachine.choose_elective)
-    courses_from_the_pulpit = await ElectiveCourseDB.get_courses_by_pulpit(session, pulpit=callback.data)
+    courses_from_the_pulpit = await ElectiveCourseDB.get_courses_by_pulpit(pulpit=callback.data)
     user_courses = await DB().select_user_by_id(session, callback.from_user.id)
 
     if len(courses_from_the_pulpit) >= 63:  # всего можно прикрепить 63 кнопки + 1 кнопка назад, но если
@@ -170,7 +170,7 @@ async def choose_pulpit(callback: CallbackQuery, state: FSMContext):
 async def choose_elective(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     session = await get_async_session()
-    courses = await ElectiveCourseDB.get_courses_by_subject(session, callback.data)
+    courses = await ElectiveCourseDB.get_courses_by_subject(callback.data)
     user = await DB().select_user_by_id(session, callback.from_user.id)
     data = await state.get_data()
 

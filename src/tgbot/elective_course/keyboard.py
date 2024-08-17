@@ -25,7 +25,7 @@ def get_elective_course_main_page_admin_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=ElectiveText.add.value[lang], callback_data='add')
     kb.button(text=ElectiveText.remove.value[lang], callback_data='remove')
-    kb.button(text=ElectiveText.edit_from_one_day.value[lang], callback_data='edit_for_one_day')
+    kb.button(text=ElectiveText.edit_for_one_day.value[lang], callback_data='edit_for_one_day')
     kb.button(text=ElectiveText.edit_permanently.value[lang], callback_data='edit_permanently')
     kb.button(text=ElectiveText.to_main.value[lang], callback_data='to_main')
 

@@ -9,7 +9,7 @@ from apscheduler.triggers.cron import CronTrigger
 from src.tgbot import feedback, auxiliary, admin
 from src.tgbot.auxiliary import bot
 from src.tgbot.changes.changes import sending_schedule_changes
-from src.tgbot.elective_course import dialogs
+from src.tgbot.elective_course import dialogs, user_work
 from src.tgbot.for_administration import administration_work
 from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
 
@@ -57,15 +57,15 @@ async def main():
 
     dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
                        optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
-                       dialogs.admin_work, dialogs.user_work)
+                       dialogs.admin_work, user_work.router)
     setup_dialogs(dp)
+
     try:
         await create_delayed_elective_changes_stream(js)
         await asyncio.gather(
             dp.start_polling(
                 bot,
-                js=js,
-                delay_subject=NATS_DELAYED_CONSUMER_SUBJECT
+                js=js
             ),
             start_delayed_consumer(
                 nc=nc,
