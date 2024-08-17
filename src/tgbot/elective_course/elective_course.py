@@ -6,17 +6,19 @@ from src.database import get_async_session
 from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse
 
+from src.tgbot.sesc_info import SESC_Info
+
 
 class ElectiveCourseDB:
     @staticmethod
     async def add_course(course: ElectiveCourse):
-        async with get_async_session() as session:
+        async with await get_async_session() as session:
             session.add(ElectiveCourseModel(**course.model_dump(exclude={'id'})))
             await session.commit()
 
     @staticmethod
     async def delete_course(course_name: str, weekdays: Optional[list[int]] = None):
-        async with get_async_session() as session:
+        async with await get_async_session() as session:
             if weekdays:
                 for weekday in weekdays:
                     stmt = delete(ElectiveCourseModel).where(ElectiveCourseModel.subject == course_name,
@@ -40,7 +42,7 @@ class ElectiveCourseDB:
                     .where(ElectiveCourseModel.subject == new_course.subject)
                     .values(**course))
 
-        async with get_async_session() as session:
+        async with await get_async_session() as session:
             await session.execute(stmt)
             await session.commit()
 
@@ -118,9 +120,15 @@ class ElectiveCourseDB:
             await session.commit()
 
     @staticmethod
-    async def get_exist_pulpits() -> list[str]:
+    async def get_exist_pulpits() -> dict[str, list]:
         query = select(ElectiveCourseModel.pulpit)
 
         async with await get_async_session() as session:
-            res = await session.execute(query)
-        return list(res.scalars().unique())
+            x = await session.execute(query)
+        row_res: list = x.scalars().all()
+        res = {
+            'en': row_res,
+            'ru': (SESC_Info['ru'][SESC_Info.PULPIT['en'].index(i)] for i in row_res)
+        }
+
+        return res
