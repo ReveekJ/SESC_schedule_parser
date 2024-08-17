@@ -125,7 +125,7 @@ class ElectiveCourseDB:
 
         async with await get_async_session() as session:
             x = await session.execute(query)
-        row_res: list = x.scalars().all()
+        row_res: list = x.scalars().unique()
         res = {
             'en': row_res,
             'ru': (SESC_Info['ru'][SESC_Info.PULPIT['en'].index(i)] for i in row_res)
