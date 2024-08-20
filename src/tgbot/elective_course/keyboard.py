@@ -10,15 +10,7 @@ from src.tgbot.elective_course.schemas import ElectiveCourse
 from src.tgbot.keyboard import add_back_btn
 from src.tgbot.text import TEXT
 from src.tgbot.sesc_info import SESC_Info
-
-
-class ElectiveInfo(Enum):
-    elective_times = sorted([datetime.time(8, 10), datetime.time(11, 40), datetime.time(15, 30),
-                             datetime.time(19, 0), datetime.time(19, 40), datetime.time(17, 0),
-                             datetime.time(18, 15), datetime.time(14, 15), datetime.time(13, 15),
-                             datetime.time(18, 30), datetime.time(20, 0), datetime.time(21, 0),
-                             datetime.time(9, 0), datetime.time(17, 30)])
-    date_format = '%H:%M'
+from .elective_info import ElectiveInfo
 
 
 def get_elective_course_main_page_admin_kb(lang: str) -> InlineKeyboardMarkup:
