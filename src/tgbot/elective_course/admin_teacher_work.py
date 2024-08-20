@@ -134,23 +134,78 @@ async def back_time_from_handler(callback: CallbackQuery, widget: Button, dialog
 
 async def cancel_elective_handler(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager, *args,
                                   **kwargs):
-    #  TODO: вызвать функцию отмены курса, а затем либо спросить следующий день, либо закунчить работу с изменениями
-    pass
+    days_of_week = dialog_manager.dialog_data.get('days_of_week')
+    cur_day_inx = dialog_manager.dialog_data.get('cur_day_inx', 0)
+
+    old_course: ElectiveCourse = dialog_manager.dialog_data.get('course')
+    course_for_remember = ElectiveCourse(
+        subject=dialog_manager.dialog_data.get('name_of_course'),
+        pulpit=dialog_manager.dialog_data.get('pulpit'),
+        teacher_name=old_course.teacher_name,
+        weekday=days_of_week[cur_day_inx],
+        time_from=old_course.time_from,
+        time_to=old_course.time_to,
+        auditory=old_course.auditory,
+        is_diffs=True,
+        is_cancelled=True
+    )
+
+    lst = update_course_for_remember(course_for_remember, dialog_manager)
+    await start_new_dialog(callback, dialog_manager, lst)
+
     # await dialog_manager.switch_to(AdminMachine)
 
 
-async def auditory_old_data_handler(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager, *args,
-                                    **kwargs):
-    course: ElectiveCourse = dialog_manager.dialog_data.get('course')
-    callback.data = course.auditory
-    await auditory_handler(callback, widget, dialog_manager, *args, **kwargs)
+async def start_new_dialog(callback: CallbackQuery, dialog_manager: DialogManager, list_of_courses_for_remember):
+    cur_day_inx = dialog_manager.dialog_data.get('cur_day_inx', 0)
+    days_of_week = dialog_manager.dialog_data.get('days_of_week')
+    action = dialog_manager.dialog_data.get('action')
+
+    if cur_day_inx + 1 == len(days_of_week):  # все дни прошли
+        js = dialog_manager.middleware_data.get('js')
+        await commit_changes(action, list_of_courses_for_remember, js)
+
+        await callback.message.delete()
+        await dialog_manager.reset_stack()
+        await dialog_manager.start(AdminMachine.action, mode=StartMode.NEW_STACK)  # возвращаемся на главную
+        return None
+
+    # подготовка следующего диалога
+    data_for_next_dialog: dict = dialog_manager.dialog_data.copy()
+    data_for_next_dialog.update({'cur_day_inx': cur_day_inx + 1})
+    for i in ('time_from', 'time_to', 'is_canceled', 'teacher_letter', 'teacher', 'auditory'):
+        data_for_next_dialog.pop(i, None)
+
+    await dialog_manager.start(AdminMachine.time_from, data=data_for_next_dialog)
+
+
+def update_course_for_remember(course_for_remember: ElectiveCourse, dialog_manager: DialogManager) -> list[ElectiveCourse]:
+    days_of_week = dialog_manager.dialog_data.get('days_of_week')
+    cur_day_inx = dialog_manager.dialog_data.get('cur_day_inx', 0)
+    list_of_courses_for_remember: list[ElectiveCourse] | None = dialog_manager.dialog_data.get('courses_for_remember')
+
+    if isinstance(list_of_courses_for_remember, NoneType):
+        list_of_courses_for_remember = [course_for_remember]
+    else:
+        if list_of_courses_for_remember[-1].weekday == days_of_week[cur_day_inx]:  # когда нажали на back
+            list_of_courses_for_remember.pop(-1)
+        list_of_courses_for_remember.append(course_for_remember)
+
+    dialog_manager.dialog_data.update({'courses_for_remember': list_of_courses_for_remember})
+    return list_of_courses_for_remember
 
 
 async def auditory_handler(callback: CallbackQuery,
                            widget: Button,
                            dialog_manager: DialogManager,
                            *args, **kwargs):
-    await __save_to_dialog_data(callback.data.split(':')[-1], dialog_manager)
+    pprint(dialog_manager.dialog_data)
+    if callback.data == 'old_auditory':
+        course: ElectiveCourse = dialog_manager.dialog_data.get('course')
+        await __save_to_dialog_data(course.auditory, dialog_manager)
+    else:
+        await __save_to_dialog_data(callback.data.split(':')[-1], dialog_manager)
+
     days_of_week: list = dialog_manager.dialog_data.get('days_of_week')
     cur_day_inx: int = dialog_manager.dialog_data.get('cur_day_inx', 0)
     action = dialog_manager.dialog_data.get('action')
@@ -172,10 +227,12 @@ async def auditory_handler(callback: CallbackQuery,
                 weekday=days_of_week[cur_day_inx],
                 time_from=old_course.time_from,
                 time_to=old_course.time_to,
-                auditiry=old_course.auditory,
+                auditory=old_course.auditory,
                 is_diffs=True,
                 diffs_teacher=dialog_manager.dialog_data.get('teacher'),
                 diffs_auditory=dialog_manager.dialog_data.get('auditory'),
+                diffs_time_from=dialog_manager.dialog_data.get('time_from'),
+                diffs_time_to=dialog_manager.dialog_data.get('time_to'),
                 is_canceled=False  # True будет в отдельном хендлере на кнопку cancel
             )
         case _:  # case 'add' | 'edit_permanently'
@@ -189,33 +246,10 @@ async def auditory_handler(callback: CallbackQuery,
                 auditory=dialog_manager.dialog_data.get('auditory'),
             )
 
-    list_of_courses_for_remember: list[ElectiveCourse] | None = dialog_manager.dialog_data.get('courses_for_remember')
-    if isinstance(list_of_courses_for_remember, NoneType):
-        list_of_courses_for_remember = [course_for_remember]
-    else:
-        if list_of_courses_for_remember[-1].weekday == days_of_week[cur_day_inx]:  # когда нажали на back
-            list_of_courses_for_remember.pop(-1)
-        list_of_courses_for_remember.append(course_for_remember)
+    list_of_courses_for_remember = update_course_for_remember(course_for_remember, dialog_manager)
 
-    dialog_manager.dialog_data.update({'courses_for_remember': list_of_courses_for_remember})
+    await start_new_dialog(callback, dialog_manager, list_of_courses_for_remember)
 
-    if cur_day_inx + 1 == len(days_of_week):  # все дни прошли
-        js = dialog_manager.middleware_data.get('js')
-        await commit_changes(action, list_of_courses_for_remember, js)
-
-        await callback.message.delete()
-        await dialog_manager.reset_stack()
-        await dialog_manager.start(AdminMachine.action, mode=StartMode.NEW_STACK)  # возвращаемся на главную
-        return None
-
-    # подготовка следующего диалога
-    data_for_next_dialog: dict = dialog_manager.dialog_data.copy()
-    data_for_next_dialog.update({'cur_day_inx': cur_day_inx + 1})
-    for i in ('time_from', 'time_to', 'is_canceled', 'teacher_letter', 'teacher', 'auditory'):
-        data_for_next_dialog.pop(i, None)
-
-    pprint(data_for_next_dialog)
-    await dialog_manager.start(AdminMachine.time_from, data=data_for_next_dialog)
 
 
 async def commit_changes(action: str, changes_list: list[ElectiveCourse], js: JetStreamContext):
@@ -233,10 +267,11 @@ async def commit_changes(action: str, changes_list: list[ElectiveCourse], js: Je
             for course in changes_list:
                 await ElectiveCourseDB.update_course(course, course.weekday)
 
+                course_id = (await ElectiveCourseDB.get_course_by_subject_and_weekday(course.subject, course.weekday)).id
                 now = datetime.datetime.now()
                 day = datetime.datetime(now.year, now.month, now.day, 23, 59)
                 removing_time = day + datetime.timedelta(days=course.weekday - day.weekday() - 1)
                 await delay_changes_removing(js=js,
-                                             course_id=course.id,
+                                             course_id=course_id,  # нельзя course.id так как в course лежит курс взятый не из бд, а собранные в auditory_handler
                                              subject=NATS_DELAYED_CONSUMER_SUBJECT,
                                              removing_time=removing_time)

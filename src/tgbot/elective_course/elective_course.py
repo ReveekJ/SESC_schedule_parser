@@ -46,19 +46,6 @@ class ElectiveCourseDB:
             await session.execute(stmt)
             await session.commit()
 
-    @staticmethod
-    async def cancel_course(course_name: str):
-        old_course = (await ElectiveCourseDB.get_courses_by_subject(course_name))[0]
-        new_course = ElectiveCourse(subject=old_course.subject,
-                                    teacher_name=old_course.teacher_name,
-                                    pulpit=old_course.pulpit,
-                                    weekday=old_course.weekday,
-                                    time_from=old_course.time_from,
-                                    time_to=old_course.time_to,
-                                    auditory=old_course.auditory,
-                                    is_cancelled=True)
-
-        await ElectiveCourseDB.update_course(new_course)
 
     @classmethod
     async def get_courses_by_subject(cls, subject: str) -> list[ElectiveCourse]:

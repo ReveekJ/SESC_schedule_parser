@@ -2,18 +2,15 @@ from aiogram.fsm.state import State, StatesGroup
 
 
 class AdminMachine(StatesGroup):
-    # start = State()
     action = State()
     pulpit = State()
     name_of_course_input = State()
     name_of_course_selector = State()
     removing = State()
-    # possible_days = State()  # этот стейт используется только для хранения
-    day_of_week = State()  # список
-    # current_weekday_index = State()  # этот стейт используется только для хранения
-    time_from = State()  # list
-    is_canceled = State()  # list
-    time_to = State()  # list
+    day_of_week = State()
+    time_from = State()
+    is_canceled = State()
+    time_to = State()
     teacher_letter = State()  # ничего нового, как при регистрации
     teacher = State()
     auditory = State()

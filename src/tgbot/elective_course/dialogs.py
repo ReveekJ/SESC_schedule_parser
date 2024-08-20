@@ -16,7 +16,7 @@ from aiogram_dialog.widgets.text import Format, Case, Const
 from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, name_input_handler, days_of_week_saver, \
     name_select_handler, switch_to_time_from_handler, old_teacher_handler, old_time_from_handler, old_time_to_handler, \
     time_handler, back_time_to_handler, back_teacher_letter_handler, cancel_elective_handler, auditory_handler, \
-    back_time_from_handler, auditory_old_data_handler
+    back_time_from_handler
 from .elective_text import ElectiveText
 from .getters import *
 from .states import *
@@ -147,7 +147,7 @@ admin_work = Dialog(
                 checked_text=Format('[✅] {item[1]}'),
                 unchecked_text=Format('[ ] {item[1]}'),
                 id='name',
-                item_id_getter=lambda x: x[0] + 1,
+                item_id_getter=lambda x: x[0],
                 items='possible_days',
                 on_state_changed=days_of_week_saver
             )
@@ -166,7 +166,8 @@ admin_work = Dialog(
         Button(
             get_text_from_enum(ElectiveText.cancel_elective.value),
             id='cancel',
-            on_click=cancel_elective_handler
+            on_click=cancel_elective_handler,
+            when='add_cancel'
         ),
         create_old_data_button(ElectiveText.same.value, 'prev_time', old_time_from_handler, 'prev_time_exist'),
         Group(
@@ -244,7 +245,7 @@ admin_work = Dialog(
     ),
     Window(
         get_text_from_text_message('choose_sub_info_auditory'),
-        create_old_data_button(ElectiveText.same.value, 'old_auditory', auditory_old_data_handler),
+        create_old_data_button(ElectiveText.same.value, 'old_auditory', auditory_handler),
         Group(
             Select(
                 Format('{item[1]}'),
@@ -271,4 +272,3 @@ admin_work = Dialog(
 )
 # TODO: сделать окно ты уверен?
 # TODO: подписать на кокой день выполняется настройка
-# TODO: если действие - это изменить на один день, то добавить кнопку отменить изменения

@@ -1,9 +1,12 @@
 import datetime
+
 from typing import Optional, Literal, Any
 
 from pydantic import BaseModel, field_validator
 
 from src.tgbot.sesc_info import SESC_Info
+from src.tgbot.elective_course.elective_text import ElectiveText
+from .elective_info import ElectiveInfo
 
 
 class ElectiveCourse(BaseModel):
@@ -15,10 +18,12 @@ class ElectiveCourse(BaseModel):
     weekday: int
     time_from: datetime.time
     time_to: datetime.time
-    auditory: Optional[str] = ''
-    is_diffs: bool = False
+    auditory: str
+    is_diffs: Optional[bool] = False
     diffs_teacher: Optional[str] = ''
     diffs_auditory: Optional[str] = ''
+    diffs_time_from: Optional[datetime.time | None] = None
+    diffs_time_to: Optional[datetime.time | None] = None
     is_cancelled: Optional[bool] = False
 
     def model_dump(
@@ -35,13 +40,24 @@ class ElectiveCourse(BaseModel):
             warnings: bool = True,
     ) -> dict[str, Any]:
         if mode == 'timetable':
-            return {'subject': self.subject,
-                    'auditory': SESC_Info.AUDITORY_REVERSE[self.auditory if not self.is_diffs else self.diffs_auditory],
-                    'teacher': SESC_Info.TEACHER_REVERSE[self.teacher_name if not self.is_diffs else self.diffs_teacher],
-                    'group': '',
-                    'subgroup': 0,
-                    'number': self.time_from,
-                    'date': 1 if self.is_diffs else None}  # для выделения желтым
+            if self.is_cancelled:
+                return {'subject': 'ОТМЕНЕНО',
+                        'auditory': 'ОТМЕНЕНО',
+                        'teacher': self.subject,
+                        'group': '',
+                        'subgroup': 0,
+                        'number': self.time_from,
+                        'date': 1}  # для выделения желтым
+            else:
+                time_from = (self.time_from if not self.is_diffs else self.diffs_time_from).strftime(ElectiveInfo.date_format.value)
+                time_to = (self.time_to if not self.is_diffs else self.diffs_time_to).strftime(ElectiveInfo.date_format.value)
+                return {'subject': self.subject,
+                        'auditory': SESC_Info.AUDITORY_REVERSE[self.auditory if not self.is_diffs else self.diffs_auditory] + f'    {time_from} - {time_to}',
+                        'teacher': SESC_Info.TEACHER_REVERSE[self.teacher_name if not self.is_diffs else self.diffs_teacher],
+                        'group': '',
+                        'subgroup': 0,
+                        'number': time_from,
+                        'date': 1 if self.is_diffs else None}  # для выделения желтым
         return super().model_dump(mode=mode,
                                   include=include,
                                   exclude=exclude,
@@ -51,14 +67,6 @@ class ElectiveCourse(BaseModel):
                                   exclude_none=exclude_none,
                                   round_trip=round_trip,
                                   warnings=warnings)
-
-    @field_validator('auditory')
-    # @classmethod
-    def auditory_validator(cls, v):
-        if v is None:
-            return ''
-        else:
-            return v
 
 
 class ElectiveCourseTimetable(BaseModel):

@@ -1,5 +1,4 @@
 import datetime
-from enum import Enum
 
 from aiogram.types import User
 from aiogram_dialog import DialogManager
@@ -8,15 +7,7 @@ from src.tgbot.elective_course.elective_course import ElectiveCourseDB
 from src.tgbot.elective_course.states import AdminMachine
 from src.tgbot.sesc_info import SESC_Info
 from src.tgbot.text import TEXT
-
-
-class ElectiveInfo(Enum):
-    elective_times = sorted([datetime.time(8, 10), datetime.time(11, 40), datetime.time(15, 30),
-                             datetime.time(19, 0), datetime.time(19, 40), datetime.time(17, 0),
-                             datetime.time(18, 15), datetime.time(14, 15), datetime.time(13, 15),
-                             datetime.time(18, 30), datetime.time(20, 0), datetime.time(21, 0),
-                             datetime.time(9, 0), datetime.time(17, 30)])
-    date_format: str = '%H:%M'
+from .elective_info import ElectiveInfo
 
 
 def __list_to_select_format(items: list, custom_index: list | None = None) -> list[tuple]:
@@ -35,20 +26,20 @@ async def pulpit_getter(event_from_user: User, dialog_manager: DialogManager, **
         return {'pulpit': __list_to_select_format(pulpit),
                 'lang': lang}
     pulpits = await ElectiveCourseDB.get_exist_pulpits()
-    return {'pulpit': __list_to_select_format(pulpits.get(lang), pulpits.get('en')),
+    return {'pulpit': sorted(__list_to_select_format(pulpits.get(lang), pulpits.get('en')), key=lambda x: x[1]),
             'lang': lang}
 
 
 async def possible_days_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
     lang = (await lang_getter(event_from_user)).get('lang')
     name_of_course = dialog_manager.dialog_data.get('name_of_course')
-    possible_days = [i.weekday for i in (await ElectiveCourseDB.get_courses_by_subject(name_of_course))]
+    possible_days_nums = [i.weekday for i in (await ElectiveCourseDB.get_courses_by_subject(name_of_course))]
 
-    possible_days = [TEXT('weekdays_kb', lang)[i] for i in (possible_days if possible_days != [] else
+    possible_days = [TEXT('weekdays_kb', lang)[i] for i in (possible_days_nums if possible_days_nums != [] else
                                                             [i for i in range(1, 8)])]
     return {
         'lang': lang,
-        'possible_days': __list_to_select_format(possible_days)
+        'possible_days': sorted(__list_to_select_format(possible_days, possible_days_nums if possible_days_nums != [] else [i for i in range(1, 8)]), key=lambda x: x[0])
     }
 
 
@@ -58,7 +49,7 @@ async def courses_by_pulpit_getter(event_from_user: User, dialog_manager: Dialog
     row_data = await ElectiveCourseDB.get_courses_by_pulpit(pulpit)
     courses = list(set(i.subject for i in row_data))
     return {'lang': lang,
-            'courses': __list_to_select_format(courses)}
+            'courses': sorted(__list_to_select_format(courses), key=lambda x: x[1])}
 
 
 async def __time_getter(event_from_user: User, dialog_manager: DialogManager, prev_time: datetime.time | None,
@@ -92,6 +83,7 @@ async def __time_getter(event_from_user: User, dialog_manager: DialogManager, pr
         # Pycharm gone crazy, but it works
         'prev_time_exist': True if (dialog_manager.dialog_data.get('action') != 'add') and
                                    (prev_time > time_from if time_from is not None else True) else False,
+        'add_cancel': True if dialog_manager.dialog_data.get('action') == 'edit_for_one_day' else False,
     }
 
 
@@ -147,8 +139,8 @@ async def teacher_getter(event_from_user: User, dialog_manager: DialogManager, *
 
 
 async def auditory_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
-    old_auditory = dialog_manager.dialog_data.get('course').auditory if (dialog_manager.dialog_data.get('course')
-                                                                         is not None) else None
+    old_auditory = SESC_Info.AUDITORY_REVERSE[dialog_manager.dialog_data.get('course').auditory] \
+        if (dialog_manager.dialog_data.get('course') is not None) else None
     return {
         'lang': (await lang_getter(event_from_user)).get('lang'),
         'auditory': __list_to_select_format(SESC_Info.AUDITORY.keys(), custom_index=SESC_Info.AUDITORY.values()),
