@@ -16,31 +16,32 @@ from src.config import CRYPTO_KEY
 
 class DB:
     @staticmethod
-    async def __decrypt_login_password(user: User) -> User:
+    async def __send_request_to_crypto_service(url: str, data_login: dict, data_password: dict):
         async with aiohttp.ClientSession() as session:
-            async with session.post(f'http://localhost:8000/crypt/decrypt?crypto_string={user.password}&key={CRYPTO_KEY}') \
-                    as password, \
-                    session.post(f'http://localhost:8000/crypt/decrypt?crypto_string={user.login}&key={CRYPTO_KEY}') as login:
-                user.password = json.loads(await password.text())['crypto_string']
-                user.login = json.loads(await login.text())['crypto_string']
-            # async with session.get(f'http://localhost:8000/lycreg/check_auth_data/?login={user.login}&password={user.
-            # password}') as resp:
-            #     if json.loads(await resp.text()).get('status') == 200:  # если пароль подходит
-            #         return user
-            #     else:
-            #         pass  # TODO: если пароль не подходит, то нужно придумать что делать
-            # raise ValueError('Login or password is incorrect')
-            return user
+            async with session.post(url, json=data_login) as login, session.post(url, json=data_password) as password:
+                return json.loads(await login.text())['crypto_string'], json.loads(await password.text())['crypto_string']
+
+    @staticmethod
+    async def __decrypt_login_password(user: User) -> User:
+        url = 'http://localhost:8000/crypt/decrypt'
+        data_login = {'crypto_string': user.login,
+                      'key': CRYPTO_KEY}
+        data_passwd = {'crypto_string': user.password,
+                       'key': CRYPTO_KEY}
+        login, password = await DB.__send_request_to_crypto_service(url, data_login, data_passwd)
+        user.login, user.password = login, password
+        return user
 
     @staticmethod
     async def __encrypt_login_password(user: User) -> User:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(f'http://localhost:8000/crypt/encrypt?crypto_string={user.password}&key={CRYPTO_KEY}') \
-                    as password, \
-                    session.post(f'http://localhost:8000/crypt/encrypt?crypto_string={user.login}&key={CRYPTO_KEY}') as login:
-                user.password = json.loads(await password.text())['crypto_string']
-                user.login = json.loads(await login.text())['crypto_string']
-            return user
+        url = 'http://localhost:8000/crypt/encrypt'
+        data_login = {'crypto_string': user.login,
+                      'key': CRYPTO_KEY}
+        data_passwd = {'crypto_string': user.password,
+                       'key': CRYPTO_KEY}
+        login, password = await DB.__send_request_to_crypto_service(url, data_login, data_passwd)
+        user.login, user.password = login, password
+        return user
 
     @staticmethod
     def __login_password_decrypt(func):
@@ -122,9 +123,20 @@ class DB:
         await session.execute(stmt)
         await session.commit()
 
-    # TODO: check is it working now
-    @staticmethod
-    async def update_user_info(session: AsyncSession, _id: int, **kwargs):
+    async def update_user_info(self, session: AsyncSession, _id: int, **kwargs):
+        user = await self.select_user_by_id(session, _id)
+
+        # шифруем логин и пароль
+        if kwargs.get('login') is not None:
+            user.login = kwargs.get('login')
+        if kwargs.get('password') is not None:
+            user.password = kwargs.get('password')
+
+        user = await self.__encrypt_login_password(user)
+        kwargs['login'] = user.login
+        kwargs['password'] = user.password
+
+        # обновляем значение в бд
         stmt = update(UsersModel).where(UsersModel.id == _id).values(**kwargs)
 
         await session.execute(stmt)

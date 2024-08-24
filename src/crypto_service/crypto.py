@@ -1,12 +1,24 @@
+from typing import Union
+
 from http import HTTPStatus
+from pprint import pprint
+
 from fastapi import APIRouter
 from cryptography.fernet import Fernet, InvalidToken
+from pydantic import BaseModel
+from requests import Request
 
 router = APIRouter(prefix='/crypt', tags=['crypto'])
 
 
+class CryptoItem(BaseModel):
+    crypto_string: str
+    key: Union[str, bytes]
+
 @router.post('/encrypt')
-async def encrypt(crypto_string: str, key: str | bytes):
+async def encrypt(item: CryptoItem):
+    crypto_string, key = item.crypto_string, item.key
+
     try:
         f = Fernet(bytes(key, 'utf-8'))
         encrypted_bytes = f.encrypt(bytes(crypto_string, 'utf-8'))
@@ -19,7 +31,9 @@ async def encrypt(crypto_string: str, key: str | bytes):
 
 
 @router.post('/decrypt')
-async def decrypt(crypto_string: str, key: str | bytes):
+async def decrypt(item: CryptoItem):
+    crypto_string, key = item.crypto_string, item.key
+
     try:
         f = Fernet(bytes(key, 'utf-8'))
         decrypted_string = f.decrypt(bytes(crypto_string, 'utf-8')).decode('utf-8')
@@ -31,4 +45,3 @@ async def decrypt(crypto_string: str, key: str | bytes):
     except Exception as e:
         return {'status': HTTPStatus.INTERNAL_SERVER_ERROR,
                 'error': str(e)}
-    
