@@ -1,6 +1,6 @@
 import datetime
 import time
-from typing import Any
+from typing import Any, Literal
 
 import aiohttp
 import simplejson as json
@@ -72,10 +72,13 @@ class LycregAPI:
     def __init__(self, client: aiohttp.ClientSession):
         self.client = client
 
-    async def __authorise_raw_request(self, captcha: str, captcha_id: str, user_login: str, user_password: str) -> str:
+    async def __authorise_raw_request(self, captcha: str,
+                                      captcha_id: str,
+                                      role: Literal['pupil', 'teacher'],
+                                      user_login: str, user_password: str) -> str:
         async with self.client.post(
-                'https://lycreg.urfu.ru/',
-                data=f'{{"t":"pupil", "l":"{user_login}", "p":"{user_password}", "f":"login", '
+                self.SESC_JSON.get('scole_domain'),
+                data=f'{{"t":{role}", "l":"{user_login}", "p":"{user_password}", "f":"login", '
                      f'"ci":{captcha_id}, "c":{captcha} }}',
         ) as response:
             assert response.status == 200, 'Login-function response is not 200'
@@ -83,7 +86,7 @@ class LycregAPI:
 
     async def __tabel_get_raw_request(self, user_login: str, user_token: str) -> str:
         async with self.client.post(
-                'https://lycreg.urfu.ru/',
+                self.SESC_JSON.get('scole_domain'),
                 data=f'{{"t":"pupil","l":"{user_login}","p":"{user_token}","f":"tabelGet","z":["{user_login}"]}}',
         ) as response:
             assert response.status == 200, 'tabelGet-function response is not 200'
@@ -91,7 +94,7 @@ class LycregAPI:
 
     async def __subj_list_raw_request(self, user_login: str, user_token: str) -> str:
         async with self.client.post(
-                'https://lycreg.urfu.ru/',
+                self.SESC_JSON.get('scole_domain'),
                 data=f'{{"t":"pupil","l":"{user_login}","p":"{user_token}","f":"subjList"}}',
         ) as response:
             assert response.status == 200, 'subjList-function response is not 200'
@@ -99,7 +102,7 @@ class LycregAPI:
 
     async def __teach_list_raw_request(self, user_login: str, user_token: str) -> str:
         async with self.client.post(
-                'https://lycreg.urfu.ru/',
+                self.SESC_JSON.get('scole_domain'),
                 data=f'{{"t":"pupil","l":"{user_login}","p":"{user_token}","f":"teachList"}}',
         ) as response:
             assert response.status == 200, 'teachList-function response is not 200'
@@ -107,18 +110,18 @@ class LycregAPI:
 
     async def __journal_get_raw_request(self, user_login: str, user_token: str) -> str:
         async with self.client.post(
-                'https://lycreg.urfu.ru/',
+                self.SESC_JSON.get('scole_domain'),
                 data=f'{{"t":"pupil","l":"{user_login}","p":"{user_token}","f":"jrnGet","z":[]}}',
         ) as response:
             assert response.status == 200, 'jrnGet-function response is not 200'
             return await response.text()
 
-    async def lycreg_authorise(self, user_login: str, user_password: str) -> dict:
+    async def lycreg_authorise(self, role: Literal['pupil', 'teacher'], user_login: str, user_password: str) -> dict:
         captcha_bytes, captcha_id = await self.__fetch_captcha()
         assert captcha_id is not None, 'X-Cpt header doesn\'t exists'
         solved_captcha = await self.__solve_captcha(captcha_bytes)
         authorise = await self.__authorise_raw_request(captcha=solved_captcha, captcha_id=captcha_id,
-                                                       user_login=user_login, user_password=user_password)
+                                                       role=role, user_login=user_login, user_password=user_password)
         if 'token' not in authorise:
             return {'error': 'auth error'}
         if '["pupil"]' not in authorise:
@@ -251,11 +254,13 @@ class LycregAPI:
                 return f'{d}.{m}'
 
     async def get_grades(self,
+                         role: Literal['pupil', 'teacher'],
                          user_login: str,
                          user_password: str,
                          week_shift=0,
                          ) -> tuple[int, str]:
         _auth = await self.lycreg_authorise(
+            role=role,
             user_login=user_login,
             user_password=user_password,
         )
@@ -301,11 +306,13 @@ class LycregAPI:
         )
 
     async def get_homework(self,
+                           role: Literal['pupil', 'teacher'],
                            user_login: str,
                            user_password: str,
                            day_shift=0,
                            ) -> tuple[int, str]:
         _auth = await self.lycreg_authorise(
+            role=role,
             user_login=user_login,
             user_password=user_password,
         )
@@ -358,10 +365,10 @@ router = APIRouter(
 
 
 @router.get('/check_auth_data/')
-async def check_auth_data(login: str, password: str) -> dict:
+async def check_auth_data(role: Literal['pupil', 'teacher'], login: str, password: str) -> dict:
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         api = LycregAPI(session)
-        auth_res = await api.lycreg_authorise(login, password)
+        auth_res = await api.lycreg_authorise(role, login, password)
 
         if auth_res.get('error') is not None:
             return {'status': 400, 'error': auth_res.get('error')}
