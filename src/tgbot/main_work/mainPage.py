@@ -1,9 +1,12 @@
 import datetime
+import json
 
+import aiohttp
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile
 from aiogram_dialog import DialogManager, StartMode
 
+from src.config import ADMINS
 from src.database import get_async_session
 from src.tgbot.auxiliary import send_schedule, bot
 from src.tgbot.elective_course import states
@@ -107,19 +110,21 @@ async def to_elective(callback: CallbackQuery, dialog_manager: DialogManager):
     db_session = await get_async_session()
     user = await DB().select_user_by_id(db_session, callback.from_user.id)
 
-    # is_auth_user = False
-
-    # url = 'http://localhost:8000/lycreg/check_auth_data/'
-    # params = {'login': user.login, 'password': user.password}
-    #
-    # async with aiohttp.ClientSession(trust_env=True) as session:
-    #     async with session.get(url, params=params) as response:
-    #         res = await response.text()
-    #         if json.loads(res).get('status') == 200:
-    #             is_auth_user = True
-
-    if user.role in ['teacher', 'admin']:  # TODO: добавить обратно проверку is_auth
+    if user.id in ADMINS:
         await dialog_manager.start(states.AdminMachine.action, mode=StartMode.RESET_STACK)
+    elif user.role in ['teacher', 'admin']:
+        url = 'http://localhost:8000/lycreg/check_auth_data/'
+        params = {'role': user.role, 'login': user.login, 'password': user.password}
+        print(params)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=params) as response:
+                res = await response.text()
+
+        if json.loads(res).get('status') == 200:
+            await dialog_manager.start(states.AdminMachine.action, mode=StartMode.RESET_STACK)
+        else:
+            await dialog_manager.start(states.AuthMachine.login, mode=StartMode.RESET_STACK)
+
     else:
         await callback.message.edit_text(ElectiveText.main_page.value[lang],
                                          reply_markup=get_elective_course_main_page_user_kb(lang))

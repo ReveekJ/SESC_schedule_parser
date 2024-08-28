@@ -12,8 +12,8 @@ class User(BaseModel):
     role: str
     sub_info: str
     lang: str
-    login: Optional[str] = None
-    password: Optional[str] = None
+    login: Optional[str] = 'None'
+    password: Optional[str] = 'None'
     elective_course_replied: list[ElectiveCourse] = []
 
     # автоматически конвертирует из типа в бд в тип во всем остальном коде

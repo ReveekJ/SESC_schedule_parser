@@ -57,7 +57,7 @@ async def main():
 
     dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
                        optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
-                       dialogs.admin_work, user_work.router)
+                       dialogs.admin_work, dialogs.auth_dialog, user_work.router)
     setup_dialogs(dp)
 
     try:

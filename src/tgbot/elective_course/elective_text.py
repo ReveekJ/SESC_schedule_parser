@@ -56,3 +56,9 @@ class ElectiveText(Enum):
             'en': 'Leave as before'}
     same_name_already_exist = {'ru': 'Факультатив с этим названием уже существует, попробуй другое',
                                'en': 'An elective with this name already exists, try another one'}
+    enter_login = {'ru': 'Введи свой логин от электронного журнала',
+                   'en': 'Enter your login from the electronic journal'}
+    enter_password = {'ru': 'Введи свой пароль от электронного журнала',
+                      'en': 'Enter your password from the electronic journal'}
+    login_password_incorrect = {'ru': 'Кажется, логин или пароль не подходят, попробуй еще раз',
+                                'en': "The username or password doesn't seem to work, try again"}

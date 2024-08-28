@@ -6,6 +6,7 @@ import aiohttp
 import simplejson as json
 
 from fastapi import APIRouter
+from pydantic import BaseModel, field_validator, ValidationError
 
 
 class LycregAPI:
@@ -74,7 +75,7 @@ class LycregAPI:
 
     async def __authorise_raw_request(self, captcha: str,
                                       captcha_id: str,
-                                      role: Literal['pupil', 'teacher'],
+                                      role: Literal['pupil', 'staff'],
                                       user_login: str, user_password: str) -> str:
         async with self.client.post(
                 self.SESC_JSON.get('scole_domain'),
@@ -116,7 +117,7 @@ class LycregAPI:
             assert response.status == 200, 'jrnGet-function response is not 200'
             return await response.text()
 
-    async def lycreg_authorise(self, role: Literal['pupil', 'teacher'], user_login: str, user_password: str) -> dict:
+    async def lycreg_authorise(self, role: Literal['pupil', 'staff'], user_login: str, user_password: str) -> dict:
         captcha_bytes, captcha_id = await self.__fetch_captcha()
         assert captcha_id is not None, 'X-Cpt header doesn\'t exists'
         solved_captcha = await self.__solve_captcha(captcha_bytes)
@@ -254,7 +255,7 @@ class LycregAPI:
                 return f'{d}.{m}'
 
     async def get_grades(self,
-                         role: Literal['pupil', 'teacher'],
+                         role: Literal['pupil', 'staff'],
                          user_login: str,
                          user_password: str,
                          week_shift=0,
@@ -306,7 +307,7 @@ class LycregAPI:
         )
 
     async def get_homework(self,
-                           role: Literal['pupil', 'teacher'],
+                           role: Literal['pupil', 'staff'],
                            user_login: str,
                            user_password: str,
                            day_shift=0,
@@ -364,8 +365,26 @@ router = APIRouter(
 )
 
 
-@router.get('/check_auth_data/')
-async def check_auth_data(role: Literal['pupil', 'teacher'], login: str, password: str) -> dict:
+class AuthData(BaseModel):
+    role: Literal['pupil', 'staff']
+    login: str
+    password: str
+
+    @field_validator('role', mode='before')
+    @classmethod
+    def role_validator(cls, v: Literal['pupil', 'staff', 'group', 'teacher']):
+        dct = {'group': 'pupil', 'teacher': 'staff', 'pupil': 'pupil', 'staff': 'staff'}
+        try:
+            return dct[v]
+        except KeyError:
+            raise ValueError('Invalid role value')
+
+
+
+@router.post('/check_auth_data/')
+async def check_auth_data(item: AuthData) -> dict:
+    role, login, password = item.role, item.login, item.password
+
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         api = LycregAPI(session)
         auth_res = await api.lycreg_authorise(role, login, password)

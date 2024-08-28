@@ -16,7 +16,7 @@ from aiogram_dialog.widgets.text import Format, Case, Const
 from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, name_input_handler, days_of_week_saver, \
     name_select_handler, switch_to_time_from_handler, old_teacher_handler, old_time_from_handler, old_time_to_handler, \
     time_handler, back_time_to_handler, back_teacher_letter_handler, cancel_elective_handler, auditory_handler, \
-    back_time_from_handler
+    back_time_from_handler, save_login, save_password_and_process_data
 from .elective_text import ElectiveText
 from .getters import *
 from .states import *
@@ -79,6 +79,30 @@ async def to_main(callback: CallbackQuery, button: Button, dialog_manager: Dialo
                                      reply_markup=get_choose_schedule(lang))
 
 
+auth_dialog = Dialog(
+    Window(
+        get_text_from_enum(ElectiveText.enter_login.value),
+        MessageInput(func=save_login,
+                     content_types=ContentType.TEXT),
+        Button(
+            text=get_text_from_enum(ElectiveText.to_main.value),
+            id='to_main',
+            on_click=to_main
+        ),  # кнопка назад сделана так, потому что остальная часть бота написана не на диалогах
+        state=AuthMachine.login,
+        getter=lang_getter
+    ),
+    Window(
+        get_text_from_enum(ElectiveText.enter_password.value),
+        MessageInput(func=save_password_and_process_data,
+                     content_types=ContentType.TEXT),
+        Back(
+            get_text_from_text_message('back')
+        ),
+        state=AuthMachine.password,
+        getter=lang_getter
+    )
+)
 admin_work = Dialog(
     Window(
         get_text_from_enum(ElectiveText.main_page.value),

@@ -23,3 +23,8 @@ class ElectiveCourseMachine(StatesGroup):
     choose_pulpit = State()
     choose_page = State()
     choose_elective = State()
+
+
+class AuthMachine(StatesGroup):
+    login = State()
+    password = State()
