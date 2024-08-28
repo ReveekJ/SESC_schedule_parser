@@ -1,22 +1,20 @@
 import datetime
-import json
 
-import aiohttp
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import CallbackQuery, FSInputFile
 
+from src.database import get_async_session
 from src.tgbot.auxiliary import Form, send_schedule
+from src.tgbot.elective_course.elective_course import ElectiveCourseDB
 from src.tgbot.elective_course.elective_text import ElectiveText
+from src.tgbot.elective_course.elective_transactions.elective_transactions import ElectiveTransactions
 from src.tgbot.elective_course.keyboard import get_elective_course_main_page_user_kb, get_choose_weekday_elective_kb, \
-    get_pulpit_kb, get_elective_kb, get_elective_course_main_page_admin_kb
+    get_pulpit_kb, get_elective_kb
 from src.tgbot.keyboard import get_choose_schedule
 from src.tgbot.parser import ELECTIVE_PARSER
 from src.tgbot.text import TEXT
-from src.tgbot.elective_course.elective_course import ElectiveCourseDB
-from src.database import get_async_session
-from src.tgbot.elective_course.elective_transactions.elective_transactions import ElectiveTransactions
 from src.tgbot.user_models.db import DB
 
 
@@ -31,42 +29,19 @@ class ElectiveCourseMachine(Form):
 router = Router()
 
 
-@router.callback_query(F.data == 'to_elective')
+# эта функция нужна только для кнопки назад, хендлер находится в файле main_page
 async def to_elective(callback: CallbackQuery, state: FSMContext, edit_messages: bool = True):
     await state.clear()
-
     lang = callback.from_user.language_code
-    db_session = await get_async_session()
-    user = await DB().select_user_by_id(db_session, callback.from_user.id)
 
-    # is_auth_user = False
-    #
-    # url = 'http://localhost:8000/lycreg/check_auth_data/'
-    # params = {'login': user.login, 'password': user.password}
-    #
-    # async with aiohttp.ClientSession(trust_env=True) as session:
-    #     async with session.get(url, params=params) as response:
-    #         res = await response.text()
-    #         if json.loads(res).get('status') == 200:
-    #             is_auth_user = True
-
-    if user.role in ['teacher', 'admin']:  # TODO: добавить обратно проверку is_auth
-        if edit_messages:
-            await callback.message.edit_text(ElectiveText.main_page.value[lang],
-                                             reply_markup=get_elective_course_main_page_admin_kb(lang))
-        else:
-            await callback.message.answer(ElectiveText.main_page.value[lang],
-                                          reply_markup=get_elective_course_main_page_admin_kb(lang))
+    if edit_messages:
+        await callback.message.edit_text(ElectiveText.main_page.value[lang],
+                                         reply_markup=get_elective_course_main_page_user_kb(lang))
     else:
-        if edit_messages:
-            await callback.message.edit_text(ElectiveText.main_page.value[lang],
-                                             reply_markup=get_elective_course_main_page_user_kb(lang))
-        else:
-            await callback.message.answer(ElectiveText.main_page.value[lang],
-                                          reply_markup=get_elective_course_main_page_user_kb(lang))
+        await callback.message.answer(ElectiveText.main_page.value[lang],
+                                      reply_markup=get_elective_course_main_page_user_kb(lang))
 
     await callback.answer()
-    # await session.close()
 
 
 @router.callback_query(F.data == 'today_elective_course')
