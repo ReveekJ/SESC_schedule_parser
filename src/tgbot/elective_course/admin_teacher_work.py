@@ -1,6 +1,5 @@
 import datetime
 import json
-from pprint import pprint
 from types import NoneType
 
 import aiohttp
@@ -125,8 +124,31 @@ async def switch_to_time_from_handler(callback: CallbackQuery, widget: Button, d
     if not dialog_manager.dialog_data.get('days_of_week'):
         return None
 
-    days = sorted(dialog_manager.dialog_data.get('days_of_week'))
-    await dialog_manager.update({'days_of_week': days})
+    days_of_week = sorted(dialog_manager.dialog_data.get('days_of_week'))
+    await dialog_manager.update({'days_of_week': days_of_week})
+
+    if dialog_manager.dialog_data.get('action') == 'remove':
+        list_of_courses_for_remember = []
+        js = dialog_manager.middleware_data.get('js')
+
+        for day in days_of_week:
+            #  используем заглушки так как в commit_changes все равно используется только subject и weekday
+            course_for_remember = ElectiveCourse(
+                subject=dialog_manager.dialog_data.get('name_of_course'),
+                pulpit='',
+                teacher_name='',
+                weekday=day,
+                time_from=datetime.time(0, 0, 0),
+                time_to=datetime.time(0, 0, 0),
+                auditory='',
+            )
+            list_of_courses_for_remember.append(course_for_remember)
+        await commit_changes(dialog_manager.dialog_data.get('action'), list_of_courses_for_remember, js)
+
+        await callback.message.delete()
+        await dialog_manager.reset_stack()
+        await dialog_manager.start(AdminMachine.action, mode=StartMode.NEW_STACK)  # возвращаемся
+        return None
 
     await dialog_manager.switch_to(AdminMachine.time_from)
 
@@ -239,7 +261,6 @@ async def auditory_handler(callback: CallbackQuery,
                            widget: Button,
                            dialog_manager: DialogManager,
                            *args, **kwargs):
-    pprint(dialog_manager.dialog_data)
     if callback.data == 'old_auditory':
         course: ElectiveCourse = dialog_manager.dialog_data.get('course')
         await __save_to_dialog_data(course.auditory, dialog_manager)
@@ -249,17 +270,12 @@ async def auditory_handler(callback: CallbackQuery,
     days_of_week: list = dialog_manager.dialog_data.get('days_of_week')
     cur_day_inx: int = dialog_manager.dialog_data.get('cur_day_inx', 0)
     action = dialog_manager.dialog_data.get('action')
+    old_course: ElectiveCourse = dialog_manager.dialog_data.get('course')
 
     # сохранить информацию до лучших времен
     match action:
-        # case 'remove':  # TODO: remove case
-        #     course_for_remember = ElectiveCourse(
-        #         subject=dialog_manager.dialog_data.get('name_of_course'),
-        #         pulpit=dialog_manager.dialog_data.get('pulpit'),
-        #
-        #     )
+        #  секция remove находится в switch_to_time_from_handler
         case 'edit_for_one_day':
-            old_course: ElectiveCourse = dialog_manager.dialog_data.get('course')
             course_for_remember = ElectiveCourse(
                 subject=dialog_manager.dialog_data.get('name_of_course'),
                 pulpit=dialog_manager.dialog_data.get('pulpit'),
