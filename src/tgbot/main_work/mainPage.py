@@ -115,7 +115,7 @@ async def to_elective(callback: CallbackQuery, dialog_manager: DialogManager):
     elif user.role in ['teacher', 'admin']:
         url = 'http://localhost:8000/lycreg/check_auth_data/'
         params = {'role': user.role, 'login': user.login, 'password': user.password}
-        print(params)
+
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=params) as response:
                 res = await response.text()

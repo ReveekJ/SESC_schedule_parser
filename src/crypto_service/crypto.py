@@ -1,12 +1,9 @@
+from http import HTTPStatus
 from typing import Union
 
-from http import HTTPStatus
-from pprint import pprint
-
-from fastapi import APIRouter
 from cryptography.fernet import Fernet, InvalidToken
+from fastapi import APIRouter
 from pydantic import BaseModel
-from requests import Request
 
 router = APIRouter(prefix='/crypt', tags=['crypto'])
 
