@@ -95,6 +95,13 @@ async def name_input_handler(message: Message, widget: MessageInput, dialog_mana
                                text=ElectiveText.same_name_already_exist.value[message.from_user.language_code])
 
 
+async def back_to_name_input(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager, *args, **kwargs):
+    if dialog_manager.dialog_data.get('action') == 'add':
+        await dialog_manager.switch_to(AdminMachine.name_of_course_input)
+    else:
+        await dialog_manager.switch_to(AdminMachine.name_of_course_selector)
+
+
 async def name_select_handler(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, *args, **kwargs):
     data = callback.data.split(':')[-1]
     await dialog_manager.update({'name_of_course': data})
@@ -188,7 +195,7 @@ async def back_teacher_letter_handler(callback: CallbackQuery, widget: Button, d
 
 async def back_time_from_handler(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager, *args,
                                  **kwargs):
-    if dialog_manager.dialog_data.get('cur_day_inx') == 0:
+    if dialog_manager.dialog_data.get('cur_day_inx') is None:
         await dialog_manager.back()
     else:
         await dialog_manager.done(result={'back_time_from': True})
