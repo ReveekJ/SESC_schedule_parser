@@ -16,7 +16,7 @@ from aiogram_dialog.widgets.text import Format, Case, Const
 from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, name_input_handler, days_of_week_saver, \
     name_select_handler, switch_to_time_from_handler, old_teacher_handler, old_time_from_handler, old_time_to_handler, \
     time_handler, back_time_to_handler, back_teacher_letter_handler, cancel_elective_handler, auditory_handler, \
-    back_time_from_handler, save_login, save_password_and_process_data
+    back_time_from_handler, save_login, save_password_and_process_data, back_to_name_input
 from .elective_text import ElectiveText
 from .getters import *
 from .states import *
@@ -43,20 +43,6 @@ def get_text_from_text_message(short_name) -> Case:
     )
 
 
-Button(
-    Case(
-        texts={
-            'ru': ElectiveText.same.value['ru'] + ' (' + Format('{old_teacher}') + ')',
-            'en': ElectiveText.same.value['en'] + ' (' + Format('{old_teacher}') + ')',
-        },
-        selector='lang'
-    ),
-    id='old_teacher',
-    on_click=old_teacher_handler,
-    when='action_not_add'
-),
-
-
 def create_old_data_button(text: dict, old_data: str, on_click, when: str = 'action_not_add') -> Button:
     return Button(
         Case(
@@ -70,6 +56,11 @@ def create_old_data_button(text: dict, old_data: str, on_click, when: str = 'act
         on_click=on_click,
         when=when
     )
+
+
+def create_weekday_text() -> tuple[Case, Format]:
+    return (get_text_from_enum(ElectiveText.settings_for.value),
+            Format('📅 {weekday}\n'))
 
 
 async def to_main(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
@@ -181,11 +172,16 @@ admin_work = Dialog(
             id='switch_to_time_from',
             on_click=switch_to_time_from_handler,
         ),
-        Back(get_text_from_text_message('back')),
+        Button(
+            id='back_to_smth',
+            text=get_text_from_text_message('back'),
+            on_click=back_to_name_input
+        ),
         getter=possible_days_getter,
         state=AdminMachine.day_of_week
     ),
     Window(
+        *create_weekday_text(),
         get_text_from_enum(ElectiveText.time_from.value),
         Button(
             get_text_from_enum(ElectiveText.cancel_elective.value),
@@ -212,6 +208,7 @@ admin_work = Dialog(
         getter=time_from_getter
     ),
     Window(
+        *create_weekday_text(),
         get_text_from_enum(ElectiveText.time_to.value),
         create_old_data_button(ElectiveText.same.value, 'prev_time', old_time_to_handler, 'prev_time_exist'),
         Group(
@@ -231,6 +228,7 @@ admin_work = Dialog(
         getter=time_to_getter
     ),
     Window(
+        *create_weekday_text(),
         get_text_from_text_message('choose_letter'),
         create_old_data_button(ElectiveText.same.value, 'old_teacher', old_teacher_handler),
         Group(
@@ -251,6 +249,7 @@ admin_work = Dialog(
         state=AdminMachine.teacher_letter
     ),
     Window(
+        *create_weekday_text(),
         get_text_from_text_message('choose_sub_info_teacher'),
         create_old_data_button(ElectiveText.same.value, 'old_teacher', old_teacher_handler),
         Group(
@@ -268,6 +267,7 @@ admin_work = Dialog(
         state=AdminMachine.teacher
     ),
     Window(
+        *create_weekday_text(),
         get_text_from_text_message('choose_sub_info_auditory'),
         create_old_data_button(ElectiveText.same.value, 'old_auditory', auditory_handler),
         Group(

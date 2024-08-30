@@ -52,6 +52,10 @@ async def courses_by_pulpit_getter(event_from_user: User, dialog_manager: Dialog
             'courses': sorted(__list_to_select_format(courses), key=lambda x: x[1])}
 
 
+def __get_weekday(dialog_manager: DialogManager, lang: str) -> str:
+    return TEXT('weekdays', lang)[dialog_manager.dialog_data.get('days_of_week')[dialog_manager.dialog_data.get('cur_day_inx', 0)]]
+
+
 async def __time_getter(event_from_user: User, dialog_manager: DialogManager, prev_time: datetime.time | None,
                         **kwargs):
     lang = (await lang_getter(event_from_user)).get('lang')
@@ -80,10 +84,10 @@ async def __time_getter(event_from_user: User, dialog_manager: DialogManager, pr
         'lang': lang,
         'time': __list_to_select_format([i.strftime(ElectiveInfo.date_format.value) for i in times]),
         'prev_time': prev_time.strftime(ElectiveInfo.date_format.value) if (prev_time is not None) else None,
-        # Pycharm gone crazy, but it works
         'prev_time_exist': True if (dialog_manager.dialog_data.get('action') != 'add') and
                                    (prev_time > time_from if time_from is not None else True) else False,
         'add_cancel': True if dialog_manager.dialog_data.get('action') == 'edit_for_one_day' else False,
+        'weekday': __get_weekday(dialog_manager, lang),
     }
 
 
@@ -114,17 +118,20 @@ async def time_to_getter(event_from_user: User, dialog_manager: DialogManager, *
 
 
 async def teacher_letter_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
+    lang = (await lang_getter(event_from_user)).get('lang')
     action = dialog_manager.dialog_data.get('action')
     return {
         'lang': (await lang_getter(event_from_user)).get('lang'),
         'action_not_add': True if action != 'add' else False,
         'old_teacher': SESC_Info.TEACHER_REVERSE[
             dialog_manager.dialog_data.get('course').teacher_name] if action != 'add' else None,
-        'teacher_letter': __list_to_select_format(SESC_Info.TEACHER_LETTERS)
+        'teacher_letter': __list_to_select_format(SESC_Info.TEACHER_LETTERS),
+        'weekday': __get_weekday(dialog_manager, lang),
     }
 
 
 async def teacher_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
+    lang = (await lang_getter(event_from_user)).get('lang')
     letter = dialog_manager.dialog_data.get('teacher_letter')
     action = dialog_manager.dialog_data.get('action')
     teachers = [(number, name) for name, number in SESC_Info.TEACHER.items() if name[0] == letter]
@@ -135,10 +142,12 @@ async def teacher_getter(event_from_user: User, dialog_manager: DialogManager, *
         'action_not_add': True if action != 'add' else False,
         'old_teacher': SESC_Info.TEACHER_REVERSE[
             dialog_manager.dialog_data.get('course').teacher_name] if action != 'add' else None,
+        'weekday': __get_weekday(dialog_manager, lang),
     }
 
 
 async def auditory_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
+    lang = (await lang_getter(event_from_user)).get('lang')
     old_auditory = SESC_Info.AUDITORY_REVERSE[dialog_manager.dialog_data.get('course').auditory] \
         if (dialog_manager.dialog_data.get('course') is not None) else None
     return {
@@ -146,4 +155,5 @@ async def auditory_getter(event_from_user: User, dialog_manager: DialogManager, 
         'auditory': __list_to_select_format(SESC_Info.AUDITORY.keys(), custom_index=SESC_Info.AUDITORY.values()),
         'old_auditory': old_auditory,
         'action_not_add': True if dialog_manager.dialog_data.get('action') != 'add' else False,
+        'weekday': __get_weekday(dialog_manager, lang),
     }
