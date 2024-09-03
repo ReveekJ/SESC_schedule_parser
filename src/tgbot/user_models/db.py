@@ -7,11 +7,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.config import CRYPTO_KEY
 from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse, ElectiveCourseTimetable
 from src.tgbot.user_models.models import UsersModel
 from src.tgbot.user_models.schemas import User
-from src.config import CRYPTO_KEY
 
 
 class DB:
@@ -125,6 +125,9 @@ class DB:
 
     async def update_user_info(self, session: AsyncSession, _id: int, **kwargs):
         user = await self.select_user_by_id(session, _id)
+
+        # kwargs bug fix
+        kwargs['id'] = _id
 
         # шифруем логин и пароль
         if kwargs.get('login') is not None:
