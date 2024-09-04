@@ -117,7 +117,7 @@ admin_work = Dialog(
             Select(
                 Format('{item[1]}'),
                 id='pulpit',
-                item_id_getter=lambda x: x[1],
+                item_id_getter=lambda x: str(x[0]),
                 items='pulpit',
                 on_click=pulpit_handler
             ),

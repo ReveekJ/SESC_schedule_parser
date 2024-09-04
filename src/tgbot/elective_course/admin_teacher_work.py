@@ -55,17 +55,16 @@ async def save_password_and_process_data(message: Message, widget: MessageInput,
         async with lycreg_session.post(url, json=params) as response:
             res = await response.text()
 
+    await db_session.close()
+    await bot.delete_messages(chat_id=chat_id,
+                              message_ids=[dialog_manager.dialog_data.get('login_message_id'), message.message_id])
+
     if json.loads(res).get('status') == 200:
         await DB().update_user_info(db_session, user.id, login=login, password=password)
         await dialog_manager.start(AdminMachine.action, mode=StartMode.RESET_STACK)
     else:
         await message.answer(ElectiveText.login_password_incorrect.value[lang])
         await dialog_manager.switch_to(AuthMachine.login)
-
-    await db_session.close()
-    await bot.delete_messages(chat_id=chat_id,
-                              message_ids=[dialog_manager.dialog_data.get('login_message_id'), message.message_id])
-
 
 async def __save_to_dialog_data(data, dialog_manager: DialogManager):
     await dialog_manager.update({dialog_manager.current_context().state.state.split(':')[-1]: data})

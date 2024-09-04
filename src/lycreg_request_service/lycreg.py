@@ -1,4 +1,5 @@
 import datetime
+import string
 import time
 from typing import Any, Literal
 
@@ -69,6 +70,7 @@ class LycregAPI:
         "weights": ['0', '0.5', '', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0'],
         "scole_domain": "https://lycreg.urfu.ru/"
     }
+    # SESC_JSON["all_dtsit"] = SESC_JSON["dtsit"] | SESC_JSON["add_dtsit"]
 
     def __init__(self, client: aiohttp.ClientSession):
         self.client = client
@@ -77,12 +79,19 @@ class LycregAPI:
                                       captcha_id: str,
                                       role: Literal['pupil', 'staff'],
                                       user_login: str, user_password: str) -> str:
+        data = {
+            't': role,
+            'l': user_login,
+            'p': user_password,
+            'f': 'login',
+            'ci': captcha_id,
+            'c': captcha
+        }
         async with self.client.post(
                 self.SESC_JSON.get('scole_domain'),
-                data=f'{{"t":{role}", "l":"{user_login}", "p":"{user_password}", "f":"login", '
-                     f'"ci":{captcha_id}, "c":{captcha} }}',
+                json=data,
         ) as response:
-            assert response.status == 200, 'Login-function response is not 200'
+            # assert response.status == 200, 'Login-function response is not 200'
             return await response.text()
 
     async def __tabel_get_raw_request(self, user_login: str, user_token: str) -> str:
@@ -119,19 +128,19 @@ class LycregAPI:
 
     async def lycreg_authorise(self, role: Literal['pupil', 'staff'], user_login: str, user_password: str) -> dict:
         captcha_bytes, captcha_id = await self.__fetch_captcha()
-        assert captcha_id is not None, 'X-Cpt header doesn\'t exists'
+        # assert captcha_id is not None, 'X-Cpt header doesn\'t exists'
         solved_captcha = await self.__solve_captcha(captcha_bytes)
         authorise = await self.__authorise_raw_request(captcha=solved_captcha, captcha_id=captcha_id,
                                                        role=role, user_login=user_login, user_password=user_password)
         if 'token' not in authorise:
             return {'error': 'auth error'}
-        if '["pupil"]' not in authorise:
-            return {'error': 'role error'}
+        # if '["pupil"]' not in authorise:
+        #     return {'error': 'role error'}
         return json.loads(authorise)
 
     async def __fetch_captcha(self) -> tuple[bytes, str | None]:
         async with self.client.get(f'{self.SESC_JSON["scole_domain"]}cpt.a') as response:
-            assert response.status == 200, '/cpt.a response status is not 200'
+            # assert response.status == 200, '/cpt.a response status is not 200'
             return await response.read(), response.headers.get('X-Cpt')
 
     @staticmethod
@@ -385,10 +394,12 @@ class AuthData(BaseModel):
 async def check_auth_data(item: AuthData) -> dict:
     role, login, password = item.role, item.login, item.password
 
+    login = ''.join((i for i in login if i in string.ascii_letters or i in string.digits))
+    password = ''.join((i for i in password if i in string.ascii_letters or i in string.digits))
+
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         api = LycregAPI(session)
         auth_res = await api.lycreg_authorise(role, login, password)
-
         if auth_res.get('error') is not None:
             return {'status': 400, 'error': auth_res.get('error')}
         else:
