@@ -110,7 +110,7 @@ async def to_elective(callback: CallbackQuery, dialog_manager: DialogManager):
     db_session = await get_async_session()
     user = await DB().select_user_by_id(db_session, callback.from_user.id)
 
-    if user.id in ADMINS:
+    if user.id in ADMINS and user.role == 'teacher':
         await dialog_manager.start(states.AdminMachine.action, mode=StartMode.RESET_STACK)
     elif user.role in ['teacher', 'admin']:
         url = 'http://localhost:8000/lycreg/check_auth_data/'
