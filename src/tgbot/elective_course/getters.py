@@ -20,11 +20,13 @@ async def lang_getter(event_from_user: User, **kwargs) -> dict:
 
 async def pulpit_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
     lang = (await lang_getter(event_from_user)).get('lang')
-    pulpit = SESC_Info.PULPIT.get(lang)
 
     if dialog_manager.dialog_data.get('action') == 'add':
-        return {'pulpit': __list_to_select_format(pulpit),
+        pulpit = SESC_Info.PULPIT.get(lang)
+
+        return {'pulpit': __list_to_select_format(pulpit, SESC_Info.PULPIT.get('en')),
                 'lang': lang}
+
     pulpits = await ElectiveCourseDB.get_exist_pulpits()
     return {'pulpit': sorted(__list_to_select_format(pulpits.get(lang), pulpits.get('en')), key=lambda x: x[1]),
             'lang': lang}
