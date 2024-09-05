@@ -32,7 +32,8 @@ class AbstractParser(ABC):
             # пытаемся найти соответствие по number и subgroup
             for index, lesson in enumerate(merged_schedule):
                 if ((lesson['number'] == number and lesson['subgroup'] == subgroup) or
-                        (lesson['number'] == number and subgroup == 0)):
+                        (lesson['number'] == number and subgroup == 0) or
+                        (lesson['number'] == number and lesson['subgroup'] == 0)):
                     merged_schedule[index] = difference
             # если соответствия нет, то добавляем этот урок
             else:
@@ -43,23 +44,6 @@ class AbstractParser(ABC):
     @abstractmethod
     async def parse(self, _type: str, _second: str, _weekday: str):
         pass
-
-    # @staticmethod  # Отправление запроса учителя
-    # @abstractmethod
-    # async def __get_json(_type: str, _second: int, weekday: int):
-    #     pass
-    #
-    # @abstractmethod
-    # async def __check_for_changes_student(self) -> None:
-    #     pass
-    #
-    # @abstractmethod
-    # async def __check_for_changes_teacher(self) -> None:
-    #     pass
-    #
-    # @abstractmethod
-    # async def check_for_changes(self):
-    #     pass
 
     # Создание таблицы
     def create_table(self, _type: str, info: list, path: str):
