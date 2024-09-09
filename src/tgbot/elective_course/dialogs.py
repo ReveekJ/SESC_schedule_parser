@@ -21,26 +21,7 @@ from .elective_text import ElectiveText
 from .getters import *
 from .states import *
 from ..keyboard import get_choose_schedule
-
-
-def get_text_from_enum(text: dict[str, str]) -> Case:
-    return Case(
-        texts={
-            'ru': Const(text.get('ru')),
-            'en': Const(text.get('en')),
-        },
-        selector='lang'
-    )
-
-
-def get_text_from_text_message(short_name) -> Case:
-    return Case(
-        texts={
-            'ru': Const(TEXT(short_name, 'ru')),
-            'en': Const(TEXT(short_name, 'en')),
-        },
-        selector='lang'
-    )
+from ...utils.dialogs_utils import get_text_from_enum, get_text_from_text_message
 
 
 def create_old_data_button(text: dict, old_data: str, on_click, when: str = 'action_not_add') -> Button:
