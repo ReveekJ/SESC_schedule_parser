@@ -8,14 +8,7 @@ from src.tgbot.elective_course.states import AdminMachine
 from src.tgbot.sesc_info import SESC_Info
 from src.tgbot.text import TEXT
 from .elective_info import ElectiveInfo
-
-
-def __list_to_select_format(items: list, custom_index: list | None = None) -> list[tuple]:
-    return [(index, elem) for index, elem in zip(range(len(items)) if custom_index is None else custom_index, items)]
-
-
-async def lang_getter(event_from_user: User, **kwargs) -> dict:
-    return {'lang': event_from_user.language_code}
+from ...utils.dialogs_utils import lang_getter, __list_to_select_format
 
 
 async def pulpit_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
