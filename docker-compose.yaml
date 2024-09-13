@@ -32,9 +32,24 @@ services:
     depends_on:
       - postgres_db
       - nats
+      - drawing
     networks:
       - app_network
       - nats_network
+      - driver_network
+    volumes:
+      - ./schedules:/images
+
+  drawing:
+    container_name: drawing
+    restart: 'always'
+    build:
+      context: ./Drawing/
+      dockerfile: ./Drawing/Dockerfile
+    networks:
+      - driver_network
+    volumes:
+      - ./schedules:/images
 
   nats:
     image: nats:latest
@@ -67,9 +82,12 @@ volumes:
   nats_data:
   nats_config:
   nui_db:
+  images:
 
 networks:
   app_network:
     driver: bridge
   nats_network:
+    driver: bridge
+  driver_network:
     driver: bridge
