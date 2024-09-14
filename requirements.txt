@@ -21,3 +21,4 @@ aiogram-dialog
 nats-py
 grpcio
 grpcio-tools
+protobuf==5.27.2
