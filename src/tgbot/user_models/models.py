@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from src.database import Base
 
+
 columns_json = {0: 'id',
                 1: 'role',
                 2: 'sub_info',
@@ -20,6 +21,7 @@ class UsersModel(Base):
     lang: Mapped[str]
     login: Mapped[Optional[str]]
     password: Mapped[Optional[str]]
+    style: Mapped[int]
 
     elective_course_replied: Mapped[Optional[list['ElectiveCourseModel']]] = relationship(
         back_populates='users_replied',

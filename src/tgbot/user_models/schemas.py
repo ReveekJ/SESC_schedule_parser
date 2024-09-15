@@ -14,6 +14,7 @@ class User(BaseModel):
     lang: str
     login: Optional[str] = 'None'
     password: Optional[str] = 'None'
+    style: int
     elective_course_replied: list[ElectiveCourse] = []
 
     # автоматически конвертирует из типа в бд в тип во всем остальном коде
@@ -58,20 +59,6 @@ class User(BaseModel):
             for index, elem in enumerate(dct.get('elective_course_replied')):
                 dct['elective_course_replied'][index] = ElectiveCourseModel(**elem)
         return dct
-
-    # @model_validator(mode='before')
-    # @classmethod
-    # def elective_course_replied_validate(cls, self):
-    #     self.id = cls.id_validator(self.id)
-    #     self.role = cls.role_validate(self.role)
-    #
-    #     if isinstance(self.elective_course_replied, list):
-    #         for index, elem in enumerate(self.elective_course_replied):
-    #             if isinstance(elem, ElectiveCourseModel):
-    #                 self.elective_course_replied[index] = ElectiveCourse(**elem.__dict__)
-    #     else:
-    #         raise ValueError('Bad Elective Course Replied')
-    #     return self
 
     def __getitem__(self, item):
         return self.__dict__[item]  # it works
