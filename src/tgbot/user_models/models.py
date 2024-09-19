@@ -19,8 +19,7 @@ class UsersModel(Base):
     role: Mapped[str]
     sub_info: Mapped[str]
     lang: Mapped[str]
-    login: Mapped[Optional[str]]
-    password: Mapped[Optional[str]]
+    is_approved_user: Mapped[Optional[bool]] = mapped_column(default=False)
     style: Mapped[int]
 
     elective_course_replied: Mapped[Optional[list['ElectiveCourseModel']]] = relationship(

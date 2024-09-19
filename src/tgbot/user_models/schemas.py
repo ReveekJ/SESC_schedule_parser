@@ -12,8 +12,7 @@ class User(BaseModel):
     role: str
     sub_info: str
     lang: str
-    login: Optional[str] = 'None'
-    password: Optional[str] = 'None'
+    is_approved_user: Optional[bool] = False
     style: int
     elective_course_replied: list[ElectiveCourse] = []
 
