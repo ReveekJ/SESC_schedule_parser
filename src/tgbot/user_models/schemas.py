@@ -13,7 +13,7 @@ class User(BaseModel):
     sub_info: str
     lang: str
     is_approved_user: Optional[bool] = False
-    style: int
+    style: Optional[int] = 0
     elective_course_replied: list[ElectiveCourse] = []
 
     # автоматически конвертирует из типа в бд в тип во всем остальном коде
