@@ -1,8 +1,8 @@
 import asyncio
 
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.exceptions import TelegramRetryAfter
-from aiogram.filters import Command, Filter
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery

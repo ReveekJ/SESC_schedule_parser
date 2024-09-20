@@ -45,7 +45,6 @@ class AbstractParser(ABC):
 
     # Создание таблицы
     def _create_table(self, _type: str, info: list, style: int):
-        print(datetime.now())
         def get_text_of_lesson(__lesson: dict) -> list | None:
             nonlocal _type
 
@@ -59,7 +58,6 @@ class AbstractParser(ABC):
 
         with grpc.insecure_channel('drawing:8080') as channel:
             stub = drawing_pb2_grpc.DrawerStub(channel)
-            print(datetime.now())
 
             lessons = []
 
@@ -73,10 +71,8 @@ class AbstractParser(ABC):
 
             styles_dct: dict[int, str] = {number: name for name, number in drawing_pb2.Style.items()}
             draw_request = drawing_pb2.DrawRequest(lessons=lessons, drawStyle=styles_dct.get(style))
-            print(datetime.now())
 
             response: DrawResponse = stub.Draw(draw_request)
-            print(datetime.now())
 
             return response.pathToImage
 
