@@ -1,5 +1,10 @@
+import asyncio
+
 from aiogram import Router, F
+from aiogram.exceptions import TelegramRetryAfter
 from aiogram.filters import Command, Filter
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 
 from src.config import ADMINS
@@ -13,30 +18,37 @@ from src.utils.aiogram_utils import StartsWithFilter
 router = Router()
 
 
+class SendToAllSG(StatesGroup):
+    message = State()
+
+
 @router.message(Command('send_to_all'))
-async def send_to_all(message: Message):
+async def send_to_all(message: Message, state: FSMContext):
     user_id = message.chat.id
 
     if user_id not in ADMINS:
         return None
 
-    session = await get_async_session()
-    users = await DB().get_all_users(session)
-    await session.close()
+    await state.set_state(SendToAllSG.message)
 
-    text = message.text[13:]
+
+@router.message(SendToAllSG.message)
+async def send_admin_message(message: Message):
     lang = message.from_user.language_code
     errors = 0
 
+    async with await get_async_session() as session:
+        users = await DB().get_all_users(session)
+
     for user in users:
         try:
-            await bot.send_message(user['id'],
-                                   text)
+            await message.send_copy(user.id)
+        except TelegramRetryAfter as e:
+            await asyncio.sleep(e.retry_after)
         except Exception as e:
             errors += 1
 
-    await bot.send_message(user_id,
-                           TEXT('admin_sending_message', lang) + str(errors))
+    await message.answer(TEXT('admin_sending_message', lang) + str(errors))
 
 
 @router.callback_query(StartsWithFilter('selfie_'))

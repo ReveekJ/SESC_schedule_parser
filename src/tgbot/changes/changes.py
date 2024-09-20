@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter
 from aiogram.types import FSInputFile
 
 from src.database import get_async_session
@@ -41,9 +41,11 @@ async def sending_schedule_changes():
                                     lang=user_data.lang,
                                     schedule=schedule,
                                     disable_notifications=False)
-                await asyncio.sleep(1)
-            except TelegramForbiddenError:
-                pass  # возникает когда пользователь заблокировал бота
+                await asyncio.sleep(0.5)
+            except TelegramForbiddenError:  # возникает когда пользователь заблокировал бота
+                pass
                 # TODO: как то удалять пользователей из базы, если оно заблокал бота
+            except TelegramRetryAfter as e:
+                await asyncio.sleep(e.retry_after)
             except Exception as e:
                 logging.error(f'|changes| {e} \n{str(user_data.id) + " " + role + " " + sub_info}')
