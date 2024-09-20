@@ -113,17 +113,10 @@ async def to_elective(callback: CallbackQuery, dialog_manager: DialogManager):
     if user.id in ADMINS and user.role == 'teacher':
         await dialog_manager.start(states.AdminMachine.action, mode=StartMode.RESET_STACK)
     elif user.role in ['teacher', 'admin']:
-        url = 'http://localhost:8000/lycreg/check_auth_data/'
-        params = {'role': user.role, 'login': user.login, 'password': user.password}
-
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=params) as response:
-                res = await response.text()
-
-        if json.loads(res).get('status') == 200:
+        if user.is_approved_user:
             await dialog_manager.start(states.AdminMachine.action, mode=StartMode.RESET_STACK)
         else:
-            await dialog_manager.start(states.AuthMachine.login, mode=StartMode.RESET_STACK)
+            await dialog_manager.start(states.AuthMachine.selfie, mode=StartMode.RESET_STACK)
 
     else:
         await callback.message.edit_text(ElectiveText.main_page.value[lang],

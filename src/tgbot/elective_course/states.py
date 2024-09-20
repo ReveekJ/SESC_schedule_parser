@@ -26,5 +26,4 @@ class ElectiveCourseMachine(StatesGroup):
 
 
 class AuthMachine(StatesGroup):
-    login = State()
-    password = State()
+    selfie = State()

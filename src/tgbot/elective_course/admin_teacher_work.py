@@ -1,27 +1,25 @@
 import datetime
-import json
 from types import NoneType
 
-import aiohttp
 from aiogram.types import CallbackQuery, Message
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_dialog import DialogManager, ShowMode, StartMode
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button, Select
 from nats.js import JetStreamContext
 
-from src.config import NATS_DELAYED_CONSUMER_SUBJECT
+from src.config import NATS_DELAYED_CONSUMER_SUBJECT, ADMINS
 from src.tgbot.auxiliary import bot
 from src.tgbot.elective_course.elective_course import ElectiveCourseDB
-from src.tgbot.elective_course.elective_text import ElectiveText
+from src.tgbot.elective_course.elective_text import ElectiveText, AuthText
 from src.utils.delayed_remove_elective_changes.publisher import delay_changes_removing
 from .getters import ElectiveInfo
 from .schemas import ElectiveCourse
-from .states import AdminMachine, AuthMachine
-from ..user_models.db import DB
-from ...database import get_async_session
+from .states import AdminMachine
+from ..keyboard import get_choose_schedule
+from ..text import TEXT
+from ...utils.dialogs_utils import lang_getter
 
-
-# from src.tgbot.elective_course.user_work import to_elective
 
 #  проверить является ли юзер зарегистрированным учителем либо админом
 #  если да, то предоставить такой функционао
@@ -30,41 +28,22 @@ from ...database import get_async_session
 #  3) посмотреть свои курсы (если ты учитель)
 #  4) получить список текущих курсов в виде google sheet
 
-async def save_login(message: Message, widget: MessageInput, dialog_manager: DialogManager, *args, **kwargs):
-    dialog_manager.show_mode = ShowMode.DELETE_AND_SEND
-    dialog_manager.dialog_data.update({'login': message.text,
-                                       'login_message_id': message.message_id})
-    await dialog_manager.next()
+# фото всегда есть так как есть фильтр на content type
+async def process_selfie(message: Message, widget: MessageInput, dialog_manager: DialogManager, *args, **kwargs):
+    lang = (await lang_getter(message.from_user)).get('lang')
 
+    yes_no_kb = InlineKeyboardBuilder()
+    yes_no_kb.button(text=AuthText.approve_btn.value[lang], callback_data=f'selfie_approve_{message.chat.id}')
+    yes_no_kb.button(text=AuthText.decline_btn.value[lang], callback_data=f'selfie_decline_{message.chat.id}')
 
-async def save_password_and_process_data(message: Message, widget: MessageInput, dialog_manager: DialogManager, *args, **kwargs):
-    dialog_manager.show_mode = ShowMode.DELETE_AND_SEND
+    for admin_id in ADMINS:
+        await message.send_copy(admin_id, reply_markup=yes_no_kb.as_markup())
 
-    lang = message.from_user.language_code
-    chat_id = message.chat.id
-    login = dialog_manager.dialog_data.get('login')
-    password = message.text
+    await message.answer(AuthText.wait_pls.value[lang], disable_notification=True)
 
-    db_session = await get_async_session()
-    user = await DB().select_user_by_id(db_session, chat_id)
-
-    url = 'http://localhost:8000/lycreg/check_auth_data/'
-    params = {'role': user.role, 'login': login, 'password': password}
-
-    async with aiohttp.ClientSession() as lycreg_session:
-        async with lycreg_session.post(url, json=params) as response:
-            res = await response.text()
-
-    await db_session.close()
-    await bot.delete_messages(chat_id=chat_id,
-                              message_ids=[dialog_manager.dialog_data.get('login_message_id'), message.message_id])
-
-    if json.loads(res).get('status') == 200:
-        await DB().update_user_info(db_session, user.id, login=login, password=password)
-        await dialog_manager.start(AdminMachine.action, mode=StartMode.RESET_STACK)
-    else:
-        await message.answer(ElectiveText.login_password_incorrect.value[lang])
-        await dialog_manager.switch_to(AuthMachine.login)
+    await dialog_manager.done()
+    await message.answer(TEXT('main', lang=lang), reply_markup=get_choose_schedule(lang),
+                         disable_notification=True)  # в главное меню
 
 async def __save_to_dialog_data(data, dialog_manager: DialogManager):
     await dialog_manager.update({dialog_manager.current_context().state.state.split(':')[-1]: data})

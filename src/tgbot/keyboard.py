@@ -86,7 +86,7 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
         # short_name
         kb.button(text=TEXT(j, lang) if j != 'teacher' else TEXT('teacher_kb', lang), callback_data='type_' + j)
 
-    # kb.button(text=TEXT('to_elective', lang), callback_data='to_elective')  # TODO: раскомментировать когда разрешат
+    kb.button(text=TEXT('to_elective', lang), callback_data='to_elective')
     kb.adjust(1)
     return kb.as_markup()
 
