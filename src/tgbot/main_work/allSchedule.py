@@ -92,7 +92,7 @@ async def func_weekday(callback: CallbackQuery, state: FSMContext):
 
     await state.clear()
 
-    file = await PARSER.parse(_type, _second, _weekday)
+    file = await PARSER.parse(_type, _second, _weekday, user_id=user_id)
 
     # проверка на присутствие расписания
     if file == 'NO_SCHEDULE':

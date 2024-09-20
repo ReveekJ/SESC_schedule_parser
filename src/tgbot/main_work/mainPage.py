@@ -23,9 +23,9 @@ router = Router()
 @router.callback_query(F.data == 'tomorrow')
 @router.callback_query(F.data == 'today')
 async def send_schedule_for_today(callback: CallbackQuery):
-    session = await get_async_session()
-    user_data = await DB().select_user_by_id(session, callback.message.chat.id)
     lang = callback.from_user.language_code
+    async with await get_async_session() as session:
+        user_data = await DB().select_user_by_id(session, callback.message.chat.id)
 
     await callback.message.delete()
 
@@ -35,7 +35,7 @@ async def send_schedule_for_today(callback: CallbackQuery):
     else:
         day = str((datetime.date.today().weekday()) % 6 + 1)
 
-    file = await PARSER.parse(user_data['role'], user_data['sub_info'], day)
+    file = await PARSER.parse(user_data['role'], user_data['sub_info'], day, user_id=user_data.id)
 
     # проверка на присутствие расписания
     if file == 'NO_SCHEDULE':
@@ -79,9 +79,11 @@ async def get_all_days_sch(callback: CallbackQuery):
 @router.callback_query(F.data == '6')
 async def get_sch_for_this_day(callback: CallbackQuery):
     lang = callback.from_user.language_code
-    session = await get_async_session()
-    user_data = await DB().select_user_by_id(session, callback.message.chat.id)
-    file = await PARSER.parse(user_data['role'], user_data['sub_info'], callback.data)
+
+    async with await get_async_session() as session:
+        user_data = await DB().select_user_by_id(session, callback.message.chat.id)
+
+    file = await PARSER.parse(user_data['role'], user_data['sub_info'], callback.data, user_id=user_data.id)
 
     await callback.message.delete()
     if file == 'NO_SCHEDULE':

@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 import aiohttp
+import grpc
 import simplejson as json
-from PIL import Image, ImageDraw, ImageFont
 
-from src.config import PATH_TO_FONT, PATH_TO_PROJECT
+from proto import drawing_pb2_grpc, drawing_pb2
+from proto.drawing_pb2 import DrawResponse
+from src.config import PATH_TO_FONT
 from src.database import get_async_session
 from src.my_typing import ChangesList, ChangesType
 from src.tgbot.sesc_info import SESC_Info
@@ -14,11 +17,6 @@ from src.tgbot.user_models.db import DB
 class AbstractParser(ABC):
     def __init__(self, font_path: str):
         self.font_path = font_path
-
-    @staticmethod
-    @abstractmethod
-    def get_path(name: str):
-        pass
 
     @staticmethod
     def merge_schedule(lessons: list[dict], diffs: list[dict]) -> list[dict]:
@@ -42,172 +40,45 @@ class AbstractParser(ABC):
         return merged_schedule
 
     @abstractmethod
-    async def parse(self, _type: str, _second: str, _weekday: str):
+    async def parse(self, _type: str, _second: str, _weekday: str, style: int):
         pass
 
     # Создание таблицы
-    def create_table(self, _type: str, info: list, path: str):
-        def get_text_of_lesson(__lesson: dict) -> str:
+    def _create_table(self, _type: str, info: list, style: int):
+        print(datetime.now())
+        def get_text_of_lesson(__lesson: dict) -> list | None:
             nonlocal _type
 
             match _type:
                 case 'teacher':
-                    return f"{__lesson['subject']}, {__lesson['group']}, {__lesson['auditory']}" \
-                        if __lesson['subject'] != '' else ''
+                    return (__lesson['subject'], __lesson['group'], __lesson['auditory']) if __lesson['subject'] != '' else None
                 case 'auditory':
-                    return f"{__lesson['subject']}, {__lesson['teacher']}, {__lesson['group']}" \
-                        if __lesson['subject'] != '' else ''
+                    return (__lesson['subject'], __lesson['teacher'], __lesson['group']) if __lesson['subject'] != '' else None
                 case _:
-                    return f"{__lesson['subject']}, {__lesson['teacher']}, {__lesson['auditory']}" \
-                        if __lesson['subject'] != '' else ''
+                    return (__lesson['subject'], __lesson['teacher'], __lesson['auditory']) if __lesson['subject'] != '' else None
 
-        def is_exist_lesson_by_number(_lessons: list[dict], number: int) -> bool:
-            for _les in _lessons:
-                if _les['number'] == number:
-                    return True
+        with grpc.insecure_channel('drawing:8080') as channel:
+            stub = drawing_pb2_grpc.DrawerStub(channel)
+            print(datetime.now())
 
-            return False
+            lessons = []
 
-        # Создаем изображение и определяем размеры и шрифт
-        width, height = 960, 540
-        image = Image.new('RGB', (width, height), (255, 255, 255))
-        draw = ImageDraw.Draw(image)
-        font_path = self.font_path
-        font_size = 20
-        font = ImageFont.truetype(font_path, font_size)
+            for index, row in enumerate(info):
+                les = get_text_of_lesson(row)
 
-        # Размеры колонок
-        column_width1 = 120
-        column_width2 = width - column_width1 - 20
+                if les is None:
+                    continue
 
-        # Расчет высоты строки и высоты текста
-        row_height = height // 8
-        text_height = font.getbbox('A')[3] - font.getbbox('A')[1] + 4
+                lessons.append(drawing_pb2.Lesson(lessonNumber=index + 1, first=les[0], second=les[1], third=les[2]))
 
-        # Рисуем шапку таблицы
-        header_bg_color = (0, 128, 0)
-        header_text = 'Уроки'
-        header_text_bounding_box = font.getbbox(header_text)
-        header_text_width = header_text_bounding_box[2] - header_text_bounding_box[0]
-        header_text_x = column_width1 + (column_width2 - header_text_width) // 2
-        header_text_y = (row_height - text_height) // 2
-        draw.rectangle(((0, 0), (width, row_height)), fill=header_bg_color)
-        draw.text((header_text_x, header_text_y), header_text, font=font, fill=(255, 255, 255))
+            styles_dct: dict[int, str] = {number: name for name, number in drawing_pb2.Style.items()}
+            draw_request = drawing_pb2.DrawRequest(lessons=lessons, drawStyle=styles_dct.get(style))
+            print(datetime.now())
 
-        # Рисуем разделительную полосу после шапки
-        draw.line([(column_width1, 0), (column_width1, row_height)], fill=(128, 128, 128), width=1)
+            response: DrawResponse = stub.Draw(draw_request)
+            print(datetime.now())
 
-        lessons = info
-
-        # Если уроков меньше 7, добавляем пустые уроки, чтобы получить 7 строк
-        for i in range(1, 8):
-            if not is_exist_lesson_by_number(lessons, i):
-                lessons.append(
-                    {'uid': None, 'subject': '', 'auditory': '', 'group': '', 'teacher': '', 'subgroup': 0, 'number': i,
-                     'weekday': None})
-
-        lessons = sorted(info, key=lambda x: x['number'])
-        skipped_rows = 0
-
-        # Рисуем таблицу с данными
-        for l in range(177):
-            if l == len(lessons):
-                break
-            lesson = lessons[l]
-            start_y = (lesson['number'] - skipped_rows) * row_height
-
-            # Рисуем разделительную полосу
-            draw.line([(0, start_y), (width, start_y)], fill=(128, 128, 128), width=1)
-
-            # Рисуем номер урока в первой колонке
-            lesson_number = str(lesson['number'])
-
-            lesson_number_bounding_box = font.getbbox(lesson_number)
-            lesson_number_width = lesson_number_bounding_box[2] - lesson_number_bounding_box[0]
-            lesson_number_x = (column_width1 - lesson_number_width) // 2
-            lesson_number_y = start_y + (row_height - text_height) // 2
-
-            # Рисуем разделительные полоски для колонок
-            draw.line([(column_width1, start_y), (column_width1, start_y + row_height)], fill=(128, 128, 128), width=1)
-
-            if lesson['subgroup'] == 0:
-                # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
-                lesson_info = get_text_of_lesson(lesson)
-
-                lesson_info_width = font.getbbox(lesson_info)[2] - font.getbbox(lesson_info)[0]
-                lesson_info_x = column_width1 + (column_width2 - lesson_info_width) // 2
-                lesson_info_y = start_y + (row_height - text_height) // 2
-                if lesson.get('date'):
-                    color = (252, 132, 3)
-                else:
-                    color = (0, 0, 0)
-                draw.text((lesson_info_x, lesson_info_y), lesson_info, font=font, fill=color)
-
-            else:
-                # TODO: доюавить разделительную полоску между расписаниеми для subgroup
-                lesson_info_subgroup1 = ''
-                lesson_info_subgroup2 = ''
-                color = (0, 0, 0)
-
-                # Рисуем урок, учителя и аудиторию во второй колонке с центровкой
-                if lesson['subgroup'] == 1:
-                    lesson_info_subgroup1 = get_text_of_lesson(lesson)
-
-                    if lesson.get('date'):
-                        color = (252, 132, 3)
-                    else:
-                        color = (0, 0, 0)
-
-                    for les in lessons:
-                        # ищем подходящий по subgroup и number урок
-                        if les['subgroup'] == 2 and les['number'] == lesson['number']:
-                            lesson2 = les
-                            break
-                    else:
-                        # если ничего подходящего не нашли, то ставим такю заглушку
-                        lesson2 = {'subject': 'Нет', 'teacher': 'Нет', 'group': 'Нет', 'auditory': 'Нет'}
-
-                    lesson_info_subgroup2 = get_text_of_lesson(lesson2)
-                elif lesson['subgroup'] == 2:
-                    lesson_info_subgroup2 = get_text_of_lesson(lesson)
-
-                    if lesson.get('date') is not None:
-                        color = (252, 132, 3)
-                    else:
-                        color = (0, 0, 0)
-
-                    for les in lessons:
-                        # ищем подходящий по subgroup и number урок
-                        if les['subgroup'] == 1 and les['number'] == lesson['number']:
-                            lesson1 = les
-                            break
-                    else:
-                        # если ничего подходящего не нашли, то ставим такю заглушку
-                        lesson1 = {'subject': 'Нет', 'teacher': 'Нет', 'group': 'Нет', 'auditory': 'Нет'}
-                    lesson_info_subgroup1 = get_text_of_lesson(lesson1)
-
-                lesson_info_subgroup1_width = (
-                        font.getbbox(lesson_info_subgroup1)[2] - font.getbbox(lesson_info_subgroup1)[0])
-
-                lesson_info_subgroup1_x = column_width1 + (column_width2 // 2 - lesson_info_subgroup1_width) // 2
-                lesson_info_subgroup1_y = start_y + (row_height - text_height) // 2
-
-                lesson_info_subgroup2_width = font.getbbox(lesson_info_subgroup2)[2] - \
-                                              font.getbbox(lesson_info_subgroup2)[0]
-                lesson_info_subgroup2_x = column_width1 + column_width2 // 2 + (
-                        column_width2 // 2 - lesson_info_subgroup2_width) // 2
-                lesson_info_subgroup2_y = start_y + (row_height - text_height) // 2
-
-                draw.text((lesson_info_subgroup2_x, lesson_info_subgroup2_y), lesson_info_subgroup2, font=font,
-                          fill=color)
-                draw.text((lesson_info_subgroup1_x, lesson_info_subgroup1_y), lesson_info_subgroup1, font=font,
-                          fill=color)
-
-            # рисуем номер урока
-            draw.text((lesson_number_x, lesson_number_y), lesson_number, font=font, fill=(0, 0, 0))
-
-        # Сохраняем изображение в файл
-        image.save(path)
+            return response.pathToImage
 
 
 class Parser(AbstractParser):
@@ -215,20 +86,18 @@ class Parser(AbstractParser):
         super().__init__(font_path)
         self.changes = ChangesList()
 
-    @staticmethod
-    def get_path(name: str):
-        return PATH_TO_PROJECT + f'schedules/schedule{name}.png'
-
     # Преобразование информации и управление процессом создания таблицы
-    async def parse(self, _type: str, _second: str, _weekday: str):
-        path = self.get_path(_second)
-
+    async def parse(self, _type: str, _second: str, _weekday: str, user_id: int, style: int | None = None):
         info = await self.__get_json(_type, int(_second), int(_weekday))
 
         if not info['lessons'] and not info['diffs']:
             return 'NO_SCHEDULE'
 
-        self.create_table(_type, self.merge_schedule(info['lessons'], info['diffs']), path)
+        async with await get_async_session() as session:
+            if style is None:
+                style = (await DB().select_user_by_id(session, user_id)).style
+
+        path = self._create_table(_type, self.merge_schedule(info['lessons'], info['diffs']), style)
 
         return path
 
@@ -290,10 +159,6 @@ class Parser(AbstractParser):
 
 class ElectiveParser(AbstractParser):
     @staticmethod
-    def get_path(name: str):
-        return PATH_TO_PROJECT + f'schedules/schedule{name}.png'
-
-    @staticmethod
     def __convert_number(func):
         def wrapper(*args, **kwargs):
             origin: list[dict] = func(*args, **kwargs)
@@ -308,28 +173,25 @@ class ElectiveParser(AbstractParser):
     def merge_schedule(self, lessons: list[dict], diffs: list[dict]) -> list[dict]:
         return super().merge_schedule(lessons, diffs)
 
-    async def parse(self, user_id: int, **kwargs) -> str:
+    async def parse(self, user_id: int, style: int | None = None, **kwargs) -> str:
         weekday = int(kwargs['weekday'])
         _type = kwargs['type'] if kwargs.get('type') else 'group'
-        session = await get_async_session()
-        courses = await DB().get_elective_courses_for_day(session, user_id, weekday)
-        await session.close()
+
+        async with await get_async_session() as session:
+            courses = await DB().get_elective_courses_for_day(session, user_id, weekday)
+
+            if style is None:
+                style = (await DB().select_user_by_id(session, user_id)).style
 
         dumped_courses = courses.model_dump(mode='timetable')
-        path = self.get_path(str(user_id))
 
         if not courses.lessons and not courses.diffs:
             return 'NO_SCHEDULE'
 
-        self.create_table(_type, self.merge_schedule(dumped_courses['lessons'], dumped_courses['diffs']), path)
+        path = self._create_table(_type, self.merge_schedule(dumped_courses['lessons'], dumped_courses['diffs']), style)
 
         return path
 
 
 PARSER = Parser(PATH_TO_FONT)
 ELECTIVE_PARSER = ElectiveParser(PATH_TO_FONT)
-
-
-
-
-{'type': 'group', 'lessons': [{'uid': 10810, 'subject': 'Математика', 'auditory': '305', 'group': '8А', 'teacher': 'Соболева И. П.', 'subgroup': 1, 'number': 1, 'weekday': 1}, {'uid': 10811, 'subject': 'Математика', 'auditory': '305', 'group': '8А', 'teacher': 'Соболева И. П.', 'subgroup': 1, 'number': 2, 'weekday': 1}, {'uid': 10812, 'subject': 'Обществознание', 'auditory': '103', 'group': '8А', 'teacher': 'Лимушин В. П.', 'subgroup': 1, 'number': 3, 'weekday': 1}, {'uid': 10813, 'subject': 'АнглЯзык', 'auditory': '', 'group': '8А', 'teacher': '', 'subgroup': 1, 'number': 4, 'weekday': 1}, {'uid': 10814, 'subject': 'АнглЯзык', 'auditory': '', 'group': '8А', 'teacher': '', 'subgroup': 1, 'number': 5, 'weekday': 1}, {'uid': 10815, 'subject': 'Математика', 'auditory': '302', 'group': '8А', 'teacher': 'Соболева И. П.', 'subgroup': 1, 'number': 6, 'weekday': 1}, {'uid': 10816, 'subject': 'Химия', 'auditory': '309', 'group': '8А', 'teacher': 'Климова Л. И.', 'subgroup': 2, 'number': 2, 'weekday': 1}, {'uid': 10817, 'subject': 'Биология', 'auditory': '114', 'group': '8А', 'teacher': 'Сергунова Н. Б.', 'subgroup': 2, 'number': 3, 'weekday': 1}, {'uid': 10818, 'subject': 'Биология', 'auditory': '114', 'group': '8А', 'teacher': 'Сергунова Н. Б.', 'subgroup': 2, 'number': 4, 'weekday': 1}, {'uid': 10819, 'subject': 'Русский', 'auditory': '322', 'group': '8А', 'teacher': 'Косова Л. В.', 'subgroup': 2, 'number': 5, 'weekday': 1}, {'uid': 12294, 'subject': 'Химия', 'auditory': '309', 'group': '8А', 'teacher': 'Климова Л. И.', 'subgroup': 2, 'number': 1, 'weekday': 1}, {'uid': 12295, 'subject': 'Русский', 'auditory': '322', 'group': '8А', 'teacher': 'Косова Л. В.', 'subgroup': 2, 'number': 6, 'weekday': 1}], 'diffs': []}

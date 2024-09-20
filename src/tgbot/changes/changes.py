@@ -22,19 +22,17 @@ async def sending_schedule_changes():
         weekday = elem.weekday
         # schedule = elem.schedule
 
-        # создаем расписание с изменениями
-        path = await PARSER.parse(str(role), str(sub_info), str(weekday))
-        schedule = FSInputFile(path)
-
-        session = await get_async_session()
-        users = await DB().select_users_by_role_and_sub_info(session,
-                                                             role=role,
-                                                             sub_info=sub_info)
-        await session.close()
+        async with await get_async_session() as session:
+            users = await DB().select_users_by_role_and_sub_info(session,
+                                                                 role=role,
+                                                                 sub_info=sub_info)
 
         # рассылаем изменения по юзерам
         for user_data in users:
             try:
+                # создаем расписание с изменениями
+                path = await PARSER.parse(str(role), str(sub_info), str(weekday), user_id=user_data.id)
+                schedule = FSInputFile(path)
                 await send_schedule(chat_id=user_data.id,
                                     short_name_text_mes='changed_schedule',
                                     role=role,
