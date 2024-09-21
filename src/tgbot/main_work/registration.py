@@ -246,7 +246,11 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
 @router.message(CommandStart())
 @router.message(F.text == MainText.to_main.value)
 async def start_registration(message: Message, state: FSMContext, dialog_manager: DialogManager):
-    await dialog_manager.done()
+    try:
+        await dialog_manager.done()
+    except Exception as e:  # возникает когда нет открытых диалогов
+        pass
+
     await message.delete()  # для красоты
     await func_start_registration(message, state)
 
