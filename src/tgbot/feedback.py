@@ -41,7 +41,6 @@ async def get_feedback(message: Message, state: FSMContext):
     await message.delete()
     await bot.send_message(user_id,
                            TEXT('get_feedback', lang),
-                           reply_markup=back_kb(lang),
                            disable_notification=True)
 
 
