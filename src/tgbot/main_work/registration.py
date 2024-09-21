@@ -6,6 +6,7 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import Message, CallbackQuery
+from aiogram_dialog import DialogManager
 
 from src.config import ADMINS
 from src.database import get_async_session
@@ -13,7 +14,7 @@ from src.tgbot.auxiliary import Form, bot
 from src.tgbot.for_administration.administration_page import administration_page
 from src.tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
                                 get_letter_of_teacher_kb, aprove)
-from src.tgbot.text import TEXT
+from src.tgbot.text import TEXT, MainText
 from src.tgbot.user_models.db import DB
 from src.tgbot.user_models.schemas import User
 from pydantic import ValidationError
@@ -243,7 +244,10 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
 
 
 @router.message(CommandStart())
-async def start_registration(message: Message, state: FSMContext):
+@router.message(F.text == MainText.to_main.value)
+async def start_registration(message: Message, state: FSMContext, dialog_manager: DialogManager):
+    await dialog_manager.done()
+    await message.delete()  # для красоты
     await func_start_registration(message, state)
 
 

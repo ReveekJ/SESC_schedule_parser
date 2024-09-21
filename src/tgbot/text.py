@@ -1,3 +1,5 @@
+from enum import Enum
+
 from src.my_typing import TextMessage
 
 TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, '),
@@ -109,3 +111,11 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                                                                                      "please write to us about it at "
                                                                                      "/feedback"),
                    ('to_elective', 'На факультативы', 'To elective courses'))
+
+
+class MainText(Enum):
+    relogin = '🔁 Re-register'
+    optional = '🔴 Дополнительно'
+    feedback = '🤝 Оставить отзыв'
+    electives = '🏫 Факультативы'
+    to_main = '⬅ На главную страницу'

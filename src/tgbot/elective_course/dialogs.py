@@ -1,5 +1,4 @@
 from aiogram.enums import ContentType
-from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import (
@@ -11,7 +10,7 @@ from aiogram_dialog.widgets.kbd import (
     Multiselect,
     SwitchTo
 )
-from aiogram_dialog.widgets.text import Format, Case, Const
+from aiogram_dialog.widgets.text import Format, Case
 
 from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, name_input_handler, days_of_week_saver, \
     name_select_handler, switch_to_time_from_handler, old_teacher_handler, old_time_from_handler, old_time_to_handler, \
@@ -20,8 +19,7 @@ from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, na
 from .elective_text import ElectiveText, AuthText
 from .getters import *
 from .states import *
-from ..keyboard import get_choose_schedule
-from ...utils.dialogs_utils import get_text_from_enum, get_text_from_text_message
+from ...utils.dialogs_utils import get_text_from_enum, get_text_from_text_message, to_main
 
 
 def create_old_data_button(text: dict, old_data: str, on_click, when: str = 'action_not_add') -> Button:
@@ -43,14 +41,6 @@ def create_weekday_text() -> tuple[Case, Format]:
     return (get_text_from_enum(ElectiveText.settings_for.value),
             Format('📅 {weekday}\n'))
 
-
-async def to_main(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
-    lang = callback.from_user.language_code
-    await dialog_manager.done()
-    await callback.message.edit_text(TEXT('main', lang=lang),
-                                     reply_markup=get_choose_schedule(lang))
-
-
 auth_dialog = Dialog(
     Window(
         get_text_from_enum(AuthText.greeting_text.value),
@@ -58,11 +48,11 @@ auth_dialog = Dialog(
             func=process_selfie,
             content_types=ContentType.PHOTO
         ),
-        Button(
-            text=get_text_from_enum(ElectiveText.to_main.value),
-            id='to_main',
-            on_click=to_main
-        ),  # кнопка назад сделана так, потому что остальная часть бота написана не на диалогах
+        # Button(
+        #     text=get_text_from_enum(ElectiveText.to_main.value),
+        #     id='to_main',
+        #     on_click=to_main
+        # ),  # кнопка назад сделана так, потому что остальная часть бота написана не на диалогах
         state=AuthMachine.selfie,
         getter=lang_getter
     )
@@ -76,11 +66,11 @@ admin_work = Dialog(
                id='edit_for_one_day', on_click=save_to_dialog_data_and_next),
         Button(get_text_from_enum(ElectiveText.edit_permanently.value),
                id='edit_permanently', on_click=save_to_dialog_data_and_next),
-        Button(
-            text=get_text_from_enum(ElectiveText.to_main.value),
-            id='to_main',
-            on_click=to_main
-        ),  # кнопка назад сделана так, потому что остальная часть бота написана не на диалогах
+        # Button(
+        #     text=get_text_from_enum(ElectiveText.to_main.value),
+        #     id='to_main',
+        #     on_click=to_main
+        # ),  # кнопка назад сделана так, потому что остальная часть бота написана не на диалогах
         state=AdminMachine.action,
         getter=lang_getter
     ),
@@ -96,7 +86,7 @@ admin_work = Dialog(
             ),
             width=1),
         Back(
-            get_text_from_text_message('back')
+            get_text_from_enum(ElectiveText.done.value)
         ),
         getter=pulpit_getter,
         state=AdminMachine.pulpit,

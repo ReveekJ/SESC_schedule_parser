@@ -1,10 +1,10 @@
 import datetime
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder, ButtonType
 
 from src.tgbot.sesc_info import SESC_Info
-from src.tgbot.text import TEXT
+from src.tgbot.text import TEXT, MainText
 
 
 def add_back_btn(keyboard: InlineKeyboardBuilder, lang: str):
@@ -15,6 +15,29 @@ def admin_functions(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=TEXT("change_schedule", lang), callback_data="change_schedule")
     return kb.as_markup()
+
+
+def bottom_menu(lang: str) -> ReplyKeyboardMarkup:
+    kb = ReplyKeyboardBuilder()
+    kb.row(
+        KeyboardButton(
+            text=MainText.electives.value
+        ),
+        KeyboardButton(
+            text=MainText.optional.value
+        )
+    )
+    kb.row(
+        KeyboardButton(
+            text=MainText.feedback.value
+        ),
+        KeyboardButton(
+            text=MainText.relogin.value
+        )
+    )
+    kb.row(KeyboardButton(text=MainText.to_main.value))
+
+    return kb.as_markup(resize_keyboard=True)
 
 
 def get_choose_role_kb(lang: str) -> InlineKeyboardMarkup:
@@ -86,7 +109,7 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
         # short_name
         kb.button(text=TEXT(j, lang) if j != 'teacher' else TEXT('teacher_kb', lang), callback_data='type_' + j)
 
-    kb.button(text=TEXT('to_elective', lang), callback_data='to_elective')
+    # kb.button(text=TEXT('to_elective', lang), callback_data='to_elective')  эта кнопка перенесена на другую клавиатуру
     kb.adjust(1)
     return kb.as_markup()
 

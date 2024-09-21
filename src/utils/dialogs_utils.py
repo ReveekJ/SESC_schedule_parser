@@ -1,6 +1,9 @@
-from aiogram.types import User
+from aiogram.types import User, CallbackQuery
+from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.text import Case, Const
 
+from src.tgbot.keyboard import get_choose_schedule
 from src.tgbot.text import TEXT
 
 
@@ -30,3 +33,10 @@ def __list_to_select_format(items: list, custom_index: list | None = None) -> li
 
 async def lang_getter(event_from_user: User, **kwargs) -> dict:
     return {'lang': event_from_user.language_code}
+
+
+async def to_main(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
+    lang = callback.from_user.language_code
+    await dialog_manager.done()
+    await callback.message.edit_text(TEXT('main', lang=lang),
+                                     reply_markup=get_choose_schedule(lang))

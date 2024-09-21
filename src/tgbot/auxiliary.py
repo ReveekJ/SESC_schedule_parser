@@ -3,6 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, FSInputFile
 
+from .keyboard import bottom_menu
 from ..config import TOKEN
 from src.tgbot.sesc_info import SESC_Info
 from src.tgbot.text import TEXT
@@ -45,4 +46,5 @@ async def send_schedule(chat_id: int, short_name_text_mes: str, role: str, sub_i
                          photo=schedule,
                          caption=caption,
                          disable_notification=disable_notifications,
+                         reply_markup=bottom_menu(lang),  # это клавиатура из кнопок внизу, здесь ее достаточно удобно разместить
                          request_timeout=5)
