@@ -58,6 +58,8 @@ class ElectiveText(Enum):
                                'en': '❌ An elective with this name already exists, try another one'}
     settings_for = {'ru': '✅ Ты настраиваешь:',
                     'en': '✅ You\'re setting up:'}
+    elective_changes = {'ru': 'Изменения в расписании факультативов для тебя',
+                        'en': 'Changes in the elective schedule for you'}
 
 
 class AuthText(Enum):
