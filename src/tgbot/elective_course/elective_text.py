@@ -58,9 +58,10 @@ class ElectiveText(Enum):
                                'en': '❌ An elective with this name already exists, try another one'}
     settings_for = {'ru': '✅ Ты настраиваешь:',
                     'en': '✅ You\'re setting up:'}
-    elective_changes = {'ru': 'Изменения в расписании факультативов для тебя',
-                        'en': 'Changes in the elective schedule for you'}
-
+    elective_changes = {'ru': 'Изменения в расписании факультативов для тебя на ',
+                        'en': 'Changes in the elective schedule for you on '}
+    loading = {'ru': 'Сохраняем изменения.....\nРассылаем изменения по ученикам',
+               'en': 'Save the changes.....\nDistribute the changes to the students'}
 
 class AuthText(Enum):
     greeting_text = {'ru': 'Отправь селфи с пропуском СУНЦ, чтобы мы могли убедиться что ты - настоящий учитель, а не вредный школьник, который хочет побаловаться \n\nПостарайся сделать фото так, чтобы было четко видно твое лицо и пропуск\n\nЕсли не получается, то напиши волонтеру: @I_relsa, он прибежит и поможет)))',

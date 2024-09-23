@@ -1,7 +1,10 @@
+import asyncio
 import datetime
+from pprint import pprint
 from types import NoneType
 
-from aiogram.types import CallbackQuery, Message
+from aiogram.exceptions import TelegramRetryAfter
+from aiogram.types import CallbackQuery, Message, FSInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_dialog import DialogManager, ShowMode, StartMode
 from aiogram_dialog.widgets.input import MessageInput
@@ -13,11 +16,15 @@ from src.tgbot.auxiliary import bot
 from src.tgbot.elective_course.elective_course import ElectiveCourseDB
 from src.tgbot.elective_course.elective_text import ElectiveText, AuthText
 from src.utils.delayed_remove_elective_changes.publisher import delay_changes_removing
+from .elective_transactions.elective_transactions import ElectiveTransactions
 from .getters import ElectiveInfo
 from .schemas import ElectiveCourse
 from .states import AdminMachine
 from ..keyboard import get_choose_schedule
+from ..parser import ElectiveParser, ELECTIVE_PARSER
 from ..text import TEXT
+from ..user_models.db import DB
+from ...database import get_async_session
 from ...utils.dialogs_utils import lang_getter
 
 
@@ -128,6 +135,8 @@ async def switch_to_time_from_handler(callback: CallbackQuery, widget: Button, d
                 auditory='',
             )
             list_of_courses_for_remember.append(course_for_remember)
+
+        await callback.message.answer(ElectiveText.loading.value[callback.from_user.language_code])
         await commit_changes(dialog_manager.dialog_data.get('action'), list_of_courses_for_remember, js)
 
         await callback.message.delete()
@@ -210,6 +219,8 @@ async def start_new_dialog(callback: CallbackQuery, dialog_manager: DialogManage
 
     if cur_day_inx + 1 == len(days_of_week):  # все дни прошли
         js = dialog_manager.middleware_data.get('js')
+
+        await callback.message.answer(ElectiveText.loading.value[callback.from_user.language_code])
         await commit_changes(action, list_of_courses_for_remember, js)
 
         await callback.message.delete()
@@ -316,3 +327,28 @@ async def commit_changes(action: str, changes_list: list[ElectiveCourse], js: Je
                                              course_id=course_id,  # нельзя course.id так как в course лежит курс взятый не из бд, а собранные в auditory_handler
                                              subject=NATS_DELAYED_CONSUMER_SUBJECT,
                                              removing_time=removing_time)
+
+    # выполняем рассылку изменений
+    if action != 'add':
+        for changed_course in changes_list:
+            # нужен реальный курс, потому что в changed_course нет поля id, а поиск юзеров выполняется по id курса
+            real_course = await ElectiveCourseDB.get_course_by_subject_and_weekday(changed_course.subject, changed_course.weekday)
+
+            ids = await ElectiveTransactions.get_user_ids_by_course_id(real_course)
+            for user_id in ids:
+                async with await get_async_session() as session:
+                    user = await DB().select_user_by_id(session, user_id)
+
+                path = await ELECTIVE_PARSER.parse(user_id, weekday=changed_course.weekday)
+                schedule = FSInputFile(path)
+
+                try:
+                    caption = ElectiveText.elective_changes.value[user.lang] + TEXT('weekdays', user.lang)[changed_course.weekday]
+                    await bot.send_photo(chat_id=user_id,
+                                         photo=schedule,
+                                         caption=caption)
+                    await asyncio.sleep(0.1)
+                except TelegramRetryAfter as e:
+                    await asyncio.sleep(e.retry_after)
+                except Exception as e:
+                    pass  # такие дела
