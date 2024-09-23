@@ -1,11 +1,12 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.database import get_async_session
 from src.tgbot.elective_course.elective_transactions.models import ElectiveCourseTransactionsModel
-from src.tgbot.elective_course.schemas import ElectiveCourse
 from src.tgbot.elective_course.models import ElectiveCourseModel
-from src.tgbot.user_models.schemas import User
+from src.tgbot.elective_course.schemas import ElectiveCourse
 from src.tgbot.user_models.models import UsersModel
+from src.tgbot.user_models.schemas import User
 
 
 class ElectiveTransactions:
@@ -22,15 +23,12 @@ class ElectiveTransactions:
         return elective_courses
 
     @staticmethod
-    async def get_users_by_course_name(session: AsyncSession, course: ElectiveCourse) -> list[User]:
-        query = select(ElectiveCourseTransactionsModel).where(course_id=course.subject)
-        result = await session.execute(query)
-        await session.commit()
-        users = []
+    async def get_user_ids_by_course_id(course: ElectiveCourse) -> list[int]:
+        async with await get_async_session() as session:
+            query = select(ElectiveCourseTransactionsModel).where(ElectiveCourseTransactionsModel.course_name == course.id)
+            result = await session.execute(query)
 
-        for user in result.scalars().all():
-            users.append(User(**user.__dict__))
-        return users
+        return [int(i.user_id) for i in result.scalars().all()]
 
     @staticmethod
     async def add_elective_transaction(session: AsyncSession, user: User, course: ElectiveCourse) -> None:
