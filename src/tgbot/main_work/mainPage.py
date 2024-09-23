@@ -123,5 +123,5 @@ async def to_elective(message: Message, dialog_manager: DialogManager):
             await dialog_manager.start(states.AuthMachine.selfie, mode=StartMode.RESET_STACK)
 
     else:
-        await message.edit_text(ElectiveText.main_page.value[lang],
-                                        reply_markup=get_elective_course_main_page_user_kb(lang))
+        await message.answer(ElectiveText.main_page.value[lang],
+                             reply_markup=get_elective_course_main_page_user_kb(lang))
