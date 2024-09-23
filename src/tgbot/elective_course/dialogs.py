@@ -19,7 +19,7 @@ from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, na
 from .elective_text import ElectiveText, AuthText
 from .getters import *
 from .states import *
-from ...utils.dialogs_utils import get_text_from_enum, get_text_from_text_message, to_main
+from ...utils.dialogs_utils import get_text_from_enum, get_text_from_text_message, lang_getter
 
 
 def create_old_data_button(text: dict, old_data: str, on_click, when: str = 'action_not_add') -> Button:

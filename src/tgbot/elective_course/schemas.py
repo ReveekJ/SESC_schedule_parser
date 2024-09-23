@@ -1,11 +1,9 @@
 import datetime
-
 from typing import Optional, Literal, Any
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 from src.tgbot.sesc_info import SESC_Info
-from src.tgbot.elective_course.elective_text import ElectiveText
 from .elective_info import ElectiveInfo
 
 
