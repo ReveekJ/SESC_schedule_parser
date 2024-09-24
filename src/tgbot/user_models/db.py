@@ -1,13 +1,10 @@
-import json
 import logging
 
-import aiohttp
 from sqlalchemy import select, delete, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.config import CRYPTO_KEY
 from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse, ElectiveCourseTimetable
 from src.tgbot.user_models.models import UsersModel
