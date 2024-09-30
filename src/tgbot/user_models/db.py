@@ -14,7 +14,7 @@ from src.tgbot.user_models.schemas import User
 
 class DB:
     @staticmethod
-    async def get_user_courses_by_course_name(user_id: int, course_name: str):
+    async def get_user_courses_by_course_name(user_id: int, course_name: str) -> list[ElectiveCourse]:
         query = (
             select(UsersModel)
             .join(UsersModel.elective_course_replied)
@@ -27,17 +27,12 @@ class DB:
 
         try:
             async with await get_async_session() as session:
-                tmp = await session.execute(query)
+                tmp: UsersModel = [i for i in (await session.execute(query)).scalars().unique()][0]
                 # q = select(tmp)
-                return tmp.scalars().unique()
-        except IndexError:
-            logging.error("User not found for the given ID")
-            await session.commit()
-            return None
-        except SQLAlchemyError as e:
-            logging.error(f"An error occurred in SQLAlchemy: {e}")
+                return [ElectiveCourse(**i.__dict__) for i in tmp.elective_course_replied]
         except Exception as e:
             logging.error(f"An unexpected error occurred: {e}")
+            return []
 
 
     # Возвращает None если запись не найдется, иначе вернется User
