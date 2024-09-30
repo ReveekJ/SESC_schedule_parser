@@ -12,3 +12,10 @@ nats-py~=2.9.0
 python-dotenv~=1.0.1
 protobuf~=5.27.2
 alembic~=1.13.1
+asyncpg
+aiogram_dialog
+uvloop
+ujson
+aiodns
+nats-py
+grpcio-tools
