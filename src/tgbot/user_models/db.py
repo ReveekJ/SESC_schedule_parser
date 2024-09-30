@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.database import get_async_session
 from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse, ElectiveCourseTimetable
 from src.tgbot.user_models.models import UsersModel
@@ -12,9 +13,39 @@ from src.tgbot.user_models.schemas import User
 
 
 class DB:
+    @staticmethod
+    async def get_user_courses_by_course_name(user_id: int, course_name: str):
+        query = (
+            select(UsersModel)
+            .join(UsersModel.elective_course_replied)
+            .where(
+                UsersModel.id == user_id,
+                ElectiveCourseModel.subject == course_name,  # Фильтр по course_id
+            )
+            .options(selectinload(UsersModel.elective_course_replied))  # Загружаем связанные данные
+        )
+
+        try:
+            async with await get_async_session() as session:
+                tmp = await session.execute(query)
+                # q = select(tmp)
+                return tmp.scalars().unique()
+        except IndexError:
+            logging.error("User not found for the given ID")
+            await session.commit()
+            return None
+        except SQLAlchemyError as e:
+            logging.error(f"An error occurred in SQLAlchemy: {e}")
+        except Exception as e:
+            logging.error(f"An unexpected error occurred: {e}")
+
+
     # Возвращает None если запись не найдется, иначе вернется User
-    async def select_user_by_id(self, session: AsyncSession, _id: int) -> User | None:
-        query = select(UsersModel).options(selectinload(UsersModel.elective_course_replied)).where(UsersModel.id == _id)
+    @staticmethod
+    async def select_user_by_id(session: AsyncSession, _id: int) -> User | None:
+        query = (select(UsersModel)
+                 .where(UsersModel.id == _id)
+                 .options(selectinload(UsersModel.elective_course_replied)))
 
         try:
             temp = await session.execute(query)
