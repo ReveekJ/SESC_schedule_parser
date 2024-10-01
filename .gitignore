@@ -13,3 +13,4 @@ log.log
 *.http
 nats/data/*
 nui/*
+/proto/*
