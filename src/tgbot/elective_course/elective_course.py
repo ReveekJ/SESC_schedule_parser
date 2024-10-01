@@ -1,8 +1,10 @@
+import logging
 from typing import Optional
 
 from sqlalchemy import select, delete, update
 
 from src.database import get_async_session
+from src.tgbot.elective_course.elective_transactions.models import ElectiveCourseTransactionsModel
 from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse
 
@@ -118,3 +120,20 @@ class ElectiveCourseDB:
             'ru': [SESC_Info.PULPIT['ru'][SESC_Info.PULPIT['en'].index(i)] for i in row_res]
         }
         return res
+
+    @staticmethod
+    async def get_elective_courses_by_user_id_and_course_name(user_id: int, course_name: str):
+        query = (select(ElectiveCourseModel)
+                 .join(ElectiveCourseTransactionsModel).filter(
+                    ElectiveCourseModel.subject == course_name,
+                    ElectiveCourseTransactionsModel.user_id == user_id
+                )
+        )
+
+        try:
+            async with await get_async_session() as session:
+                return [ElectiveCourse(**i.__dict__) for i in (await session.execute(query)).scalars().unique()]
+        except IndexError:  # значит просто таких факультативов нет
+            return []
+        except Exception as e:
+            logging.error(e)

@@ -5,7 +5,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.database import get_async_session
 from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse, ElectiveCourseTimetable
 from src.tgbot.user_models.models import UsersModel
@@ -13,28 +12,6 @@ from src.tgbot.user_models.schemas import User
 
 
 class DB:
-    @staticmethod
-    async def get_user_courses_by_course_name(user_id: int, course_name: str) -> list[ElectiveCourse]:
-        query = (
-            select(UsersModel)
-            .join(UsersModel.elective_course_replied)
-            .where(
-                UsersModel.id == user_id,
-                ElectiveCourseModel.subject == course_name,  # Фильтр по course_id
-            )
-            .options(selectinload(UsersModel.elective_course_replied))  # Загружаем связанные данные
-        )
-
-        try:
-            async with await get_async_session() as session:
-                tmp: UsersModel = [i for i in (await session.execute(query)).scalars().unique()][0]
-                # q = select(tmp)
-                return [ElectiveCourse(**i.__dict__) for i in tmp.elective_course_replied]
-        except Exception as e:
-            logging.error(f"An unexpected error occurred: {e}")
-            return []
-
-
     # Возвращает None если запись не найдется, иначе вернется User
     @staticmethod
     async def select_user_by_id(session: AsyncSession, _id: int) -> User | None:
