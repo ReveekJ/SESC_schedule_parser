@@ -14,16 +14,14 @@ class ElectiveText(Enum):
                'en': '⬅ To main'}
     main_page = {'ru': 'Факультативы',
                  'en': 'Elective courses'}
-    register_to_new_course = {'ru': 'Зарегистрироваться на новый факультатив',
-                              'en': 'Register for a new elective'}
+    register_to_new_course = {'ru': 'Записаться/Отписаться',
+                              'en': 'Subscribe/Unsubscribe'}
     choose_pulpit = {'ru': 'Выберите кафедру',
                      'en': 'Choose a pulpit'}
     choose_elective = {'ru': 'Выберите факультатив',
                        'en': 'Choose an elective'}
-    successfully_register = {'ru': '✅ Ты успешно зарегистрировался на факультатив',
-                             'en': '✅ You have successfully registered for an elective'}
-    successfully_unsubscribe = {'ru': '✅ Ты успешно отписался от факультатива',
-                                'en': '✅ You have successfully unsubscribe for an elective'}
+    successfully_sub_or_unsub = {'ru': '✅ Ты успешно изменил свои факультативы',
+                                 'en': '✅ You have successfully registered for an elective'}
     unsubscribe = {'ru': 'Отписаться от факультатива',
                    'en': 'Unsubscribe from an elective'}
     enter_a_name = {'ru': '🖋 Введите название факультатива',
