@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-from pprint import pprint
 from types import NoneType
 
 from aiogram.exceptions import TelegramRetryAfter
@@ -21,19 +20,12 @@ from .getters import ElectiveInfo
 from .schemas import ElectiveCourse
 from .states import AdminMachine
 from ..keyboard import get_choose_schedule
-from ..parser import ElectiveParser, ELECTIVE_PARSER
+from ..parser import ELECTIVE_PARSER
 from ..text import TEXT
 from ..user_models.db import DB
 from ...database import get_async_session
-from ...utils.dialogs_utils import lang_getter
+from ...utils.dialogs_utils import lang_getter, get_days_of_week
 
-
-#  проверить является ли юзер зарегистрированным учителем либо админом
-#  если да, то предоставить такой функционао
-#  1) добавить новый курс
-#  2) удалить курс
-#  3) посмотреть свои курсы (если ты учитель)
-#  4) получить список текущих курсов в виде google sheet
 
 # фото всегда есть так как есть фильтр на content type
 async def process_selfie(message: Message, widget: MessageInput, dialog_manager: DialogManager, *args, **kwargs):
@@ -95,29 +87,12 @@ async def name_select_handler(callback: CallbackQuery, widget: Select, dialog_ma
     # await dialog_manager.switch_to(AdminMachine.)
 
 
-async def days_of_week_saver(callback: CallbackQuery, widget: MessageInput, dialog_manager: DialogManager, *args,
-                             **kwargs):
-    days = dialog_manager.dialog_data.get('days_of_week')
-    data = int(callback.data.split(':')[-1])
-
-    if not days:
-        days = [data]
-    elif data in days:
-        days: list
-        days.remove(data)
-    else:
-        days.append(data)
-
-    await dialog_manager.update({'days_of_week': days})
-
-
 async def switch_to_time_from_handler(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager, *args,
                                       **kwargs):
-    if not dialog_manager.dialog_data.get('days_of_week'):
-        return None
+    days_of_week = get_days_of_week('weekdays_selector_admin', dialog_manager)
 
-    days_of_week = sorted(dialog_manager.dialog_data.get('days_of_week'))
-    await dialog_manager.update({'days_of_week': days_of_week})
+    if not days_of_week:
+        return None
 
     if dialog_manager.dialog_data.get('action') == 'remove':
         list_of_courses_for_remember = []
@@ -190,7 +165,7 @@ async def back_time_from_handler(callback: CallbackQuery, widget: Button, dialog
 
 async def cancel_elective_handler(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager, *args,
                                   **kwargs):
-    days_of_week = dialog_manager.dialog_data.get('days_of_week')
+    days_of_week = get_days_of_week('weekdays_selector_admin', dialog_manager)
     cur_day_inx = dialog_manager.dialog_data.get('cur_day_inx', 0)
 
     old_course: ElectiveCourse = dialog_manager.dialog_data.get('course')
@@ -214,7 +189,7 @@ async def cancel_elective_handler(callback: CallbackQuery, widget: Button, dialo
 
 async def start_new_dialog(callback: CallbackQuery, dialog_manager: DialogManager, list_of_courses_for_remember):
     cur_day_inx = dialog_manager.dialog_data.get('cur_day_inx', 0)
-    days_of_week = dialog_manager.dialog_data.get('days_of_week')
+    days_of_week = get_days_of_week('weekdays_selector_admin', dialog_manager)
     action = dialog_manager.dialog_data.get('action')
 
     if cur_day_inx + 1 == len(days_of_week):  # все дни прошли
@@ -238,7 +213,7 @@ async def start_new_dialog(callback: CallbackQuery, dialog_manager: DialogManage
 
 
 def update_course_for_remember(course_for_remember: ElectiveCourse, dialog_manager: DialogManager) -> list[ElectiveCourse]:
-    days_of_week = dialog_manager.dialog_data.get('days_of_week')
+    days_of_week = get_days_of_week('weekdays_selector_admin', dialog_manager)
     cur_day_inx = dialog_manager.dialog_data.get('cur_day_inx', 0)
     list_of_courses_for_remember: list[ElectiveCourse] | None = dialog_manager.dialog_data.get('courses_for_remember')
 
@@ -263,7 +238,7 @@ async def auditory_handler(callback: CallbackQuery,
     else:
         await __save_to_dialog_data(callback.data.split(':')[-1], dialog_manager)
 
-    days_of_week: list = dialog_manager.dialog_data.get('days_of_week')
+    days_of_week = get_days_of_week('weekdays_selector_admin', dialog_manager)
     cur_day_inx: int = dialog_manager.dialog_data.get('cur_day_inx', 0)
     action = dialog_manager.dialog_data.get('action')
     old_course: ElectiveCourse = dialog_manager.dialog_data.get('course')

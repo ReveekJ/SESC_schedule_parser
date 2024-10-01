@@ -12,13 +12,16 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Format, Case
 
-from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, name_input_handler, days_of_week_saver, \
+from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, name_input_handler, \
     name_select_handler, switch_to_time_from_handler, old_teacher_handler, old_time_from_handler, old_time_to_handler, \
     time_handler, back_time_to_handler, back_teacher_letter_handler, cancel_elective_handler, auditory_handler, \
     back_time_from_handler, back_to_name_input, process_selfie
 from .elective_text import ElectiveText, AuthText
 from .getters import *
 from .states import *
+from .states import UserWorkMachine
+from .user_work import on_today, on_tomorrow, on_any_weekday, user_pulpit_handler, user_course_handler, \
+    register_to_electives
 from ...utils.dialogs_utils import get_text_from_enum, get_text_from_text_message, lang_getter
 
 
@@ -66,11 +69,6 @@ admin_work = Dialog(
                id='edit_for_one_day', on_click=save_to_dialog_data_and_next),
         Button(get_text_from_enum(ElectiveText.edit_permanently.value),
                id='edit_permanently', on_click=save_to_dialog_data_and_next),
-        # Button(
-        #     text=get_text_from_enum(ElectiveText.to_main.value),
-        #     id='to_main',
-        #     on_click=to_main
-        # ),  # кнопка назад сделана так, потому что остальная часть бота написана не на диалогах
         state=AdminMachine.action,
         getter=lang_getter
     ),
@@ -85,9 +83,7 @@ admin_work = Dialog(
                 on_click=pulpit_handler
             ),
             width=1),
-        Back(
-            get_text_from_enum(ElectiveText.done.value)
-        ),
+        Back(get_text_from_text_message('back')),
         getter=pulpit_getter,
         state=AdminMachine.pulpit,
     ),
@@ -124,10 +120,9 @@ admin_work = Dialog(
             Multiselect(
                 checked_text=Format('[✅] {item[1]}'),
                 unchecked_text=Format('[ ] {item[1]}'),
-                id='name',
+                id='weekdays_selector_admin',
                 item_id_getter=lambda x: x[0],
-                items='possible_days',
-                on_state_changed=days_of_week_saver
+                items='possible_days'
             )
         ),
         Button(
@@ -258,3 +253,114 @@ admin_work = Dialog(
     # )
 )
 # TODO: сделать окно ты уверен?
+
+user_dialog = Dialog(
+    Window(
+        get_text_from_enum(ElectiveText.main_page.value),  # Title or header of the dialog
+        Button(
+            get_text_from_text_message('today'),
+            id='today_elective_course',
+            on_click=on_today
+        ),
+        Button(
+            get_text_from_text_message('tomorrow'),
+            id='tomorrow_elective_course',
+            on_click=on_tomorrow
+        ),
+        SwitchTo(
+            get_text_from_text_message('all_days'),
+            id='all_days_elective_course',
+            state=UserWorkMachine.all_days
+        ),
+        SwitchTo(
+            get_text_from_enum(ElectiveText.register_to_new_course.value),
+            id='register_to_new_course',
+            state=UserWorkMachine.choose_pulpit
+        ),
+        # Button(
+        #     ElectiveText.unsubscribe.value,
+        #     id='unsubscribe'
+        # ),
+        getter=lang_getter,
+        state=UserWorkMachine.start
+    ),
+    Window(
+        get_text_from_text_message('choose_day'),
+        Select(
+            Format('{item[1]}'),
+            id='weekday',
+            item_id_getter=lambda x: x[1],
+            items='weekdays',
+            on_click=on_any_weekday
+        ),
+        Back(
+            get_text_from_text_message('back')
+        ),
+        getter=user_weekday_getter,
+        state=UserWorkMachine.all_days
+    ),
+    Window(
+        get_text_from_enum(ElectiveText.choose_pulpit.value),
+        Group(
+            Select(
+                Format('{item[1]}'),
+                id='pulpit',
+                item_id_getter=lambda x: str(x[0]),
+                items='pulpit',
+                on_click=user_pulpit_handler
+            ),
+            width=1
+        ),
+        SwitchTo(
+            get_text_from_text_message('back'),
+            id='switch_to_start',
+            state=UserWorkMachine.start
+        ),
+        state=UserWorkMachine.choose_pulpit,
+        getter=pulpit_getter
+    ),
+    Window(
+        get_text_from_enum(ElectiveText.choose_elective.value),
+        Group(
+            Select(
+                Format('{item[1]}'),
+                id='elective',
+                item_id_getter=lambda x: x[1],
+                items='courses',
+                on_click=user_course_handler
+            ),
+            width=3
+        ),
+        SwitchTo(
+            text=get_text_from_text_message('back'),
+            id='switch_to_pulpit',
+            state=UserWorkMachine.choose_pulpit
+        ),
+        getter=courses_by_pulpit_getter,  # сработает и тут, смотри save_user_work_schema
+        state=UserWorkMachine.choose_elective
+    ),
+    Window(
+        get_text_from_text_message('choose_day'),
+        Column(
+            Multiselect(
+                checked_text=Format('[✅] {item[1]}'),
+                unchecked_text=Format('[ ] {item[1]}'),
+                id='weekdays_selector_userwork',
+                item_id_getter=lambda x: x[0],
+                items='possible_days'
+            )
+        ),
+        Button(
+            get_text_from_enum(ElectiveText.done.value),
+            id='register',
+            on_click=register_to_electives,
+        ),
+        SwitchTo(
+            id='back_to_smth',
+            text=get_text_from_text_message('back'),
+            state=UserWorkMachine.choose_elective
+        ),
+        getter=possible_days_getter,
+        state=UserWorkMachine.choose_weekday
+    )
+)

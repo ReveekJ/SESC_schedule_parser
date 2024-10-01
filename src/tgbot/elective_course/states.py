@@ -16,13 +16,12 @@ class AdminMachine(StatesGroup):
     auditory = State()
 
 
-class ElectiveCourseMachine(StatesGroup):
+class UserWorkMachine(StatesGroup):
     start = State()
     all_days = State()
-    register_or_unsubscribe = State()
     choose_pulpit = State()
-    choose_page = State()
     choose_elective = State()
+    choose_weekday = State()
 
 
 class AuthMachine(StatesGroup):
