@@ -9,10 +9,11 @@ from apscheduler.triggers.cron import CronTrigger
 from src.tgbot import feedback, auxiliary, admin
 from src.tgbot.auxiliary import bot
 from src.tgbot.changes.changes import sending_schedule_changes
-from src.tgbot.elective_course import dialogs, user_work
+from src.tgbot.elective_course import dialogs
 from src.tgbot.for_administration import administration_work
 from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
 from src.tgbot.settings import dialogs as settings
+from src.tgbot.settings.dialogs import dialog
 
 from src.utils.nats_connect import connect_to_nats
 from src.utils.delayed_remove_elective_changes.start_delayed_consumer import start_delayed_consumer
@@ -60,7 +61,7 @@ async def main():
 
     dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
                        optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
-                       dialogs.admin_work, dialogs.auth_dialog, user_work.router, settings.dialog, settings.router)
+                       dialogs.admin_work, dialogs.auth_dialog, dialogs.user_dialog, settings.dialog, settings.router)
     setup_dialogs(dp)
 
     try:
