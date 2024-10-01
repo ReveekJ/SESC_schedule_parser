@@ -1,7 +1,5 @@
 import datetime
-import json
 
-import aiohttp
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile, Message
 from aiogram_dialog import DialogManager, StartMode
@@ -10,8 +8,7 @@ from src.config import ADMINS
 from src.database import get_async_session
 from src.tgbot.auxiliary import send_schedule, bot
 from src.tgbot.elective_course import states
-from src.tgbot.elective_course.elective_text import ElectiveText
-from src.tgbot.elective_course.keyboard import get_elective_course_main_page_user_kb
+from src.tgbot.elective_course.user_work import UserWorkMachine
 from src.tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
 from src.tgbot.parser import PARSER
 from src.tgbot.text import TEXT, MainText
@@ -123,5 +120,4 @@ async def to_elective(message: Message, dialog_manager: DialogManager):
             await dialog_manager.start(states.AuthMachine.selfie, mode=StartMode.RESET_STACK)
 
     else:
-        await message.answer(ElectiveText.main_page.value[lang],
-                             reply_markup=get_elective_course_main_page_user_kb(lang))
+        await dialog_manager.start(UserWorkMachine.start, mode=StartMode.RESET_STACK)
