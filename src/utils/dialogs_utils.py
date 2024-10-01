@@ -1,6 +1,6 @@
 from aiogram.types import User, CallbackQuery
 from aiogram_dialog import DialogManager
-from aiogram_dialog.widgets.kbd import Button
+from aiogram_dialog.widgets.kbd import Button, Multiselect, ManagedMultiselect
 from aiogram_dialog.widgets.text import Case, Const
 
 from src.tgbot.keyboard import get_choose_schedule
@@ -40,3 +40,9 @@ async def to_main(callback: CallbackQuery, button: Button, dialog_manager: Dialo
     await dialog_manager.done()
     await callback.message.edit_text(TEXT('main', lang=lang),
                                      reply_markup=get_choose_schedule(lang))
+
+
+#  узкая функция, но часто используется
+def get_days_of_week(multiselect_name: str, dialog_manager: DialogManager) -> list[int]:
+    days_multiselect: ManagedMultiselect = dialog_manager.find(multiselect_name)
+    return days_multiselect.get_checked()
