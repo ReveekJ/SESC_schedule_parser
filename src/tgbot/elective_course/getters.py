@@ -2,6 +2,7 @@ import datetime
 
 from aiogram.types import User
 from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.kbd import ManagedMultiselect
 
 from src.tgbot.elective_course.elective_course import ElectiveCourseDB
 from src.tgbot.elective_course.states import AdminMachine
@@ -32,9 +33,26 @@ async def possible_days_getter(event_from_user: User, dialog_manager: DialogMana
 
     possible_days = [TEXT('weekdays_kb', lang)[i] for i in (possible_days_nums if possible_days_nums != [] else
                                                             [i for i in range(1, 8)])]
+    res = sorted(__list_to_select_format(possible_days, possible_days_nums if possible_days_nums != [] else [i for i in range(1, 8)]), key=lambda x: x[0])
+
+    #  геттер вызывается каждый раз, когда изменяется multiselect, так что мы должны проверить:
+    #  мы еще ни разу не отмечали курсы (not is_set_checked_courses)
+    #  функция вызывается юзером, а не учителем (isinstance(is_set_checked_courses, bool))
+    is_set_checked_courses = dialog_manager.dialog_data.get('is_set_checked_courses')
+
+    if (not is_set_checked_courses) and isinstance(is_set_checked_courses, bool):
+        users_courses = await ElectiveCourseDB.get_elective_courses_by_user_id_and_course_name(event_from_user.id, name_of_course)
+        multiselect: ManagedMultiselect = dialog_manager.find('weekdays_selector_userwork')
+
+        for i in users_courses:
+            await multiselect.set_checked(item_id=i.weekday,
+                                          checked=True)
+
+        dialog_manager.dialog_data.update({'is_set_checked_courses': True})
+
     return {
         'lang': lang,
-        'possible_days': sorted(__list_to_select_format(possible_days, possible_days_nums if possible_days_nums != [] else [i for i in range(1, 8)]), key=lambda x: x[0])
+        'possible_days': res
     }
 
 
@@ -152,3 +170,10 @@ async def auditory_getter(event_from_user: User, dialog_manager: DialogManager, 
         'action_not_add': True if dialog_manager.dialog_data.get('action') != 'add' else False,
         'weekday': __get_weekday(dialog_manager, lang),
     }
+
+
+async def user_weekday_getter(event_from_user: User):
+    lang = (await lang_getter(event_from_user)).get('lang')
+    weekdays = TEXT('weekdays_kb', lang)
+    return {'lang': lang,
+            'weekdays': __list_to_select_format(list(weekdays.values()), [str(i) for i in weekdays.keys()])}
