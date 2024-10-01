@@ -86,3 +86,8 @@ class ElectiveCourseTimetable(BaseModel):
     ) -> dict[str, Any]:
         return {'lessons': [lesson.model_dump(mode='timetable') for lesson in self.lessons],
                 'diffs': [diffs.model_dump(mode='timetable') for diffs in self.diffs]}
+
+
+class UserWorkSchema(BaseModel):
+    pulpit: Optional[str] = None
+    name_of_course: Optional[str] = None
