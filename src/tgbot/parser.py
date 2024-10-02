@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
 
 import aiohttp
 import grpc
@@ -67,7 +66,12 @@ class AbstractParser(ABC):
                 if les is None:
                     continue
 
-                lessons.append(drawing_pb2.Lesson(lessonNumber=index + 1, first=les[0], second=les[1], third=les[2]))
+                lessons.append(drawing_pb2.Lesson(lessonNumber=int(row.get('number')),
+                                                  lessonNumberView=str(row.get('number')), # TODO: подставить время
+                                                  first=les[0],
+                                                  second=les[1],
+                                                  third=les[2],
+                                                  isDiff=True if row.get('date') else False))
 
             styles_dct: dict[int, str] = {number: name for name, number in drawing_pb2.Style.items()}
             draw_request = drawing_pb2.DrawRequest(lessons=lessons, drawStyle=styles_dct.get(style))
