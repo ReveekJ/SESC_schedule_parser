@@ -50,12 +50,13 @@ class ElectiveCourse(BaseModel):
                 time_from = (self.time_from if not self.is_diffs else self.diffs_time_from).strftime(ElectiveInfo.date_format.value)
                 time_to = (self.time_to if not self.is_diffs else self.diffs_time_to).strftime(ElectiveInfo.date_format.value)
                 return {'subject': self.subject,
-                        'auditory': SESC_Info.AUDITORY_REVERSE[self.auditory if not self.is_diffs else self.diffs_auditory] + f'    {time_from} - {time_to}',
+                        'auditory': SESC_Info.AUDITORY_REVERSE[self.auditory if not self.is_diffs else self.diffs_auditory],
                         'teacher': SESC_Info.TEACHER_REVERSE[self.teacher_name if not self.is_diffs else self.diffs_teacher],
                         'group': '',
                         'subgroup': 0,
                         'number': time_from,
-                        'date': 1 if self.is_diffs else None}  # для выделения желтым
+                        'date': 1 if self.is_diffs else None,
+                        'custom_time': f'{time_from}-{time_to}'}  # для выделения желтым
         return super().model_dump(mode=mode,
                                   include=include,
                                   exclude=exclude,
