@@ -1,8 +1,8 @@
 import datetime
 
 from aiogram.types import CallbackQuery, FSInputFile
-from aiogram_dialog import DialogManager
-from aiogram_dialog.widgets.kbd import Button, Multiselect
+from aiogram_dialog import DialogManager, StartMode, ShowMode
+from aiogram_dialog.widgets.kbd import Button, Multiselect, ManagedMultiselect
 
 from src.database import get_async_session
 from src.tgbot.auxiliary import send_schedule
@@ -71,7 +71,7 @@ async def on_any_weekday(callback: CallbackQuery,
                          *args, **kwargs):
     lang = callback.from_user.language_code
 
-    await handle_schedule(callback, lang, str(callback.data))
+    await handle_schedule(callback, lang, str(callback.data.split(':')[-1]))
 
     await dialog_manager.done()
     await dialog_manager.start(UserWorkMachine.start)
@@ -128,4 +128,7 @@ async def register_to_electives(callback: CallbackQuery,
             await ElectiveTransactions.add_elective_transaction(session, user, course)
 
     await callback.message.answer(ElectiveText.successfully_sub_or_unsub.value[user_lang])
-    await dialog_manager.switch_to(UserWorkMachine.start)
+    await dialog_manager.done()
+    await dialog_manager.start(UserWorkMachine.start,
+                               mode=StartMode.RESET_STACK,
+                               show_mode=ShowMode.DELETE_AND_SEND)

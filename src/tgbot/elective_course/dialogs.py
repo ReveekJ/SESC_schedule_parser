@@ -277,21 +277,19 @@ user_dialog = Dialog(
             id='register_to_new_course',
             state=UserWorkMachine.choose_pulpit
         ),
-        # Button(
-        #     ElectiveText.unsubscribe.value,
-        #     id='unsubscribe'
-        # ),
         getter=lang_getter,
         state=UserWorkMachine.start
     ),
     Window(
         get_text_from_text_message('choose_day'),
-        Select(
-            Format('{item[1]}'),
-            id='weekday',
-            item_id_getter=lambda x: x[1],
-            items='weekdays',
-            on_click=on_any_weekday
+        Column(
+            Select(
+                Format('{item[1]}'),
+                id='weekday',
+                item_id_getter=lambda x: x[0],
+                items='weekdays',
+                on_click=on_any_weekday
+            ),
         ),
         Back(
             get_text_from_text_message('back')

@@ -43,6 +43,7 @@ async def possible_days_getter(event_from_user: User, dialog_manager: DialogMana
     if (not is_set_checked_courses) and isinstance(is_set_checked_courses, bool):
         users_courses = await ElectiveCourseDB.get_elective_courses_by_user_id_and_course_name(event_from_user.id, name_of_course)
         multiselect: ManagedMultiselect = dialog_manager.find('weekdays_selector_userwork')
+        await multiselect.reset_checked()
 
         for i in users_courses:
             await multiselect.set_checked(item_id=i.weekday,
@@ -172,7 +173,7 @@ async def auditory_getter(event_from_user: User, dialog_manager: DialogManager, 
     }
 
 
-async def user_weekday_getter(event_from_user: User):
+async def user_weekday_getter(event_from_user: User, **kwargs):
     lang = (await lang_getter(event_from_user)).get('lang')
     weekdays = TEXT('weekdays_kb', lang)
     return {'lang': lang,
