@@ -67,7 +67,7 @@ async def courses_by_pulpit_getter(event_from_user: User, dialog_manager: Dialog
 
 
 def __get_weekday(dialog_manager: DialogManager, lang: str) -> str:
-    return TEXT('weekdays', lang)[dialog_manager.dialog_data.get('days_of_week')[dialog_manager.dialog_data.get('cur_day_inx', 0)]]
+    return TEXT('weekdays', lang)[int(dialog_manager.dialog_data.get('days_of_week')[dialog_manager.dialog_data.get('cur_day_inx', 0)])]
 
 
 async def __time_getter(event_from_user: User, dialog_manager: DialogManager, prev_time: datetime.time | None,

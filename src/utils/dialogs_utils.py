@@ -45,4 +45,11 @@ async def to_main(callback: CallbackQuery, button: Button, dialog_manager: Dialo
 #  узкая функция, но часто используется
 def get_days_of_week(multiselect_name: str, dialog_manager: DialogManager) -> list[int]:
     days_multiselect: ManagedMultiselect = dialog_manager.find(multiselect_name)
-    return days_multiselect.get_checked()
+    checked = days_multiselect.get_checked()
+
+    if not checked:
+        checked = dialog_manager.dialog_data.get('days_of_week') if dialog_manager.dialog_data.get('days_of_week') else []
+
+    dialog_manager.dialog_data.update({'days_of_week': checked})  # фиксит легаси получение days_of_week
+
+    return checked
