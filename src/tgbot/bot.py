@@ -1,3 +1,11 @@
+import sys
+
+from src.config import (NATS_SERVER, NATS_DELAYED_CONSUMER_STREAM, NATS_DELAYED_CONSUMER_SUBJECT,
+                        NATS_DELAYED_CONSUMER_DURABLE_NAME, PATH_TO_PROJECT)
+
+sys.path.append(f'{PATH_TO_PROJECT}/proto')
+
+
 import asyncio
 import datetime
 
@@ -13,16 +21,11 @@ from src.tgbot.elective_course import dialogs
 from src.tgbot.for_administration import administration_work
 from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
 from src.tgbot.settings import dialogs as settings
-from src.tgbot.settings.dialogs import dialog
 
 from src.utils.nats_connect import connect_to_nats
 from src.utils.delayed_remove_elective_changes.start_delayed_consumer import start_delayed_consumer
 from src.utils.delayed_remove_elective_changes.create_stream import create_delayed_elective_changes_stream
 
-from src.config import (NATS_SERVER, NATS_DELAYED_CONSUMER_STREAM, NATS_DELAYED_CONSUMER_SUBJECT,
-                        NATS_DELAYED_CONSUMER_DURABLE_NAME, PATH_TO_PROJECT)
-import sys
-sys.path.append(f'{PATH_TO_PROJECT}/proto')
 
 
 def set_tasks(scheduler: AsyncIOScheduler):
