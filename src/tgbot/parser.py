@@ -66,8 +66,9 @@ class AbstractParser(ABC):
                 if les is None:
                     continue
 
+                lesson_time = row.get('custom_time') if row.get('custom_time') is not None else SESC_Info.DEFAULT_TIME_OF_LESSONS.get(int(row.get('number')))
                 lessons.append(drawing_pb2.Lesson(lessonNumber=int(row.get('number')),
-                                                  lessonNumberView=str(row.get('number')), # TODO: подставить время
+                                                  lessonNumberView=lesson_time,
                                                   first=les[0],
                                                   second=les[1],
                                                   third=les[2],
