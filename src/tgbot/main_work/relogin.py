@@ -1,12 +1,11 @@
 from aiogram import Router, F
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from src.database import get_async_session
 from src.tgbot.auxiliary import bot
-from src.tgbot.main_work.registration import func_start_registration, RegistrationMachine
 from src.tgbot.keyboard import hard_choice, get_choose_schedule
+from src.tgbot.main_work.registration import func_start_registration, RegistrationMachine
 from src.tgbot.text import TEXT, MainText
 from src.tgbot.user_models.db import DB
 
@@ -51,7 +50,6 @@ async def cancel_deletion(callback: CallbackQuery):
     await bot.edit_message_text(chat_id=user_id,
                                 message_id=message_id,
                                 text=TEXT('main', lang),
-                                reply_markup=get_choose_schedule(lang),
-                                disable_notification=True)
+                                reply_markup=get_choose_schedule(lang))
 
     await callback.answer()
