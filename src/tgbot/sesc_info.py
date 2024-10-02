@@ -56,6 +56,17 @@ class SESCInfo:
 
         self.TEACHER_LETTERS = sorted(list(set(i[0] for i in self.TEACHER.keys())))
 
+        self.DEFAULT_TIME_OF_LESSONS = {
+            1: '9:00-9:40',
+            2: '9:50-10:30',
+            3: '10:45-11:25',
+            4: '11:40-12:20',
+            5: '12:35-13:15',
+            6: '13:35-14:15',
+            7: '14:35-15:15',
+        }
+
+
     @classmethod
     def __parse(cls, options: list, exceptions: list):
         res = {}
