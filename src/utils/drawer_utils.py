@@ -1,6 +1,7 @@
 import grpc
 
 from proto import drawing_pb2_grpc, drawing_pb2
+from src.tgbot.sesc_info import SESC_Info
 
 
 def render_example_image(style: int) -> str:
@@ -9,8 +10,18 @@ def render_example_image(style: int) -> str:
         dct: dict[str, str] = {str(value): key for key, value in drawing_pb2.Style.items()}
 
         class_lessons = [
-            drawing_pb2.Lesson(lessonNumber=1, first='Math', second='101', third='Mr. Smith'),
-            drawing_pb2.Lesson(lessonNumber=2, first='Science', second='102', third='Mrs. Johnson')
+            drawing_pb2.Lesson(lessonNumber=1,
+                               lessonNumberView=SESC_Info.DEFAULT_TIME_OF_LESSONS[1],
+                               first='Math',
+                               second='101',
+                               third='Mr. Smith',
+                               isDiff=False),
+            drawing_pb2.Lesson(lessonNumber=2,
+                               lessonNumberView=SESC_Info.DEFAULT_TIME_OF_LESSONS[2],
+                               first='Science',
+                               second='102',
+                               third='Mrs. Johnson',
+                               isDiff=True)
         ]
 
         request = drawing_pb2.DrawRequest(
