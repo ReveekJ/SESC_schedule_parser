@@ -6,7 +6,7 @@ from src.database import get_async_session
 from src.tgbot.auxiliary import bot
 from src.tgbot.keyboard import hard_choice, get_choose_schedule
 from src.tgbot.main_work.registration import func_start_registration, RegistrationMachine
-from src.tgbot.text import TEXT, MainText
+from src.tgbot.text import TEXT, BottomMenuText
 from src.tgbot.user_models.db import DB
 
 router = Router()
@@ -16,7 +16,7 @@ class ReloginMashine(RegistrationMachine):
     pass
 
 
-@router.message(F.text == MainText.relogin.value)
+@router.message(F.text == BottomMenuText.relogin.value)
 async def relogin_confirmation(message: Message, state: FSMContext):
     lang = message.from_user.language_code
     chat_id = message.chat.id

@@ -113,9 +113,10 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                    ('to_elective', 'На факультативы', 'To elective courses'))
 
 
-class MainText(Enum):
+class BottomMenuText(Enum):
     relogin = '🔁 Re-register'
     optional = '🔴 Дополнительно'
     feedback = '🤝 Оставить отзыв'
     electives = '🏫 Факультативы'
     to_main = '⬅ На главную страницу'
+    settings = '⚙ Настройки'

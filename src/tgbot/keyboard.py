@@ -4,7 +4,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder, ButtonType
 
 from src.tgbot.sesc_info import SESC_Info
-from src.tgbot.text import TEXT, MainText
+from src.tgbot.text import TEXT, BottomMenuText
 
 
 def add_back_btn(keyboard: InlineKeyboardBuilder, lang: str):
@@ -21,21 +21,22 @@ def bottom_menu(lang: str) -> ReplyKeyboardMarkup:
     kb = ReplyKeyboardBuilder()
     kb.row(
         KeyboardButton(
-            text=MainText.electives.value
+            text=BottomMenuText.electives.value
         ),
         KeyboardButton(
-            text=MainText.optional.value
+            text=BottomMenuText.optional.value
         )
     )
     kb.row(
         KeyboardButton(
-            text=MainText.feedback.value
+            text=BottomMenuText.feedback.value
         ),
         KeyboardButton(
-            text=MainText.relogin.value
+            text=BottomMenuText.relogin.value
         )
     )
-    kb.row(KeyboardButton(text=MainText.to_main.value))
+    # KeyboardButton(text=BottomMenuText.settings.value)
+    kb.row(KeyboardButton(text=BottomMenuText.to_main.value))
 
     return kb.as_markup(resize_keyboard=True)
 
@@ -172,6 +173,7 @@ def options_kb(lang: str) -> InlineKeyboardMarkup:
 
     kb.button(text=TEXT('free_auditory', lang), callback_data='free_auditory')
     kb.button(text=TEXT('bell_schedule', lang), callback_data='bell_schedule')
+    kb.button(text=BottomMenuText.settings.value, callback_data='go_to_settings')
     kb.button(text=TEXT('official_site', lang), url='https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii')
 
     kb.adjust(1)

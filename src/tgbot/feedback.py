@@ -10,7 +10,7 @@ from src.config import ADMINS
 from src.tgbot.auxiliary import bot, Form
 from src.tgbot.main_work.registration import func_start_registration
 from src.tgbot.keyboard import back_kb
-from src.tgbot.text import TEXT, MainText
+from src.tgbot.text import TEXT, BottomMenuText
 
 router = Router()
 
@@ -30,7 +30,7 @@ class FeedbackMachine(Form):
     get_feedback = State()
 
 
-@router.message(F.text == MainText.feedback.value)
+@router.message(F.text == BottomMenuText.feedback.value)
 async def get_feedback(message: Message, state: FSMContext):
     user_id = message.chat.id
     lang = message.from_user.language_code

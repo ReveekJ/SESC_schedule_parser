@@ -10,7 +10,7 @@ from src.tgbot.main_work.registration import func_start_registration
 from src.tgbot.keyboard import (get_choose_schedule,
                                 options_kb, get_choose_weekday_kb, choose_lessons_kb)
 from src.tgbot.parser import PARSER
-from src.tgbot.text import TEXT, MainText
+from src.tgbot.text import TEXT, BottomMenuText
 
 router = Router()
 
@@ -20,7 +20,7 @@ class FreeAuditoryMachine(Form):
     lesson_for_free_auditory = State()
 
 
-@router.message(F.text == MainText.optional.value)
+@router.message(F.text == BottomMenuText.optional.value)
 async def optional_func(message: Message | CallbackQuery, state: FSMContext):
     lang = message.from_user.language_code
 

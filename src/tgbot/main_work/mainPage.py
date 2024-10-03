@@ -11,7 +11,7 @@ from src.tgbot.elective_course import states
 from src.tgbot.elective_course.user_work import UserWorkMachine
 from src.tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
 from src.tgbot.parser import PARSER
-from src.tgbot.text import TEXT, MainText
+from src.tgbot.text import TEXT, BottomMenuText
 from src.tgbot.user_models.db import DB
 
 router = Router()
@@ -103,7 +103,7 @@ async def get_sch_for_this_day(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.message(F.text == MainText.electives.value)
+@router.message(F.text == BottomMenuText.electives.value)
 async def to_elective(message: Message, dialog_manager: DialogManager):
     lang = message.from_user.language_code
 
