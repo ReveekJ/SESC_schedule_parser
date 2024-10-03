@@ -14,7 +14,7 @@ from src.tgbot.auxiliary import Form, bot
 from src.tgbot.for_administration.administration_page import administration_page
 from src.tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
                                 get_letter_of_teacher_kb, aprove)
-from src.tgbot.text import TEXT, MainText
+from src.tgbot.text import TEXT, BottomMenuText
 from src.tgbot.user_models.db import DB
 from src.tgbot.user_models.schemas import User
 from pydantic import ValidationError
@@ -244,13 +244,8 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
 
 
 @router.message(CommandStart())
-@router.message(F.text == MainText.to_main.value)
+@router.message(F.text == BottomMenuText.to_main.value)
 async def start_registration(message: Message, state: FSMContext, dialog_manager: DialogManager):
-    try:
-        await dialog_manager.done()
-    except Exception as e:  # возникает когда нет открытых диалогов
-        pass
-
     await message.delete()  # для красоты
     await func_start_registration(message, state)
 

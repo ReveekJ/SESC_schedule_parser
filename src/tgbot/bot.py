@@ -1,7 +1,11 @@
 import sys
+from typing import Dict, Any, Callable, Awaitable
+
+from aiogram.types import TelegramObject, Message
 
 from src.config import (NATS_SERVER, NATS_DELAYED_CONSUMER_STREAM, NATS_DELAYED_CONSUMER_SUBJECT,
                         NATS_DELAYED_CONSUMER_DURABLE_NAME, PATH_TO_PROJECT)
+from src.tgbot.text import BottomMenuText
 
 sys.path.append(f'{PATH_TO_PROJECT}/proto')
 
@@ -9,7 +13,7 @@ sys.path.append(f'{PATH_TO_PROJECT}/proto')
 import asyncio
 import datetime
 
-from aiogram import Dispatcher
+from aiogram import Dispatcher, BaseMiddleware
 from aiogram_dialog import setup_dialogs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -25,6 +29,24 @@ from src.tgbot.settings import dialogs as settings
 from src.utils.nats_connect import connect_to_nats
 from src.utils.delayed_remove_elective_changes.start_delayed_consumer import start_delayed_consumer
 from src.utils.delayed_remove_elective_changes.create_stream import create_delayed_elective_changes_stream
+
+
+class CloseDialogsMiddleware(BaseMiddleware):
+    async def __call__(
+            self,
+            handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+            event: TelegramObject,
+            data: Dict[str, Any],
+    ):
+        try:
+            if isinstance(event, Message):
+                if event.text in [i.value for i in BottomMenuText]:
+                    dialog_manager = data.get('dialog_manager')
+                    await dialog_manager.done()
+        except Exception as e:  # возникает когда нет открытых диалогов
+            print(e)
+
+        return await handler(event, data)
 
 
 
@@ -66,6 +88,7 @@ async def main():
                        optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
                        dialogs.admin_work, dialogs.auth_dialog, dialogs.user_dialog, settings.dialog, settings.router)
     setup_dialogs(dp)
+    dp.message.middleware(CloseDialogsMiddleware())
 
     try:
         await create_delayed_elective_changes_stream(js)
