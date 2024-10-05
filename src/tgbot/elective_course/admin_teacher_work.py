@@ -305,7 +305,7 @@ async def commit_changes(action: str, changes_list: list[ElectiveCourse], js: Je
                                              removing_time=removing_time)
 
     # выполняем рассылку изменений
-    if action != 'add':
+    if action not in ['add', 'remove']:
         for changed_course in changes_list:
             # нужен реальный курс, потому что в changed_course нет поля id, а поиск юзеров выполняется по id курса
             real_course = await ElectiveCourseDB.get_course_by_subject_and_weekday(changed_course.subject, changed_course.weekday)
