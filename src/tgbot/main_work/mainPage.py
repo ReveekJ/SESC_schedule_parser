@@ -1,6 +1,7 @@
 import datetime
 
 from aiogram import Router, F
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile, Message
 from aiogram_dialog import DialogManager, StartMode
 
@@ -10,6 +11,7 @@ from src.tgbot.auxiliary import send_schedule, bot
 from src.tgbot.elective_course import states
 from src.tgbot.elective_course.user_work import UserWorkMachine
 from src.tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
+from src.tgbot.main_work.registration import func_start_registration
 from src.tgbot.parser import PARSER
 from src.tgbot.text import TEXT, BottomMenuText
 from src.tgbot.user_models.db import DB
@@ -19,10 +21,14 @@ router = Router()
 
 @router.callback_query(F.data == 'tomorrow')
 @router.callback_query(F.data == 'today')
-async def send_schedule_for_today(callback: CallbackQuery):
+async def send_schedule_for_today(callback: CallbackQuery, state: FSMContext):
     lang = callback.from_user.language_code
     async with await get_async_session() as session:
         user_data = await DB().select_user_by_id(session, callback.message.chat.id)
+
+    if user_data is None:
+        await func_start_registration(callback, state)
+        return None
 
     await callback.message.delete()
 
