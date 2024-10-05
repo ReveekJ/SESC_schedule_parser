@@ -28,6 +28,7 @@ async def send_schedule_for_today(callback: CallbackQuery, state: FSMContext):
 
     if user_data is None:
         await func_start_registration(callback, state)
+        await callback.answer()
         return None
 
     await callback.message.delete()
