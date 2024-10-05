@@ -1,15 +1,11 @@
-from pprint import pprint
-
 from aiogram.enums import ContentType
-from aiogram.types import User, Update
+from aiogram.types import User
 from aiogram_dialog import DialogManager
 from aiogram_dialog.api.entities import MediaAttachment
-from aiogram_dialog.widgets.common import ManagedScroll
 
-from proto.drawing_pb2 import Style
 from src.database import get_async_session
 from src.tgbot.user_models.db import DB
-from src.utils.dialogs_utils import lang_getter, __list_to_select_format
+from src.utils.dialogs_utils import lang_getter
 from src.utils.drawer_utils import render_example_image
 
 
