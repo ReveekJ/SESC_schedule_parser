@@ -24,6 +24,7 @@ from ..parser import ELECTIVE_PARSER
 from ..text import TEXT
 from ..user_models.db import DB
 from ...database import get_async_session
+from ...utils.aiogram_utils import delete_last_message, send_main_page
 from ...utils.dialogs_utils import lang_getter, get_days_of_week
 
 
@@ -322,6 +323,11 @@ async def commit_changes(action: str, changes_list: list[ElectiveCourse], js: Je
                     await bot.send_photo(chat_id=user_id,
                                          photo=schedule,
                                          caption=caption)
+
+                    await delete_last_message(user_id)
+                    main_msg = await send_main_page(user_id)
+                    await DB().update_last_message_id(user_id, main_msg.message_id)
+
                     await asyncio.sleep(0.1)
                 except TelegramRetryAfter as e:
                     await asyncio.sleep(e.retry_after)
