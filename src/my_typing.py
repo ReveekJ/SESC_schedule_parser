@@ -6,24 +6,6 @@ from src.tgbot.changes.changes_db import ChangesDB
 from src.tgbot.changes.schemas import ChangesType
 
 
-class UnchangeableType:
-    def __init__(self):
-        self.count_of_change = 0
-
-    def __set_name__(self, owner, name):
-        self.name = '_' + name
-
-    def __set__(self, instance, value):
-        if self.count_of_change < 3:
-            self.count_of_change += 1
-            return setattr(instance, self.name, value)
-        else:
-            raise ValueError('You can not change this attribute')
-
-    def __get__(self, instance, owner):
-        return getattr(instance, self.name)
-
-
 # при попытке например пройтись по этому типу данных будет выполнен проход по self как в массиве
 class ChangesList(list):
     def __init__(self):
