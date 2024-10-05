@@ -46,19 +46,20 @@ async def func_start_registration(message: Message | CallbackQuery, state: FSMCo
 
     if current_user is not None:
         await state.clear()
-        if current_user['role'] == 'administrator':
-            await administration_page(message)
-        elif isinstance(message, CallbackQuery):
-            await bot.edit_message_text(chat_id=user_id,
+        # if current_user['role'] == 'administrator':
+        #     await administration_page(message)
+        if isinstance(message, CallbackQuery):
+            msg = await bot.edit_message_text(chat_id=user_id,
                                         message_id=message_id,
                                         text=TEXT('main', lang=lang),
                                         reply_markup=get_choose_schedule(lang))
         else:
-            await bot.send_message(chat_id=user_id,
+            msg = await bot.send_message(chat_id=user_id,
                                    text=TEXT('main', lang=lang),
                                    reply_markup=get_choose_schedule(lang),
                                    disable_notification=True)
-        return None
+        return msg
+
     data = await state.get_data()
 
     if data.get('role') is None:
@@ -232,10 +233,11 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
                                     message_id=start_message_id,
                                     text=TEXT('registration_done', lang=lang))
         # отправляем основное сообщения
-        await bot.edit_message_text(chat_id=user_id,
+        msg = await bot.edit_message_text(chat_id=user_id,
                                     message_id=current_message_id,
                                     text=TEXT('main', lang=lang),
                                     reply_markup=get_choose_schedule(lang))
+        await DB().update_last_message_id(user_id, msg.message_id)
 
     await callback.answer()
 
@@ -247,7 +249,7 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
 @router.message(F.text == BottomMenuText.to_main.value)
 async def start_registration(message: Message, state: FSMContext, dialog_manager: DialogManager):
     await message.delete()  # для красоты
-    await func_start_registration(message, state)
+    return await func_start_registration(message, state)
 
 
 @router.callback_query(RegistrationMachine.role, F.data.casefold() == 'group')

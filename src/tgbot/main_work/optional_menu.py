@@ -32,20 +32,20 @@ async def optional_func(message: Message | CallbackQuery, state: FSMContext):
         chat_id = message.message.chat.id
         message_id = message.message.message_id
 
-        await bot.edit_message_text(text=TEXT('choose_optional_function', lang),
+        await message.answer()
+        return (await bot.edit_message_text(text=TEXT('choose_optional_function', lang),
                                     chat_id=chat_id,
                                     message_id=message_id,
-                                    reply_markup=options_kb(lang))
-        await message.answer()
+                                    reply_markup=options_kb(lang)))
     else:
         chat_id = message.chat.id
 
         await message.delete()
-        await bot.send_message(text=TEXT('choose_optional_function', lang),
+        return (await bot.send_message(text=TEXT('choose_optional_function', lang),
                                chat_id=chat_id,
                                reply_markup=options_kb(lang),
                                disable_notification=True)
-
+)
 
 @router.callback_query(F.data == 'free_auditory')
 async def free_auditory(callback: CallbackQuery, state: FSMContext):

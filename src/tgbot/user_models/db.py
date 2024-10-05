@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.database import get_async_session
 from src.tgbot.elective_course.models import ElectiveCourseModel
 from src.tgbot.elective_course.schemas import ElectiveCourse, ElectiveCourseTimetable
 from src.tgbot.user_models.models import UsersModel
@@ -77,6 +78,12 @@ class DB:
 
         await session.execute(stmt)
         await session.commit()
+
+    async def update_last_message_id(self, user_id: int, last_message_id: int):
+        async with await get_async_session() as session:
+            await self.update_user_info(session,
+                                        user_id,
+                                        last_message_id=last_message_id)
 
     async def get_elective_courses_for_day(self, session: AsyncSession, user_id: int, weekday: int) \
             -> ElectiveCourseTimetable:

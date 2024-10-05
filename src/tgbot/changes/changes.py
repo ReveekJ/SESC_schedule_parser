@@ -8,13 +8,12 @@ from src.database import get_async_session
 from src.tgbot.auxiliary import send_schedule
 from src.tgbot.parser import PARSER
 from src.tgbot.user_models.db import DB
+from src.utils.aiogram_utils import delete_last_message
 
 
 async def sending_schedule_changes():
     # получаем измения
-    logging.debug('начинаю проверку изменений')
     changes = await PARSER.check_for_changes()
-    logging.debug('получил изменения')
 
     for elem in changes:
         role = elem.type
@@ -41,6 +40,8 @@ async def sending_schedule_changes():
                                     lang=user_data.lang,
                                     schedule=schedule,
                                     disable_notifications=False)
+                await delete_last_message(user_data.id)
+                await DB().update_last_message_id(user_data.id, user_data.last_message_id + 2)
                 await asyncio.sleep(0.5)
             except TelegramForbiddenError:  # возникает когда пользователь заблокировал бота
                 pass

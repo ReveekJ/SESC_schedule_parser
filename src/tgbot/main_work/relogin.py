@@ -22,10 +22,10 @@ async def relogin_confirmation(message: Message, state: FSMContext):
     chat_id = message.chat.id
 
     await message.delete()
-    await bot.send_message(chat_id,
+    return (await bot.send_message(chat_id,
                            TEXT("aus", lang),
                            reply_markup=hard_choice(lang=lang),
-                           disable_notification=True)
+                           disable_notification=True))
 
 
 @router.callback_query(F.data == "relogin")

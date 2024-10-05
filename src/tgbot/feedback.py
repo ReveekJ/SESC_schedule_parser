@@ -39,9 +39,9 @@ async def get_feedback(message: Message, state: FSMContext):
     await state.update_data({'prev': func_start_registration})
 
     await message.delete()
-    await bot.send_message(user_id,
+    return (await bot.send_message(user_id,
                            TEXT('get_feedback', lang),
-                           disable_notification=True)
+                           disable_notification=True))
 
 
 @router.message(ChatTypeFilter(chat_ignor_type=['group', 'supergroup']) and FeedbackMachine.get_feedback)

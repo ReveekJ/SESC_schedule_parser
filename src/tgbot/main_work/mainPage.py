@@ -48,10 +48,10 @@ async def send_schedule_for_today(callback: CallbackQuery):
                             short_name_text_mes='main_schedule',
                             weekday=int(day))
 
-    await callback.message.answer(TEXT('main', lang),
-                                  reply_markup=get_choose_schedule(lang),
-                                  disable_notification=True)
     await callback.answer()
+    return (await callback.message.answer(TEXT('main', lang),
+                                  reply_markup=get_choose_schedule(lang),
+                                  disable_notification=True))
 
 
 @router.callback_query(F.data == 'all_days')
@@ -96,17 +96,14 @@ async def get_sch_for_this_day(callback: CallbackQuery):
                             weekday=int(callback.data),
                             lang=lang)
 
-    await callback.message.answer(TEXT('main', lang),
-                                  reply_markup=get_choose_schedule(lang),
-                                  disable_notification=True)
-
     await callback.answer()
+    return (await callback.message.answer(TEXT('main', lang),
+                                  reply_markup=get_choose_schedule(lang),
+                                  disable_notification=True))
 
 
 @router.message(F.text == BottomMenuText.electives.value)
 async def to_elective(message: Message, dialog_manager: DialogManager):
-    lang = message.from_user.language_code
-
     await message.delete()
     async with await get_async_session() as session:
         user = await DB().select_user_by_id(session, message.from_user.id)
@@ -118,6 +115,7 @@ async def to_elective(message: Message, dialog_manager: DialogManager):
             await dialog_manager.start(states.AdminMachine.action, mode=StartMode.RESET_STACK)
         else:
             await dialog_manager.start(states.AuthMachine.selfie, mode=StartMode.RESET_STACK)
-
     else:
         await dialog_manager.start(UserWorkMachine.start, mode=StartMode.RESET_STACK)
+
+    await DB().update_last_message_id(message.from_user.id, user.last_message_id + 2)

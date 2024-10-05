@@ -1,5 +1,7 @@
+from pprint import pprint
+
 from aiogram.enums import ContentType
-from aiogram.types import User
+from aiogram.types import User, Update
 from aiogram_dialog import DialogManager
 from aiogram_dialog.api.entities import MediaAttachment
 from aiogram_dialog.widgets.common import ManagedScroll
@@ -22,11 +24,13 @@ async def styles_getter(event_from_user: User, dialog_manager: DialogManager, **
     image = MediaAttachment(ContentType.PHOTO, path=path)
 
 
-    # выставляем верную страницу
+    # выставляем верную страницу и сохраняем id сообщения
     if dialog_manager.dialog_data.get('is_first_entry') is None:
         dialog_manager.dialog_data['is_first_entry'] = True
         scroll = dialog_manager.find('styles')
         await scroll.set_page(int(style))
+
+        await DB().update_last_message_id(event_from_user.id, user.last_message_id + 1)
 
     return {'lang': lang, # __list_to_select_format(Style.keys(), Style.values()),
             'is_user_style': user.style == style,

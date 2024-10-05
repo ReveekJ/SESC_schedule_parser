@@ -21,6 +21,7 @@ class UsersModel(Base):
     lang: Mapped[str]
     is_approved_user: Mapped[Optional[bool]] = mapped_column(default=False)
     style: Mapped[int]
+    last_message_id: Mapped[BigInteger] = mapped_column(type_=BigInteger)
 
     elective_course_replied: Mapped[Optional[list['ElectiveCourseModel']]] = relationship(
         back_populates='users_replied',
