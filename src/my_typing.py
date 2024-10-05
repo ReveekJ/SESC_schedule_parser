@@ -107,4 +107,7 @@ class TextMessage:
         return res
 
     def __call__(self, short_name_text_mes: str, lang: str):
-        return self.__text[lang][short_name_text_mes]
+        try:
+            return self.__text[lang][short_name_text_mes]
+        except Exception:
+            return self.__text['ru'][short_name_text_mes]
