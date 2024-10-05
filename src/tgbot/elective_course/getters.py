@@ -166,7 +166,7 @@ async def auditory_getter(event_from_user: User, dialog_manager: DialogManager, 
         if (dialog_manager.dialog_data.get('course') is not None) else None
     return {
         'lang': (await lang_getter(event_from_user)).get('lang'),
-        'auditory': __list_to_select_format(SESC_Info.AUDITORY.keys(), custom_index=SESC_Info.AUDITORY.values()),
+        'auditory': __list_to_select_format(SESC_Info.ELECTIVE_AUDITORY.keys(), custom_index=SESC_Info.ELECTIVE_AUDITORY.values()),
         'old_auditory': old_auditory,
         'action_not_add': True if dialog_manager.dialog_data.get('action') != 'add' else False,
         'weekday': __get_weekday(dialog_manager, lang),

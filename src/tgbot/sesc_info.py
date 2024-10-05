@@ -2,17 +2,9 @@ import requests
 from bs4 import BeautifulSoup as bs
 from bs4 import NavigableString
 
-from src.my_typing import UnchangeableType
-
 
 class SESCInfo:
     __instance = None
-
-    GROUP = UnchangeableType()
-    TEACHER = UnchangeableType()
-    WEEKDAY = UnchangeableType()
-    AUDITORY = UnchangeableType()
-    TYPE = UnchangeableType()
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:
@@ -40,6 +32,8 @@ class SESCInfo:
         # {'АктЗал': '83', 'СпЗал': '79', '101': '64', '102': '65', '103': '66', '104': '67', '105': '68', ....}
         self.AUDITORY = self.__parse_auditory_info()
         self.AUDITORY_REVERSE = {v: key for key, v in self.AUDITORY.items()}
+        self.ELECTIVE_AUDITORY = {**{'Онлайн': '525252'}, **self.AUDITORY}
+        self.AUDITORY_REVERSE.update({'525252': 'Онлайн'})
 
         # {'Аудитория': 'auditory', 'Учитель/преподаватель': 'teacher', 'Класс': 'group', 'Все аудитории': 'all'}
         self.TYPE = self.__parse_type_info()
