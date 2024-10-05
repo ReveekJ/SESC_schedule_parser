@@ -5,8 +5,13 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from config import *
-from models.model import metadata
+from src.config import *
+from src.database import Base, metadata
+from src.tgbot.user_models.models import *
+from src.tgbot.changes.models import *
+from src.tgbot.elective_course.models import *
+from src.tgbot.elective_course.elective_transactions.models import *
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -28,7 +33,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = metadata
+target_metadata = [metadata, Base.metadata]
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

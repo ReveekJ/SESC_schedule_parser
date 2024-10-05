@@ -7,6 +7,10 @@ __pycache__/
 qodana.yaml
 test/test.py
 .env
-docker-compose.yaml
 *.mp4
 *.mp3
+log.log
+*.http
+nats/data/*
+nui/*
+/proto/*

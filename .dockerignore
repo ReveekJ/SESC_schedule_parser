@@ -1,0 +1,15 @@
+.idea/*
+schedule*.png
+*.log
+venv/
+__pycache__/
+qodana.yaml
+test/
+.env
+docker-compose.yaml
+*.mp4
+*.mp3
+log.log
+*.http
+nats/
+nui/
