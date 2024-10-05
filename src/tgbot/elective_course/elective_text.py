@@ -8,8 +8,8 @@ class ElectiveText(Enum):
               'en': '💥 Remove optional'}
     edit_permanently = {'ru': '📒 Изменить на постоянной основе',
                         'en': '📒 Change permanently'}
-    edit_for_one_day = {'ru': '⏱ Изменить на непостоянной основе',
-                        'en': '⏱ Change on a non-permanent basis'}
+    edit_for_one_day = {'ru': '⏱ Изменить до следующего занятия',
+                        'en': '⏱ Change until next lesson'}
     to_main = {'ru': '⬅ На главную',
                'en': '⬅ To main'}
     main_page = {'ru': 'Факультативы',
