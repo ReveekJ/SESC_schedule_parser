@@ -110,11 +110,12 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                                                                                      "if the error persists, "
                                                                                      "please write to us about it at "
                                                                                      "/feedback"),
-                   ('to_elective', 'На факультативы', 'To elective courses'))
+                   ('to_elective', 'На факультативы', 'To elective courses'),
+                   ('relogin', 'Перерегистрироваться', 'Re-register'))
 
 
 class BottomMenuText(Enum):
-    relogin = '🔁 Re-register'
+    # relogin = '🔁 Re-register'
     optional = '🔴 Дополнительно'
     feedback = '🤝 Оставить отзыв'
     electives = '🏫 Факультативы'

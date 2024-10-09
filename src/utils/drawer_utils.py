@@ -15,12 +15,14 @@ def render_example_image(style: int) -> str:
                                first='Math',
                                second='101',
                                third='Mr. Smith',
+                               subgroup=0,
                                isDiff=False),
             drawing_pb2.Lesson(lessonNumber=2,
                                lessonNumberView=SESC_Info.DEFAULT_TIME_OF_LESSONS[2],
                                first='Science',
                                second='102',
                                third='Mrs. Johnson',
+                               subgroup=0,
                                isDiff=True)
         ]
 

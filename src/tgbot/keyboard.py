@@ -32,7 +32,7 @@ def bottom_menu(lang: str) -> ReplyKeyboardMarkup:
             text=BottomMenuText.feedback.value
         ),
         KeyboardButton(
-            text=BottomMenuText.relogin.value
+            text=BottomMenuText.settings.value
         )
     )
     # KeyboardButton(text=BottomMenuText.settings.value)
@@ -173,7 +173,7 @@ def options_kb(lang: str) -> InlineKeyboardMarkup:
 
     kb.button(text=TEXT('free_auditory', lang), callback_data='free_auditory')
     kb.button(text=TEXT('bell_schedule', lang), callback_data='bell_schedule')
-    kb.button(text=BottomMenuText.settings.value, callback_data='go_to_settings')
+    kb.button(text=TEXT('relogin', lang), callback_data='to_relogin')
     kb.button(text=TEXT('official_site', lang), url='https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii')
 
     kb.adjust(1)
