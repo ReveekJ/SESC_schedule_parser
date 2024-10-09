@@ -92,7 +92,8 @@ async def user_course_handler(callback: CallbackQuery,
                               dialog_manager: DialogManager,
                               *args, **kwargs):
     data = get_user_work_schema(dialog_manager)
-    data.name_of_course = callback.data.split(':')[-1]
+    course_id = int(callback.data.split(':')[-1])
+    data.name_of_course = (await ElectiveCourseDB.get_course_by_id(course_id)).subject
 
     save_user_work_schema(dialog_manager, data)
     dialog_manager.dialog_data.update({'is_set_checked_courses': False})

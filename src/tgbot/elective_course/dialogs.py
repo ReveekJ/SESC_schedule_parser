@@ -10,7 +10,7 @@ from aiogram_dialog.widgets.kbd import (
     Multiselect,
     SwitchTo
 )
-from aiogram_dialog.widgets.text import Format, Case
+from aiogram_dialog.widgets.text import Format, Case, Multi
 
 from .admin_teacher_work import save_to_dialog_data_and_next, pulpit_handler, name_input_handler, \
     name_select_handler, switch_to_time_from_handler, old_teacher_handler, old_time_from_handler, old_time_to_handler, \
@@ -99,12 +99,15 @@ admin_work = Dialog(
     ),
     Window(
         get_text_from_enum(ElectiveText.choose_elective.value),
-        Select(
-            Format('{item[1]}'),
-            id='elective',
-            item_id_getter=lambda x: x[1],
-            items='courses',
-            on_click=name_select_handler
+        Group(
+            Select(
+                Format('{item[1]}'),
+                id='elective',
+                item_id_getter=lambda x: str(x[0]),
+                items='courses',
+                on_click=name_select_handler
+            ),
+            width=2
         ),
         SwitchTo(
             text=get_text_from_text_message('back'),
@@ -115,7 +118,10 @@ admin_work = Dialog(
         state=AdminMachine.name_of_course_selector
     ),
     Window(
-        get_text_from_text_message('choose_day'),
+        Multi(
+            Format('{course_name}\n\n'),
+            get_text_from_text_message('choose_day'),
+        ),
         Column(
             Multiselect(
                 checked_text=Format('[✅] {item[1]}'),
@@ -323,11 +329,11 @@ user_dialog = Dialog(
             Select(
                 Format('{item[1]}'),
                 id='elective',
-                item_id_getter=lambda x: x[1],
+                item_id_getter=lambda x: str(x[0]),
                 items='courses',
                 on_click=user_course_handler
             ),
-            width=3
+            width=2
         ),
         SwitchTo(
             text=get_text_from_text_message('back'),
@@ -338,7 +344,10 @@ user_dialog = Dialog(
         state=UserWorkMachine.choose_elective
     ),
     Window(
-        get_text_from_text_message('choose_day'),
+        Multi(
+            Format('{course_name}\n\n'),
+            get_text_from_text_message('choose_day'),
+        ),
         Column(
             Multiselect(
                 checked_text=Format('[✅] {item[1]}'),

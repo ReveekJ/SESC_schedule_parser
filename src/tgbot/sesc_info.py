@@ -25,6 +25,8 @@ class SESCInfo:
         # {'Александрова Т. И.': '153', 'Алексеева М. А.': '1', 'Ананьина Т. А.': '2', 'Анисимова Е. Г.': '195', ....}
         self.TEACHER = self.__parse_teacher_info()
         self.TEACHER_REVERSE = {v: key for key, v in self.TEACHER.items()}
+        self.ELECTIVE_TEACHER = {**{'Кто-то': '52525252'}, **self.TEACHER}
+        self.TEACHER_REVERSE.update({'52525252': 'Кто-то'})
 
         # {'Понедельник': '1', 'Вторник': '2', 'Среда': '3', 'Четверг': '4', 'Пятница': '5', 'Суббота': '6'}
         self.WEEKDAY = self.__parse_weekday_info()
@@ -32,8 +34,8 @@ class SESCInfo:
         # {'АктЗал': '83', 'СпЗал': '79', '101': '64', '102': '65', '103': '66', '104': '67', '105': '68', ....}
         self.AUDITORY = self.__parse_auditory_info()
         self.AUDITORY_REVERSE = {v: key for key, v in self.AUDITORY.items()}
-        self.ELECTIVE_AUDITORY = {**{'Онлайн': '525252'}, **self.AUDITORY}
-        self.AUDITORY_REVERSE.update({'525252': 'Онлайн'})
+        self.ELECTIVE_AUDITORY = {**{'Онлайн': '525252', 'Какая-то': '12341234'}, **self.AUDITORY}
+        self.AUDITORY_REVERSE.update({'525252': 'Онлайн', '12341234': 'Какая-то'})
 
         # {'Аудитория': 'auditory', 'Учитель/преподаватель': 'teacher', 'Класс': 'group', 'Все аудитории': 'all'}
         self.TYPE = self.__parse_type_info()
@@ -41,11 +43,11 @@ class SESCInfo:
         # важно чтобы порядок в одном и другом языке был одинаков
         self.PULPIT = {
             'ru': ['Гуманитарное образование', 'Иностранные языков', 'Математика',
-                   'Психофизическая культура', 'Филология', 'Химия и биология', 'Информатика',
+                   'Психофизическая культура', 'Филология', 'Физика и астрономия', 'Химия и биология', 'Информатика',
                    'Отдел воспитательной работы'],
             'en': ['Humanitarian education', 'Foreign languages', 'Mathematics',
-                   'Physical education', 'Philology', 'Chemistry and biology', 'Computer science',
-                   'Department of educational work']
+                   'Physical education', 'Philology', 'Physics and astronomy', 'Chemistry and biology',
+                   'Computer science', 'Department of educational work']
         }
 
         self.TEACHER_LETTERS = sorted(list(set(i[0] for i in self.TEACHER.keys())))

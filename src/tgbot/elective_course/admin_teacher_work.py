@@ -19,6 +19,7 @@ from .elective_transactions.elective_transactions import ElectiveTransactions
 from .getters import ElectiveInfo
 from .schemas import ElectiveCourse
 from .states import AdminMachine
+from .utils import get_course_name
 from ..keyboard import get_choose_schedule
 from ..parser import ELECTIVE_PARSER
 from ..text import TEXT
@@ -102,7 +103,7 @@ async def switch_to_time_from_handler(callback: CallbackQuery, widget: Button, d
         for day in days_of_week:
             #  используем заглушки так как в commit_changes все равно используется только subject и weekday
             course_for_remember = ElectiveCourse(
-                subject=dialog_manager.dialog_data.get('name_of_course'),
+                subject=(await get_course_name(dialog_manager)),
                 pulpit='',
                 teacher_name='',
                 weekday=day,
@@ -171,7 +172,7 @@ async def cancel_elective_handler(callback: CallbackQuery, widget: Button, dialo
 
     old_course: ElectiveCourse = dialog_manager.dialog_data.get('course')
     course_for_remember = ElectiveCourse(
-        subject=dialog_manager.dialog_data.get('name_of_course'),
+        subject=(await get_course_name(dialog_manager)),
         pulpit=dialog_manager.dialog_data.get('pulpit'),
         teacher_name=old_course.teacher_name,
         weekday=days_of_week[cur_day_inx],
@@ -243,13 +244,14 @@ async def auditory_handler(callback: CallbackQuery,
     cur_day_inx: int = dialog_manager.dialog_data.get('cur_day_inx', 0)
     action = dialog_manager.dialog_data.get('action')
     old_course: ElectiveCourse = dialog_manager.dialog_data.get('course')
+    course_name = await get_course_name(dialog_manager)
 
     # сохранить информацию до лучших времен
     match action:
         #  секция remove находится в switch_to_time_from_handler
         case 'edit_for_one_day':
             course_for_remember = ElectiveCourse(
-                subject=dialog_manager.dialog_data.get('name_of_course'),
+                subject=course_name,
                 pulpit=dialog_manager.dialog_data.get('pulpit'),
                 teacher_name=old_course.teacher_name,
                 weekday=days_of_week[cur_day_inx],
@@ -265,7 +267,7 @@ async def auditory_handler(callback: CallbackQuery,
             )
         case _:  # case 'add' | 'edit_permanently'
             course_for_remember = ElectiveCourse(
-                subject=dialog_manager.dialog_data.get('name_of_course'),
+                subject=course_name,
                 pulpit=dialog_manager.dialog_data.get('pulpit'),
                 teacher_name=dialog_manager.dialog_data.get('teacher'),
                 weekday=days_of_week[cur_day_inx],

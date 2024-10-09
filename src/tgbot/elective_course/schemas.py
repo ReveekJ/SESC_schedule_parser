@@ -1,7 +1,9 @@
 import datetime
-from typing import Optional, Literal, Any
+from typing import Optional, Literal, Any, Annotated
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, Field
+from pydantic_core.core_schema import ValidationInfo
+
 
 from src.tgbot.sesc_info import SESC_Info
 from .elective_info import ElectiveInfo
@@ -11,6 +13,7 @@ class ElectiveCourse(BaseModel):
     id: Optional[int] = 0  # опционально так как при создании курса id не указывается, а определяется автоматически
     # на sql
     subject: str
+    short_subject: Annotated[str, Field(validate_default=True, exclude=True)] = ''
     pulpit: str
     teacher_name: str
     weekday: int
@@ -23,6 +26,12 @@ class ElectiveCourse(BaseModel):
     diffs_time_from: Optional[datetime.time | None] = None
     diffs_time_to: Optional[datetime.time | None] = None
     is_cancelled: Optional[bool] = False
+
+
+    @field_validator('short_subject')
+    def set_short_string(cls, v, values: ValidationInfo):
+        sub = values.data['subject']
+        return sub[:20] + '...' if len(sub) > 20 else sub
 
     def model_dump(
             self,

@@ -9,6 +9,7 @@ from src.tgbot.elective_course.states import AdminMachine
 from src.tgbot.sesc_info import SESC_Info
 from src.tgbot.text import TEXT
 from .elective_info import ElectiveInfo
+from .utils import get_course_name
 from ...utils.dialogs_utils import lang_getter, __list_to_select_format
 
 
@@ -28,7 +29,7 @@ async def pulpit_getter(event_from_user: User, dialog_manager: DialogManager, **
 
 async def possible_days_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
     lang = (await lang_getter(event_from_user)).get('lang')
-    name_of_course = dialog_manager.dialog_data.get('name_of_course')
+    name_of_course = await get_course_name(dialog_manager)
     possible_days_nums = [i.weekday for i in (await ElectiveCourseDB.get_courses_by_subject(name_of_course))]
 
     possible_days = [TEXT('weekdays_kb', lang)[i] for i in (possible_days_nums if possible_days_nums != [] else
@@ -53,7 +54,8 @@ async def possible_days_getter(event_from_user: User, dialog_manager: DialogMana
 
     return {
         'lang': lang,
-        'possible_days': res
+        'possible_days': res,
+        'course_name': name_of_course
     }
 
 
@@ -61,9 +63,20 @@ async def courses_by_pulpit_getter(event_from_user: User, dialog_manager: Dialog
     lang = (await lang_getter(event_from_user)).get('lang')
     pulpit = dialog_manager.dialog_data.get('pulpit')
     row_data = await ElectiveCourseDB.get_courses_by_pulpit(pulpit)
-    courses = list(set(i.subject for i in row_data))
+
+
+    unique_courses = {}
+    for course in row_data:
+        if course.subject not in unique_courses:
+            unique_courses[course.subject] = course
+
+    # Получаем список уникальных курсов
+    unique_courses_list = list(unique_courses.values())
+    names = [i.short_subject for i in unique_courses_list]
+    ids = [i.id for i in unique_courses_list]
+
     return {'lang': lang,
-            'courses': sorted(__list_to_select_format(courses), key=lambda x: x[1])}
+            'courses': sorted(__list_to_select_format(names, ids), key=lambda x: x[1])}  # фигачим id курсов, а потом делаем метод для получения названия по id
 
 
 def __get_weekday(dialog_manager: DialogManager, lang: str) -> str:
@@ -77,9 +90,6 @@ async def __time_getter(event_from_user: User, dialog_manager: DialogManager, pr
     time_from = dialog_manager.dialog_data.get('time_from')
 
     if dialog_manager.dialog_data.get('action') != 'add':
-        # prev_time = ((await ElectiveCourseDB.get_courses_by_subject(dialog_manager.dialog_data.get('name_of_course')))
-        #              [0].time_from)
-        # await dialog_manager.update({'prev_time': prev_time})
         times.remove(prev_time)
 
     if dialog_manager.current_context().state == AdminMachine.time_to:
@@ -108,10 +118,10 @@ async def __time_getter(event_from_user: User, dialog_manager: DialogManager, pr
 async def time_from_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs) -> dict:
     #  получаем старый курс
     try:
+        course_name = await get_course_name(dialog_manager)
         current_weekday = dialog_manager.dialog_data.get('days_of_week')[dialog_manager.dialog_data.get('cur_day_inx',
                                                                                                         0)]
-        old_course = await ElectiveCourseDB.get_course_by_subject_and_weekday(dialog_manager.dialog_data.get('name_of_course'),
-                                                                              current_weekday)
+        old_course = await ElectiveCourseDB.get_course_by_subject_and_weekday(course_name, current_weekday)
         dialog_manager.dialog_data.update({'course': old_course})
     except Exception as e:
         print(e)
@@ -148,7 +158,7 @@ async def teacher_getter(event_from_user: User, dialog_manager: DialogManager, *
     lang = (await lang_getter(event_from_user)).get('lang')
     letter = dialog_manager.dialog_data.get('teacher_letter')
     action = dialog_manager.dialog_data.get('action')
-    teachers = [(number, name) for name, number in SESC_Info.TEACHER.items() if name[0] == letter]
+    teachers = [(number, name) for name, number in SESC_Info.ELECTIVE_TEACHER.items() if name[0] == letter]
 
     return {
         'lang': (await lang_getter(event_from_user)).get('lang'),
