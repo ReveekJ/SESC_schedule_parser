@@ -14,3 +14,4 @@ log.log
 nats/data/*
 nui/*
 /proto/*
+*.ipynb
