@@ -72,6 +72,7 @@ class AbstractParser(ABC):
                                                   first=les[0],
                                                   second=les[1],
                                                   third=les[2],
+                                                  subgroup=int(row.get('subgroup', 0)),
                                                   isDiff=True if row.get('date') else False))
 
             styles_dct: dict[int, str] = {number: name for name, number in drawing_pb2.Style.items()}
