@@ -16,12 +16,12 @@ class ReloginMashine(RegistrationMachine):
     pass
 
 
-@router.message(F.text == BottomMenuText.relogin.value)
-async def relogin_confirmation(message: Message, state: FSMContext):
-    lang = message.from_user.language_code
-    chat_id = message.chat.id
+@router.callback_query(F.data == 'to_relogin')
+async def relogin_confirmation(callback: CallbackQuery):
+    lang = callback.from_user.language_code
+    chat_id = callback.from_user.id
 
-    await message.delete()
+    await callback.message.delete()
     return (await bot.send_message(chat_id,
                            TEXT("aus", lang),
                            reply_markup=hard_choice(lang=lang),

@@ -23,8 +23,9 @@ from src.utils.dialogs_utils import get_text_from_enum, lang_getter, to_main, ge
 router = Router()
 
 
-@router.callback_query(F.data == 'go_to_settings')
-async def settings_start(callback: CallbackQuery, dialog_manager: DialogManager):
+@router.message(F.text == BottomMenuText.settings.value)
+async def settings_start(message: Message, dialog_manager: DialogManager):
+    await message.delete()
     await dialog_manager.start(state=SettingsSG.start)
 
 
