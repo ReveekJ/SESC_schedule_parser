@@ -19,6 +19,8 @@ async def sending_schedule_changes():
         role = elem.type
         sub_info = elem.second
         weekday = elem.weekday
+
+        sent_users = []
         # schedule = elem.schedule
 
         async with await get_async_session() as session:
@@ -28,6 +30,9 @@ async def sending_schedule_changes():
 
         # рассылаем изменения по юзерам
         for user_data in users:
+            if user_data.id in sent_users:
+                continue  # еще раз предохраняемся
+
             try:
                 # создаем расписание с изменениями
                 path = await PARSER.parse(str(role), str(sub_info), str(weekday), user_id=user_data.id)
