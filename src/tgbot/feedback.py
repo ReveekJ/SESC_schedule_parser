@@ -4,7 +4,7 @@ from aiogram import Router, F
 from aiogram.filters import BaseFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
-from aiogram.types import Message, ContentType
+from aiogram.types import Message, ContentType, CallbackQuery
 
 from src.config import ADMINS
 from src.tgbot.auxiliary import bot, Form
@@ -30,15 +30,15 @@ class FeedbackMachine(Form):
     get_feedback = State()
 
 
-@router.message(F.text == BottomMenuText.feedback.value)
-async def get_feedback(message: Message, state: FSMContext):
-    user_id = message.chat.id
-    lang = message.from_user.language_code
+@router.callback_query(F.data == 'to_feedback')
+async def get_feedback(callback: CallbackQuery, state: FSMContext):
+    user_id = callback.from_user.id
+    lang = callback.from_user.language_code
 
     await state.set_state(FeedbackMachine.get_feedback)
     await state.update_data({'prev': func_start_registration})
 
-    await message.delete()
+    await callback.message.delete()
     return (await bot.send_message(user_id,
                            TEXT('get_feedback', lang),
                            disable_notification=True))

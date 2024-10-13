@@ -27,14 +27,14 @@ def bottom_menu(lang: str) -> ReplyKeyboardMarkup:
             text=BottomMenuText.optional.value
         )
     )
-    kb.row(
-        KeyboardButton(
-            text=BottomMenuText.feedback.value
-        ),
-        KeyboardButton(
-            text=BottomMenuText.settings.value
-        )
-    )
+    # kb.row(
+    #     KeyboardButton(
+    #         text=BottomMenuText.feedback.value
+    #     ),
+    #     KeyboardButton(
+    #         text=BottomMenuText.settings.value
+    #     )
+    # )
     # KeyboardButton(text=BottomMenuText.settings.value)
     kb.row(KeyboardButton(text=BottomMenuText.to_main.value))
 
@@ -102,16 +102,18 @@ def get_choose_schedule(lang: str) -> InlineKeyboardMarkup:
     kb.button(text=TEXT('tomorrow', lang), callback_data='tomorrow')
     kb.button(text=TEXT('all_days', lang), callback_data='all_days')
 
+    temp = []
     for i, j in SESC_Info.TYPE.items():
         # ignore all schedule
         if j in ['all']:
             continue
         # если это преподаватель, то берем специальный текст, так как мы имеем похожий текст при регистрации с этим
         # short_name
-        kb.button(text=TEXT(j, lang) if j != 'teacher' else TEXT('teacher_kb', lang), callback_data='type_' + j)
+        temp.append(InlineKeyboardButton(text=TEXT(j, lang) if j != 'teacher' else TEXT('teacher_kb', lang), callback_data='type_' + j))
 
-    # kb.button(text=TEXT('to_elective', lang), callback_data='to_elective')  эта кнопка перенесена на другую клавиатуру
     kb.adjust(1)
+    kb.row(*temp, width=3)
+    # kb.button(text=TEXT('to_elective', lang), callback_data='to_elective')  эта кнопка перенесена на другую клавиатуру
     return kb.as_markup()
 
 
@@ -172,7 +174,8 @@ def options_kb(lang: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
 
     kb.button(text=TEXT('free_auditory', lang), callback_data='free_auditory')
-    kb.button(text=TEXT('bell_schedule', lang), callback_data='bell_schedule')
+    kb.button(text=TEXT('to_feedback', lang), callback_data='to_feedback')
+    kb.button(text=TEXT('to_settings', lang), callback_data='to_settings')
     kb.button(text=TEXT('relogin', lang), callback_data='to_relogin')
     kb.button(text=TEXT('official_site', lang), url='https://lyceum.urfu.ru/ucheba/raspisanie-zanjatii')
 
