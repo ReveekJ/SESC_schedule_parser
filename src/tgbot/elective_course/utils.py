@@ -35,7 +35,7 @@ async def send_elective_schedule(callback: CallbackQuery, lang: str, day: str, p
 
         await send_schedule(chat_id=callback.message.chat.id,
                             schedule=schedule,
-                            short_name_text_mes='main_schedule',
+                            short_name_text_mes='elective_schedule',
                             role='elective',
                             sub_info='',
                             weekday=int(day),
