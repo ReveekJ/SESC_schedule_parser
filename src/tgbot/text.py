@@ -113,7 +113,8 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                    ('to_elective', 'На факультативы', 'To elective courses'),
                    ('relogin', '🔄 Перерегистрироваться', '🔄 Re-register'),
                    ('to_feedback', '🤝 Оставить отзыв', '🤝 Leave feedback'),
-                   ('to_settings', '⚙ Настройки', '⚙ Settings'))
+                   ('to_settings', '⚙ Настройки', '⚙ Settings'),
+                   ('elective_schedule', 'Расписание факультативов на', 'Schedule of electives for'))
 
 
 class BottomMenuText(Enum):
