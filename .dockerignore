@@ -2,6 +2,7 @@
 schedule*.png
 *.log
 venv/
+.venv/
 __pycache__/
 qodana.yaml
 test/
@@ -9,7 +10,6 @@ test/
 docker-compose.yaml
 *.mp4
 *.mp3
-log.log
 *.http
 nats/
 nui/

@@ -82,7 +82,7 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                    ('administration_role', 'Администрация', 'Administration'),
                    ('optional_func', 'Дополнительные функции', 'Optional functions'),
                    ('choose_optional_function', 'Выбери дополнительную функцию', 'Select additional function'),
-                   ('free_auditory', 'Свободные аудитории', 'Free audiences'),
+                   ('free_auditory', '👩‍🏫 Свободные аудитории', '👩‍🏫 Free audiences'),
                    ('official_site', 'Официальный сайт расписания СУНЦ УрФУ',
                     'Official website of the schedule of the SESC of UrFU'),
                    ('choose_lesson', 'Выбери урок', 'Choose a lesson'),
@@ -111,13 +111,12 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                                                                                      "please write to us about it at "
                                                                                      "/feedback"),
                    ('to_elective', 'На факультативы', 'To elective courses'),
-                   ('relogin', 'Перерегистрироваться', 'Re-register'))
+                   ('relogin', '🔄 Перерегистрироваться', '🔄 Re-register'),
+                   ('to_feedback', '🤝 Оставить отзыв', '🤝 Leave feedback'),
+                   ('to_settings', '⚙ Настройки', '⚙ Settings'))
 
 
 class BottomMenuText(Enum):
-    # relogin = '🔁 Re-register'
     optional = '🔴 Дополнительно'
-    feedback = '🤝 Оставить отзыв'
     electives = '🏫 Факультативы'
     to_main = '⬅ На главную страницу'
-    settings = '⚙ Настройки'

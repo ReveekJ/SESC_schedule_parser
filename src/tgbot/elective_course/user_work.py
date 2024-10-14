@@ -11,6 +11,7 @@ from src.tgbot.elective_course.elective_text import ElectiveText
 from src.tgbot.elective_course.elective_transactions.elective_transactions import ElectiveTransactions
 from src.tgbot.elective_course.schemas import UserWorkSchema, ElectiveCourse
 from src.tgbot.elective_course.states import UserWorkMachine
+from src.tgbot.elective_course.utils import send_elective_schedule
 from src.tgbot.parser import ELECTIVE_PARSER
 from src.tgbot.text import TEXT
 from src.tgbot.user_models.db import DB
@@ -29,29 +30,10 @@ def save_user_work_schema(dialog_manager: DialogManager, new_schema: UserWorkSch
         dialog_manager.dialog_data[key] = value
 
 
-async def handle_schedule(callback: CallbackQuery, lang: str, day: str):
-    user_id = callback.from_user.id
-    file = await ELECTIVE_PARSER.parse(user_id, weekday=day)
-    await callback.message.delete()
-
-    if file == 'NO_SCHEDULE':
-        await callback.message.answer(TEXT('no_schedule', lang), disable_notification=True)
-    else:
-        schedule = FSInputFile(file)
-
-        await send_schedule(chat_id=callback.message.chat.id,
-                            schedule=schedule,
-                            short_name_text_mes='main_schedule',
-                            role='elective',
-                            sub_info='',
-                            weekday=int(day),
-                            lang=lang)
-
-
 async def on_today(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
     lang = callback.from_user.language_code
     day = str((datetime.date.today().weekday()) % 6 + 1)  # Today
-    await handle_schedule(callback, lang, day)
+    await send_elective_schedule(callback, lang, day)
 
     await dialog_manager.done()
     await dialog_manager.start(UserWorkMachine.start)
@@ -60,7 +42,7 @@ async def on_tomorrow(callback: CallbackQuery, widget: Button, dialog_manager: D
     lang = callback.from_user.language_code
     today_to_tomorrow = {0: '2', 1: '3', 2: '4', 3: '5', 4: '6', 5: '1', 6: '1'}
     day = today_to_tomorrow[datetime.date.today().weekday()]  # Tomorrow
-    await handle_schedule(callback, lang, day)
+    await send_elective_schedule(callback, lang, day)
 
     await dialog_manager.done()
     await dialog_manager.start(UserWorkMachine.start)
@@ -71,7 +53,7 @@ async def on_any_weekday(callback: CallbackQuery,
                          *args, **kwargs):
     lang = callback.from_user.language_code
 
-    await handle_schedule(callback, lang, str(callback.data.split(':')[-1]))
+    await send_elective_schedule(callback, lang, str(callback.data.split(':')[-1]))
 
     await dialog_manager.done()
     await dialog_manager.start(UserWorkMachine.start)

@@ -1,14 +1,12 @@
 from aiogram import Router, F
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
-from aiogram.types import CallbackQuery, Message, FSInputFile
+from aiogram.types import CallbackQuery, Message
 
-from src.config import PATH_TO_PROJECT
 from src.tgbot.auxiliary import Form, bot
-from src.tgbot.main_work.registration import func_start_registration
 from src.tgbot.keyboard import (get_choose_schedule,
                                 options_kb, get_choose_weekday_kb, choose_lessons_kb)
+from src.tgbot.main_work.registration import func_start_registration
 from src.tgbot.parser import PARSER
 from src.tgbot.text import TEXT, BottomMenuText
 
@@ -108,26 +106,8 @@ async def send_free_auditory(callback: CallbackQuery, state: FSMContext):
                                 chat_id=chat_id,
                                 message_id=message_id)
 
+    await callback.answer()
     # отправка основного сообщения
-    await callback.message.answer(TEXT('main', lang),
+    return await callback.message.answer(TEXT('main', lang),
                                   reply_markup=get_choose_schedule(lang),
                                   disable_notification=True)
-    await callback.answer()
-
-
-@router.callback_query(F.data == 'bell_schedule')
-async def bell_schedule(callback: CallbackQuery):
-    chat_id = callback.message.chat.id
-    message_id = callback.message.message_id
-    lang = callback.from_user.language_code
-    path = PATH_TO_PROJECT + 'schedules/bell_schedule.png'
-
-    await bot.delete_message(chat_id, message_id)
-    await bot.send_photo(chat_id=chat_id,
-                         photo=FSInputFile(path),
-                         disable_notification=True)
-    await callback.message.answer(TEXT('main', lang),
-                                  reply_markup=get_choose_schedule(lang),
-                                  disable_notification=True)
-
-    await callback.answer()

@@ -10,6 +10,7 @@ from src.database import get_async_session
 from src.tgbot.auxiliary import send_schedule, bot
 from src.tgbot.elective_course import states
 from src.tgbot.elective_course.user_work import UserWorkMachine
+from src.tgbot.elective_course.utils import send_elective_schedule
 from src.tgbot.keyboard import get_choose_schedule, get_choose_weekday_kb
 from src.tgbot.main_work.registration import func_start_registration
 from src.tgbot.parser import PARSER
@@ -38,6 +39,8 @@ async def send_schedule_for_today(callback: CallbackQuery, state: FSMContext):
         day = today_to_tomorrow[datetime.date.today().weekday()]
     else:
         day = str((datetime.date.today().weekday()) % 6 + 1)
+
+    await send_elective_schedule(callback, lang, day, pass_if_no_schedule=True)
 
     file = await PARSER.parse(user_data['role'], user_data['sub_info'], day, user_id=user_data.id)
 
@@ -86,6 +89,8 @@ async def get_sch_for_this_day(callback: CallbackQuery):
 
     async with await get_async_session() as session:
         user_data = await DB().select_user_by_id(session, callback.message.chat.id)
+
+    await send_elective_schedule(callback, lang, callback.data, pass_if_no_schedule=True)
 
     file = await PARSER.parse(user_data['role'], user_data['sub_info'], callback.data, user_id=user_data.id)
 
