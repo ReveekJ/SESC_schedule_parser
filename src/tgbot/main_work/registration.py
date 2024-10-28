@@ -246,7 +246,8 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
 
 
 @router.message(CommandStart())
-@router.message(F.text == BottomMenuText.to_main.value)
+@router.message(F.text == BottomMenuText.to_main.value['ru'])
+@router.message(F.text == BottomMenuText.to_main.value['en'])
 async def start_registration(message: Message, state: FSMContext, dialog_manager: DialogManager):
     await message.delete()  # для красоты
     return await func_start_registration(message, state)

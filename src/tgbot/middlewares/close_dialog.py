@@ -15,7 +15,12 @@ class CloseDialogsMiddleware(BaseMiddleware):
     ):
         try:
             if isinstance(event, Message):
-                if event.text in [i.value for i in BottomMenuText]:
+                texts = []
+                for i in BottomMenuText:
+                    for j in i.value.values():
+                        texts.append(j)
+
+                if event.text in texts:
                     # завершаем все диалоги
                     dialog_manager = data.get('dialog_manager')
                     await dialog_manager.done()
