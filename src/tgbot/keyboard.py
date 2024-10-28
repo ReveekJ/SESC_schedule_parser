@@ -21,10 +21,10 @@ def bottom_menu(lang: str) -> ReplyKeyboardMarkup:
     kb = ReplyKeyboardBuilder()
     kb.row(
         KeyboardButton(
-            text=BottomMenuText.electives.value
+            text=BottomMenuText.electives.value[lang]
         ),
         KeyboardButton(
-            text=BottomMenuText.optional.value
+            text=BottomMenuText.optional.value[lang]
         )
     )
     # kb.row(
@@ -36,7 +36,7 @@ def bottom_menu(lang: str) -> ReplyKeyboardMarkup:
     #     )
     # )
     # KeyboardButton(text=BottomMenuText.settings.value)
-    kb.row(KeyboardButton(text=BottomMenuText.to_main.value))
+    kb.row(KeyboardButton(text=BottomMenuText.to_main.value[lang]))
 
     return kb.as_markup(resize_keyboard=True)
 
