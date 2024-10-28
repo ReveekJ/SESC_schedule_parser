@@ -17,7 +17,12 @@ class DeleteLastMessageMiddleware(BaseMiddleware):
     ):
         try:
             if isinstance(event, Message):
-                if event.text in [i.value for i in BottomMenuText]:
+                texts = []
+                for i in BottomMenuText:
+                    for j in i.value.values():
+                        texts.append(j)
+
+                if event.text in texts:
                     # удаляем последнее, уже не нужное сообщение
                     await delete_last_message(event.from_user.id)
         except Exception as e:  # возникает когда сообщения не существует

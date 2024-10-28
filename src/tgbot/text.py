@@ -118,6 +118,9 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
 
 
 class BottomMenuText(Enum):
-    optional = '🔴 Дополнительно'
-    electives = '🏫 Факультативы'
-    to_main = '⬅ На главную страницу'
+    optional = {'ru': '🔴 Дополнительно',
+                'en': '🔴 Optional'}
+    electives = {'ru': '🏫 Факультативы',
+                 'en': '🏫 Electives'}
+    to_main = {'ru': '⬅ На главную страницу',
+               'en': '⬅ To main page'}

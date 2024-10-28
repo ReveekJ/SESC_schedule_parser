@@ -18,7 +18,8 @@ class FreeAuditoryMachine(Form):
     lesson_for_free_auditory = State()
 
 
-@router.message(F.text == BottomMenuText.optional.value)
+@router.message(F.text == BottomMenuText.optional.value['ru'])
+@router.message(F.text == BottomMenuText.optional.value['en'])
 async def optional_func(message: Message | CallbackQuery, state: FSMContext):
     lang = message.from_user.language_code
 

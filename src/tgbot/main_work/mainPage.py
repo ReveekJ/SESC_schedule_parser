@@ -113,7 +113,8 @@ async def get_sch_for_this_day(callback: CallbackQuery):
                                   disable_notification=True))
 
 
-@router.message(F.text == BottomMenuText.electives.value)
+@router.message(F.text == BottomMenuText.electives.value['ru'])
+@router.message(F.text == BottomMenuText.electives.value['en'])
 async def to_elective(message: Message, dialog_manager: DialogManager):
     await message.delete()
     async with await get_async_session() as session:
