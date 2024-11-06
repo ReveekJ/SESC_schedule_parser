@@ -4,8 +4,9 @@ import logging
 from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter
 from aiogram.types import FSInputFile
 
+from src.config import ADMINS
 from src.database import get_async_session
-from src.tgbot.auxiliary import send_schedule
+from src.tgbot.auxiliary import send_schedule, bot
 from src.tgbot.parser import PARSER
 from src.tgbot.user_models.db import DB
 from src.utils.aiogram_utils import delete_last_message, send_main_page
@@ -14,6 +15,8 @@ from src.utils.aiogram_utils import delete_last_message, send_main_page
 async def sending_schedule_changes():
     # получаем измения
     changes = await PARSER.check_for_changes()
+
+    await bot.send_message(ADMINS[0], text=f'Начал отсылать изменения ({len(changes)})')
 
     for elem in changes:
         role = elem.type
