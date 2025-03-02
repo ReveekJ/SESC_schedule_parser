@@ -3,6 +3,7 @@ schedule*.png
 *.log
 venv/
 .venv/
+.venv1/
 __pycache__/
 qodana.yaml
 test/
@@ -13,3 +14,4 @@ docker-compose.yaml
 *.http
 nats/
 nui/
+nohup.out
