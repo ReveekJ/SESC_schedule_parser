@@ -14,6 +14,7 @@ from src.tgbot.auxiliary import Form, bot
 from src.tgbot.for_administration.administration_page import administration_page
 from src.tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
                                 get_letter_of_teacher_kb, aprove)
+from src.tgbot.sesc_info import SESC_Info
 from src.tgbot.text import TEXT, BottomMenuText
 from src.tgbot.user_models.db import DB
 from src.tgbot.user_models.schemas import User
@@ -240,7 +241,11 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
         await DB().update_last_message_id(user_id, msg.message_id)
 
     await callback.answer()
-
+    for admin_id in ADMINS:
+        try:
+            await bot.send_message(admin_id, text=f'Добавлен новый пользователь {SESC_Info.GROUP_REVERSE.get(sub_role)}')
+        except Exception as e:
+            logging.error(e)
 
 '''-------- ХЭНДЛЕРЫ -------------'''
 

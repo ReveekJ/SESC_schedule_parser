@@ -71,7 +71,7 @@ TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, ')
                    ('changed_schedule', 'Изменения в расписании на', 'Schedule changes for'),
                    ('yes', 'Да', 'Yes'),
                    ('no', 'Нет', 'No'),
-                   ('aus', "Вы уверены?", 'Are you sure?'),
+                   ('aus', "Ты уверен? При перерегистрации удалятся все твои подписки на факультативы, сбросятся выбранный класс и тема оформления. В общем мы забудем вообще все, как будто ты никогда и не пользовался нашим ботом. Это действие невозможно отменить!", 'You are sure? During re-registration, all your subscriptions to electives will be removed, the selected class and the theme of design will be dropped. In general, we will forget everything at all, as if you had never used our bot. This action cannot be canceled!'),
                    ('admin_sending_message', 'Сообщения отправлены, ошибок - ', 'Messages sent, errors - '),
                    ('get_feedback', 'Дорогой друг! Если тебе понравился этот бот или у тебя есть предложение, '
                                     'как сделать его еще лучше - напиши и отправь нам сообщение в этот чат',

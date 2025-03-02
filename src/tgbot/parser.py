@@ -40,7 +40,7 @@ class AbstractParser(ABC):
 
     @abstractmethod
     async def parse(self, _type: str, _second: str, _weekday: str, style: int):
-        pass
+        ...
 
     # Создание таблицы
     def _create_table(self, _type: str, info: list, style: int):
@@ -131,11 +131,13 @@ class Parser(AbstractParser):
                     await self.changes.append(ChangesType(type='teacher', second=teacher, weekday=day,
                                                           schedule=schedule))
 
-    async def check_for_changes(self) -> ChangesList:
+    async def check_for_changes(self) -> list[ChangesType]:
         await self.__check_for_changes_student()
         await self.__check_for_changes_teacher()
+        res = self.changes.copy()
+        self.changes.flush_sending_list()
 
-        return self.changes
+        return res
 
     @staticmethod
     async def get_free_auditories(weekday: int, lesson: int):

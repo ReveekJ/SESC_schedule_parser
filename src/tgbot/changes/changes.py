@@ -15,8 +15,8 @@ from src.utils.aiogram_utils import delete_last_message, send_main_page
 async def sending_schedule_changes():
     # получаем измения
     changes = await PARSER.check_for_changes()
-
-    await bot.send_message(ADMINS[0], text=f'Начал отсылать изменения ({len(changes)})')
+    if len(changes) != 0:
+        await bot.send_message(ADMINS[0], text=f'Начал отсылать изменения ({len(changes)})')
 
     for elem in changes:
         role = elem.type
@@ -24,7 +24,6 @@ async def sending_schedule_changes():
         weekday = elem.weekday
 
         sent_users = []
-        # schedule = elem.schedule
 
         async with await get_async_session() as session:
             users = await DB().select_users_by_role_and_sub_info(session,
@@ -56,7 +55,6 @@ async def sending_schedule_changes():
                 await asyncio.sleep(0.5)
             except TelegramForbiddenError:  # возникает когда пользователь заблокировал бота
                 pass
-                # TODO: как то удалять пользователей из базы, если оно заблокал бота
             except TelegramRetryAfter as e:
                 await asyncio.sleep(e.retry_after)
             except Exception as e:

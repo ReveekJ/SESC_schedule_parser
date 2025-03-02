@@ -69,6 +69,9 @@ class ChangesList(list):
                     return index
         super().index(__value, __start, __stop)
 
+    def flush_sending_list(self):
+        self.clear()
+
 
 # Порядок ввода: tuple(краткое имя, русское вариант) ......
 class TextMessage:

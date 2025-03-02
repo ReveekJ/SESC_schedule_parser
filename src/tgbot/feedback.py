@@ -1,7 +1,7 @@
 from typing import Union
 
 from aiogram import Router, F
-from aiogram.filters import BaseFilter, Command
+from aiogram.filters import BaseFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import Message, ContentType, CallbackQuery
@@ -9,8 +9,7 @@ from aiogram.types import Message, ContentType, CallbackQuery
 from src.config import ADMINS
 from src.tgbot.auxiliary import bot, Form
 from src.tgbot.main_work.registration import func_start_registration
-from src.tgbot.keyboard import back_kb
-from src.tgbot.text import TEXT, BottomMenuText
+from src.tgbot.text import TEXT
 
 router = Router()
 
@@ -53,7 +52,7 @@ async def feedback_photo(message: Message, state: FSMContext):
 
     if message.content_type == ContentType.TEXT:
         for admin in ADMINS:
-            await bot.send_message(admin, message.text,
+            await bot.send_message(admin, message.text + f' @{str(message.from_user.username)}',
                                    disable_notification=True)
     elif message.content_type == ContentType.PHOTO:
         for admin in ADMINS:
