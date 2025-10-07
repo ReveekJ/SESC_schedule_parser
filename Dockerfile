@@ -7,10 +7,10 @@ RUN mkdir -p /usr/project
 WORKDIR /usr/project
 
 RUN apk add --no-cache --upgrade bash
-#RUN apk add --no-cache build-base
+RUN apk add --no-cache build-base
 #RUN apk add --no-cache python3-dev
-#RUN apk add --no-cache libffi-dev
-#RUN apk add --no-cache openssl-dev
+RUN apk add --no-cache libffi-dev
+RUN apk add --no-cache openssl-dev
 
 
 COPY requirements.txt /usr/project
