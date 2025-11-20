@@ -1,76 +1,83 @@
-from enum import Enum
+"""Модуль для работы с текстами факультативов через fluentogram"""
+from src.tgbot.i18n import get_translator
 
 
-class ElectiveText(Enum):
-    add = {'ru': '➕ Добавить факультатив',
-           'en': '➕ Add an elective'}
-    remove = {'ru': '💥 Удалить факультатив',
-              'en': '💥 Remove optional'}
-    edit_permanently = {'ru': '📒 Изменить на постоянной основе',
-                        'en': '📒 Change permanently'}
-    edit_for_one_day = {'ru': '⏱ Изменить до следующего занятия',
-                        'en': '⏱ Change until next lesson'}
-    to_main = {'ru': '⬅ На главную',
-               'en': '⬅ To main'}
-    main_page = {'ru': 'Факультативы',
-                 'en': 'Elective courses'}
-    register_to_new_course = {'ru': 'Записаться/Отписаться',
-                              'en': 'Subscribe/Unsubscribe'}
-    choose_pulpit = {'ru': 'Выберите кафедру',
-                     'en': 'Choose a pulpit'}
-    choose_elective = {'ru': 'Выберите факультатив',
-                       'en': 'Choose an elective'}
-    successfully_sub_or_unsub = {'ru': '✅ Ты успешно изменил свои факультативы',
-                                 'en': '✅ You have successfully registered for an elective'}
-    unsubscribe = {'ru': 'Отписаться от факультатива',
-                   'en': 'Unsubscribe from an elective'}
-    enter_a_name = {'ru': '🖋 Введите название факультатива',
-                    'en': '🖋 Enter the name of the elective'}
-    are_you_sure_remove = {'ru': 'Ты уверен, что хочешь удалить этот факультатив. Это действие нельзя отменить. Все '
-                                 'ученики, записанные на этот курс, автоматически отпишутся от него',
-                           'en': 'Are you sure you want to remove this elective? This action cannot be undone. All '
-                                 'students enrolled in this course will automatically unsubscribe from it'}
-    yes = {'ru': 'Да я уверен',
-           'en': "Yes I'm sure"}
-    no = {'ru': 'Нет, оставить все как есть',
-          'en': 'No, leave everything as it is'}
-    remove_done = {'ru': 'Успешно удален факультатив',
-                   'en': 'Successfully removed elective course'}
-    done = {'ru': '✅ Готово',
-            'en': '✅ Done'}
-    time_from = {'ru': '⏰ Выберите время начала факультатива',
-                 'en': '⏰ Select the start time of the elective'}
-    time_to = {'ru': '⏰ Выберите время конца факультатива',
-               'en': '⏰ Select the end time of the elective'}
-    cancel_elective = {'ru': '❌ Отменить факультатив',
-                       'en': '❌ Cancel an elective'}
-    error = {'ru': '❌ Произошла ошибка! Попробуй нажать на /start и повторить еще раз. Если ошибка сохраняется, '
-                   'то напишите об этом нам в /feedback (приложите описание ваших дейтсвий, чтобы мы могли '
-                   'воспроизвести ошибку и исправить её)',
-             'en': '❌ An error has occurred! Try clicking start and repeating again. If the error persists, write about '
-                   'it to us in feedback (attach a description of your actions so that we can reproduce the error and '
-                   'fix it)'}
-    same = {'ru': 'Оставить как раньше',
-            'en': 'Leave as before'}
-    same_name_already_exist = {'ru': '❌ Факультатив с этим названием уже существует, попробуй другое',
-                               'en': '❌ An elective with this name already exists, try another one'}
-    settings_for = {'ru': '✅ Ты настраиваешь:',
-                    'en': '✅ You\'re setting up:'}
-    elective_changes = {'ru': 'Изменения в расписании факультативов для тебя на ',
-                        'en': 'Changes in the elective schedule for you on '}
-    loading = {'ru': 'Сохраняем изменения.....\nРассылаем изменения по ученикам',
-               'en': 'Save the changes.....\nDistribute the changes to the students'}
+class ElectiveText:
+    """Класс для текстов факультативов"""
+    
+    @staticmethod
+    def _get_value(key: str, lang: str):
+        translator = get_translator(lang)
+        key_mapping = {
+            'add': 'elective-add',
+            'remove': 'elective-remove',
+            'edit_permanently': 'elective-edit-permanently',
+            'edit_for_one_day': 'elective-edit-for-one-day',
+            'to_main': 'elective-to-main',
+            'main_page': 'elective-main-page',
+            'register_to_new_course': 'elective-register-to-new-course',
+            'choose_pulpit': 'elective-choose-pulpit',
+            'choose_elective': 'elective-choose-elective',
+            'successfully_sub_or_unsub': 'elective-successfully-sub-or-unsub',
+            'unsubscribe': 'elective-unsubscribe',
+            'enter_a_name': 'elective-enter-a-name',
+            'are_you_sure_remove': 'elective-are-you-sure-remove',
+            'yes': 'elective-yes',
+            'no': 'elective-no',
+            'remove_done': 'elective-remove-done',
+            'done': 'elective-done',
+            'time_from': 'elective-time-from',
+            'time_to': 'elective-time-to',
+            'cancel_elective': 'elective-cancel',
+            'error': 'elective-error',
+            'same': 'elective-same',
+            'same_name_already_exist': 'elective-same-name-already-exist',
+            'settings_for': 'elective-settings-for',
+            'elective_changes': 'elective-changes',
+            'loading': 'elective-loading',
+        }
+        return translator.get(key_mapping.get(key, key))
+    
+    def __getattr__(self, name):
+        """Динамическое создание свойств для обратной совместимости"""
+        class _TextValue:
+            @property
+            def value(self):
+                return {
+                    'ru': ElectiveText._get_value(name, 'ru'),
+                    'en': ElectiveText._get_value(name, 'en'),
+                }
+        return _TextValue()
 
-class AuthText(Enum):
-    greeting_text = {'ru': 'Отправь селфи с пропуском СУНЦ, чтобы мы могли убедиться что ты - настоящий учитель, а не вредный школьник, который хочет побаловаться \n\nПостарайся сделать фото так, чтобы было четко видно твое лицо и пропуск\n\nЕсли не получается, то напиши волонтеру: @I_relsa, он прибежит и поможет)))',
-                     'en': 'Send a selfie with your SESC pass so that we can make sure that you are a real teacher and not a mischievous student who wants to have fun \n\nTry to take a photo so that your face and pass are clearly visible\n\nIf that doesn’t work, then write to a volunteer : @I_relsa, he will come running and help)))'}
-    approve_btn = {'ru': 'Подтвердить',
-                   'en': 'Approve'}
-    decline_btn = {'ru': 'Отклонить',
-                   'en': 'Decline'}
-    wait_pls = {'ru': 'Твоя заявка отправлена на рассмотрение. Когда мы пример решение мы тебе сообщим.\n\nА пока что подожди.\n\nОбещаем, скоро ответим',
-                'en': 'Your application has been sent for consideration. When we have an example solution, we will let you know.\n\nIn the meantime, wait.\n\nWe promise we will answer soon'}
-    you_approved = {'ru': 'Поздравляем - ты подтвержден!\n\nТеперь тебе доступны функции редактирования факультативов!',
-                    'en': 'Congratulations - you are confirmed!\n\nNow you have access to the functions of editing electives!'}
-    you_declined = {'ru': 'К сожалению ты отклонен :(\n\nЕсли ты не согласен с нашим решением, то напиши волонтеру @I_relsa, он прибежит и разберется',
-                    'en': 'Unfortunately, you were rejected :(\n\nIf you do not agree with our decision, then write to volunteer @I_relsa, he will come running and sort it out'}
+
+class AuthText:
+    """Класс для текстов авторизации"""
+    
+    @staticmethod
+    def _get_value(key: str, lang: str):
+        translator = get_translator(lang)
+        key_mapping = {
+            'greeting_text': 'auth-greeting-text',
+            'approve_btn': 'auth-approve-btn',
+            'decline_btn': 'auth-decline-btn',
+            'wait_pls': 'auth-wait-pls',
+            'you_approved': 'auth-you-approved',
+            'you_declined': 'auth-you-declined',
+        }
+        return translator.get(key_mapping.get(key, key))
+    
+    def __getattr__(self, name):
+        """Динамическое создание свойств для обратной совместимости"""
+        class _TextValue:
+            @property
+            def value(self):
+                return {
+                    'ru': AuthText._get_value(name, 'ru'),
+                    'en': AuthText._get_value(name, 'en'),
+                }
+        return _TextValue()
+
+
+# Создаем экземпляры для обратной совместимости
+ElectiveText = ElectiveText()
+AuthText = AuthText()

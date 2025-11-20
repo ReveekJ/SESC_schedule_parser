@@ -241,9 +241,11 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
         await DB().update_last_message_id(user_id, msg.message_id)
 
     await callback.answer()
+    from src.tgbot.i18n import get_translator
+    translator = get_translator(lang)
     for admin_id in ADMINS:
         try:
-            await bot.send_message(admin_id, text=f'Добавлен новый пользователь {SESC_Info.GROUP_REVERSE.get(sub_role)}')
+            await bot.send_message(admin_id, text=translator.get('admin-new-user', group=SESC_Info.GROUP_REVERSE.get(sub_role)))
         except Exception as e:
             logging.error(e)
 
@@ -251,8 +253,7 @@ async def func_set_sub_info(callback: CallbackQuery, state: FSMContext):
 
 
 @router.message(CommandStart())
-@router.message(F.text == BottomMenuText.to_main.value['ru'])
-@router.message(F.text == BottomMenuText.to_main.value['en'])
+@router.message(F.text.in_(list(BottomMenuText.to_main.value.values())))
 async def start_registration(message: Message, state: FSMContext, dialog_manager: DialogManager):
     await message.delete()  # для красоты
     return await func_start_registration(message, state)

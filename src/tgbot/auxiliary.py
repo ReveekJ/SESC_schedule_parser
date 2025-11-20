@@ -19,12 +19,17 @@ bot = Bot(token=TOKEN)
 
 @router.callback_query(F.data == 'back')
 async def back(callback: CallbackQuery, state: FSMContext):
-    func = await state.get_data()
-    func = func.get('prev')
+    data = await state.get_data()
+    func = data.get('prev')
 
     # await callback.message.delete()
 
-    await func(callback, state)
+    if func is not None:
+        await func(callback, state)
+    else:
+        # Если функция не найдена, просто очищаем состояние
+        await state.clear()
+        await callback.answer()
 
 
 async def send_schedule(chat_id: int, short_name_text_mes: str, role: str, sub_info: str, weekday: int, lang: str,

@@ -16,9 +16,10 @@ class CloseDialogsMiddleware(BaseMiddleware):
         try:
             if isinstance(event, Message):
                 texts = []
-                for i in BottomMenuText:
-                    for j in i.value.values():
-                        texts.append(j)
+                # Собираем все тексты из BottomMenuText для всех языков
+                for menu_item in [BottomMenuText.optional, BottomMenuText.electives, BottomMenuText.to_main]:
+                    for text_value in menu_item.value.values():
+                        texts.append(text_value)
 
                 if event.text in texts:
                     # завершаем все диалоги

@@ -19,3 +19,5 @@ ujson
 aiodns
 nats-py
 grpcio-tools
+fluentogram
+fluent-compiler

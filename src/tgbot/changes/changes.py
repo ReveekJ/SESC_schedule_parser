@@ -14,9 +14,11 @@ from src.utils.aiogram_utils import delete_last_message, send_main_page
 
 async def sending_schedule_changes():
     # получаем измения
+    from src.tgbot.i18n import get_translator
     changes = await PARSER.check_for_changes()
     if len(changes) != 0:
-        await bot.send_message(ADMINS[0], text=f'Начал отсылать изменения ({len(changes)})')
+        translator = get_translator('ru')  # Админские сообщения на русском
+        await bot.send_message(ADMINS[0], text=translator.get('admin-started-sending-changes', count=len(changes)))
 
     for elem in changes:
         role = elem.type

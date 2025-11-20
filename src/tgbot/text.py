@@ -1,126 +1,150 @@
-from enum import Enum
+"""Модуль для работы с текстами через fluentogram"""
+from src.tgbot.i18n import get_translator
 
-from src.my_typing import TextMessage
+# Маппинг старых ключей на новые (для обратной совместимости)
+KEY_MAPPING = {
+    'choose_role': 'choose-role',
+    'choose_sub_info_group': 'choose-sub-info-group',
+    'choose_sub_info_teacher': 'choose-sub-info-teacher',
+    'choose_sub_info_auditory': 'choose-sub-info-auditory',
+    'teacher_kb': 'teacher-kb',
+    'registration_done': 'registration-done',
+    'main_schedule': 'main-schedule',
+    'choose_type': 'choose-type',
+    'choose_day': 'choose-day',
+    'no_schedule': 'no-schedule',
+    'all_days': 'all-days',
+    'choose_letter': 'choose-letter',
+    'changed_schedule': 'changed-schedule',
+    'admin_sending_message': 'admin-sending-message',
+    'get_feedback': 'get-feedback',
+    'feedback_done': 'feedback-done',
+    'administration_role': 'administration-role',
+    'optional_func': 'optional-func',
+    'choose_optional_function': 'choose-optional-function',
+    'free_auditory': 'free-auditory',
+    'official_site': 'official-site',
+    'choose_lesson': 'choose-lesson',
+    'today_btn': 'today-btn',
+    'bell_schedule': 'bell-schedule',
+    'send_your_pass': 'send-your-pass',
+    'administrator_dismissed': 'administrator-dismissed',
+    'new_administrator_text': 'new-administrator-text',
+    'admin_panel': 'admin-panel',
+    'change_schedule': 'change-schedule',
+    'reg_error': 'reg-error',
+    'to_elective': 'to-elective',
+    'to_feedback': 'to-feedback',
+    'to_settings': 'to-settings',
+    'elective_schedule': 'elective-schedule',
+}
 
-TEXT = TextMessage(('welcome', 'Добро пожаловать, ', 'Welcome, '),
-                   ('hello', '✅ Пройди регистрацию в пару кликов', '✅ Register in a couple of clicks:'),
-                   ('choose_role', 'Выбери роль', 'Choose your role'),
-                   ('choose_sub_info_group', 'Выбери класс', 'Choose your class'),
-                   ('choose_sub_info_teacher', 'Выбери ФИО', "Choose the teacher's full name"),
-                   ('choose_sub_info_auditory', 'Выбери аудиторию', 'Choose auditory'),
-                   ('student', '👨‍🎓Ученик', '👨‍🎓Student'),
-                   ('teacher', '👨‍🏫Преподаватель', '👨‍🏫Teacher'),
-                   ('parent', '👨‍👩‍👧Родитель', '👨‍👩‍👧Parent'),
-                   ('teacher_kb', 'Для преподавателя', 'For a teacher'),
-                   ('auditory', 'Для аудитории', 'For an auditory'),
-                   ('group', 'Для класса', 'For a group'),
-                   ('registration_done', '✅ Регистрация прошла успешно', '✅ Registration was successful'),
-                   ('today', 'На сегодня', 'For today'),
-                   ('tomorrow', 'На завтра', 'For tomorrow'),
-                   ('all', 'Все расписание', 'All schedule'),
-                   ('main', 'Показать расписание', 'Show the schedule'),  # ЗАМЕТЬТЕ РАЗНИЦУ
-                   ('main_schedule', 'Расписание на', 'Schedule for'),
-                   ('month', ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь',
-                              'Октябрь', 'Ноябрь', 'Декабрь'],
-                    ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
-                     'November', 'December']),
-                   ('weekdays', {
-                       1: 'Понедельник',
-                       2: 'Вторник',
-                       3: 'Среду',
-                       4: 'Четверг',
-                       5: 'Пятницу',
-                       6: 'Субботу',
-                       7: 'Воскресенье'
-                   },
-                    {
-                        1: 'Monday',
-                        2: 'Tuesday',
-                        3: 'Wednesday',
-                        4: 'Thursday',
-                        5: 'Friday',
-                        6: 'Saturday',
-                        7: 'Sunday'
-                    }),
-                   ('weekdays_kb', {
-                       1: 'Понедельник',
-                       2: 'Вторник',
-                       3: 'Среда',
-                       4: 'Четверг',
-                       5: 'Пятница',
-                       6: 'Суббота',
-                       7: 'Воскресенье'
-                   },
-                    {
-                        1: 'Monday',
-                        2: 'Tuesday',
-                        3: 'Wednesday',
-                        4: 'Thursday',
-                        5: 'Friday',
-                        6: 'Saturday',
-                        7: 'Sunday'
-                    }),
-                   ('choose_type', 'Для кого/чего ищешь расписание?',
-                    'Who/what are you looking for a schedule for?'),
-                   ('choose_day', 'Выбери день недели', 'Choose a day of the week'),
-                   ('no_schedule', '❎ Занятий нет', '❎ There are no classes'),
-                   ('all_days', 'На конкретный день недели', 'For a specific day of the week'),
-                   ('choose_letter', 'Выбери первую букву фамилии',
-                    "Choose the first letter of last name"),
-                   ('back', '⬅ Назад', '⬅ Back'),
-                   ('changed_schedule', 'Изменения в расписании на', 'Schedule changes for'),
-                   ('yes', 'Да', 'Yes'),
-                   ('no', 'Нет', 'No'),
-                   ('aus', "Ты уверен? При перерегистрации удалятся все твои подписки на факультативы, сбросятся выбранный класс и тема оформления. В общем мы забудем вообще все, как будто ты никогда и не пользовался нашим ботом. Это действие невозможно отменить!", 'You are sure? During re-registration, all your subscriptions to electives will be removed, the selected class and the theme of design will be dropped. In general, we will forget everything at all, as if you had never used our bot. This action cannot be canceled!'),
-                   ('admin_sending_message', 'Сообщения отправлены, ошибок - ', 'Messages sent, errors - '),
-                   ('get_feedback', 'Дорогой друг! Если тебе понравился этот бот или у тебя есть предложение, '
-                                    'как сделать его еще лучше - напиши и отправь нам сообщение в этот чат',
-                    'Dear friend! If you liked this bot, or you have suggestions on how to make it even better, '
-                    'write and send us a message to this chat'),
-                   ('feedback_done', 'Отзыв успешно отправлен. Благодарим за обратную связь 🤝',
-                    'The review has been sent successfully. Thanks for the feedback. 🤝'),
-                   ('administration_role', 'Администрация', 'Administration'),
-                   ('optional_func', 'Дополнительные функции', 'Optional functions'),
-                   ('choose_optional_function', 'Выбери дополнительную функцию', 'Select additional function'),
-                   ('free_auditory', '👩‍🏫 Свободные аудитории', '👩‍🏫 Free audiences'),
-                   ('official_site', 'Официальный сайт расписания СУНЦ УрФУ',
-                    'Official website of the schedule of the SESC of UrFU'),
-                   ('choose_lesson', 'Выбери урок', 'Choose a lesson'),
-                   ('lesson', 'Урок', 'Lesson'),
-                   ('today_btn', 'Сегодня', 'Today'),
-                   ('bell_schedule', 'Расписание звонков', 'Bell schedule'),
-                   ('administration_role', 'Администратор', 'Administrator'),
-                   ('send_your_pass', 'Отправьте фото вашего пропуска', "Send a photo of your pass"),
-                   ('confirmation', 'Запрос отправлен на рассмотрение. Если хочешь, то можешь зарегистрироваться на '
-                                    'не административную роль. Мы пришлем тебе уведомление о том что твоя заявка '
-                                    'принята или отклонена',
-                    'The request has been sent for consideration. If you want, you can sign up for a '
-                    'non-administrative role. We will send you a notification that your application has been accepted '
-                    'or rejected.'),
-                   ("administrator_dismissed", 'Ваша заявка была отклонена', 'Your application has been rejected'),
-                   ("new_administrator_text", 'Ваша заявка была одобрена', 'Your application has been approved'),
-                   ('admin_panel', 'Функции: ', 'Functions: '),
-                   ("change_schedule", "Изменить расписание", "Change schedule"),
-                   ('reg_error', 'Кажется, что-то пошло не так :( Мы уже разбираемся с этим. Попробуйте '
-                                 'зарегистрироваться еще раз (с помощью команды /start) и если ошибка повторится, '
-                                 'то напишите, пожалуйста, об этом нам в /feedback', "It seems something went wrong "
-                                                                                     ":( We are already looking into "
-                                                                                     "this. Try registering again ("
-                                                                                     "using the /start command) and "
-                                                                                     "if the error persists, "
-                                                                                     "please write to us about it at "
-                                                                                     "/feedback"),
-                   ('to_elective', 'На факультативы', 'To elective courses'),
-                   ('relogin', '🔄 Перерегистрироваться', '🔄 Re-register'),
-                   ('to_feedback', '🤝 Оставить отзыв', '🤝 Leave feedback'),
-                   ('to_settings', '⚙ Настройки', '⚙ Settings'),
-                   ('elective_schedule', 'Расписание факультативов на', 'Schedule of electives for'))
+# Маппинг месяцев
+MONTH_MAPPING = {
+    1: 'month-january',
+    2: 'month-february',
+    3: 'month-march',
+    4: 'month-april',
+    5: 'month-may',
+    6: 'month-june',
+    7: 'month-july',
+    8: 'month-august',
+    9: 'month-september',
+    10: 'month-october',
+    11: 'month-november',
+    12: 'month-december',
+}
+
+# Маппинг дней недели
+WEEKDAY_MAPPING = {
+    1: 'weekday-monday',
+    2: 'weekday-tuesday',
+    3: 'weekday-wednesday',
+    4: 'weekday-thursday',
+    5: 'weekday-friday',
+    6: 'weekday-saturday',
+    7: 'weekday-sunday',
+}
+
+WEEKDAY_KB_MAPPING = {
+    1: 'weekday-kb-monday',
+    2: 'weekday-kb-tuesday',
+    3: 'weekday-kb-wednesday',
+    4: 'weekday-kb-thursday',
+    5: 'weekday-kb-friday',
+    6: 'weekday-kb-saturday',
+    7: 'weekday-kb-sunday',
+}
 
 
-class BottomMenuText(Enum):
-    optional = {'ru': '🔴 Дополнительно',
-                'en': '🔴 Optional'}
-    electives = {'ru': '🏫 Факультативы',
-                 'en': '🏫 Electives'}
-    to_main = {'ru': '⬅ На главную страницу',
-               'en': '⬅ To main page'}
+def TEXT(short_name: str, lang: str = 'ru'):
+    """
+    Получить текст по ключу и языку.
+    Обратная совместимость со старым API.
+    """
+    translator = get_translator(lang)
+    
+    # Обработка специальных случаев
+    if short_name == 'month':
+        return [translator.get(MONTH_MAPPING[i]) for i in range(1, 13)]
+    
+    if short_name == 'weekdays':
+        return {i: translator.get(WEEKDAY_MAPPING[i]) for i in range(1, 8)}
+    
+    if short_name == 'weekdays_kb':
+        return {i: translator.get(WEEKDAY_KB_MAPPING[i]) for i in range(1, 8)}
+    
+    # Обычный ключ
+    key = KEY_MAPPING.get(short_name, short_name.replace('_', '-'))
+    try:
+        return translator.get(key)
+    except Exception:
+        # Fallback на старый ключ если не найден
+        return translator.get(short_name.replace('_', '-'))
+
+
+# Для обратной совместимости с BottomMenuText
+class _BottomMenuText:
+    """Класс для текстов нижнего меню"""
+    @staticmethod
+    def _get_value(key: str, lang: str):
+        translator = get_translator(lang)
+        key_mapping = {
+            'optional': 'bottom-menu-optional',
+            'electives': 'bottom-menu-electives',
+            'to_main': 'bottom-menu-to-main',
+        }
+        return translator.get(key_mapping.get(key, key))
+    
+    @staticmethod
+    def _get_all_languages_value(key: str):
+        """Получить значение для всех поддерживаемых языков"""
+        from src.tgbot.i18n import supported_locales
+        return {lang: _BottomMenuText._get_value(key, lang) for lang in supported_locales}
+    
+    @property
+    def optional(self):
+        class _Optional:
+            @property
+            def value(self):
+                return _BottomMenuText._get_all_languages_value('optional')
+        return _Optional()
+    
+    @property
+    def electives(self):
+        class _Electives:
+            @property
+            def value(self):
+                return _BottomMenuText._get_all_languages_value('electives')
+        return _Electives()
+    
+    @property
+    def to_main(self):
+        class _ToMain:
+            @property
+            def value(self):
+                return _BottomMenuText._get_all_languages_value('to_main')
+        return _ToMain()
+
+
+BottomMenuText = _BottomMenuText()
