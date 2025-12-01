@@ -67,7 +67,11 @@ services:
       - nats_network
 
 volumes:
+  volumes:
   postgres-data:
+    driver: local
+    # Добавьте это для явного сохранения данных
+    name: postgres_data_volume
   nats_data:
   nats_config:
   images:
