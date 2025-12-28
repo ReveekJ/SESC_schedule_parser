@@ -11,7 +11,6 @@ from aiogram_dialog import DialogManager
 from src.config import ADMINS
 from src.database import get_async_session
 from src.tgbot.auxiliary import Form, bot
-from src.tgbot.for_administration.administration_page import administration_page
 from src.tgbot.keyboard import (get_choose_role_kb, get_choose_group_kb, get_choose_teacher_kb, get_choose_schedule,
                                 get_letter_of_teacher_kb, aprove)
 from src.tgbot.sesc_info import SESC_Info
@@ -176,7 +175,6 @@ async def func_pozdravlenie(message: CallbackQuery, state: FSMContext):
             await bot.send_message(user_id, TEXT('reg_error', lang))
             await func_start_registration(message, state)
     await bot.send_message(user_id, text=TEXT("new_administrator_text", lang), disable_notification=True)
-    await administration_page(message)
     await message.answer()
 
 

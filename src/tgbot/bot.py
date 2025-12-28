@@ -18,7 +18,6 @@ from src.tgbot import feedback, auxiliary, admin
 from src.tgbot.auxiliary import bot
 from src.tgbot.changes.changes import sending_schedule_changes
 from src.tgbot.elective_course import dialogs
-from src.tgbot.for_administration import administration_work
 from src.tgbot.main_work import allSchedule, relogin, mainPage, registration, optional_menu
 from src.tgbot.settings import dialogs as settings
 
@@ -63,7 +62,7 @@ async def main():
 
     nc, js = await connect_to_nats(servers=NATS_SERVER)
 
-    dp.include_routers(administration_work.router, auxiliary.router, registration.router, allSchedule.router,
+    dp.include_routers(auxiliary.router, registration.router, allSchedule.router,
                        optional_menu.router, mainPage.router, relogin.router, admin.router, feedback.router,
                        dialogs.admin_work, dialogs.auth_dialog, dialogs.user_dialog, settings.dialog, settings.router)
     setup_dialogs(dp)
