@@ -6,7 +6,7 @@ import simplejson as json
 
 from proto import drawing_pb2_grpc, drawing_pb2
 from proto.drawing_pb2 import DrawResponse
-from src.config import PATH_TO_FONT
+from src.config import PATH_TO_FONT, DRAWING_HOST
 from src.database import get_async_session
 from src.my_typing import ChangesList, ChangesType
 from src.tgbot.sesc_info import SESC_Info
@@ -55,7 +55,7 @@ class AbstractParser(ABC):
                 case _:
                     return (__lesson['subject'], __lesson['teacher'], __lesson['auditory']) if __lesson['subject'] != '' else None
 
-        with grpc.insecure_channel('drawing:8080') as channel:
+        with grpc.insecure_channel(DRAWING_HOST) as channel:
             stub = drawing_pb2_grpc.DrawerStub(channel)
 
             lessons = []

@@ -1,11 +1,12 @@
 import grpc
 
 from proto import drawing_pb2_grpc, drawing_pb2
+from src.config import DRAWING_HOST
 from src.tgbot.sesc_info import SESC_Info
 
 
 def render_example_image(style: int) -> str:
-    with grpc.insecure_channel('drawing:8080') as channel:
+    with grpc.insecure_channel(DRAWING_HOST) as channel:
         stub = drawing_pb2_grpc.DrawerStub(channel)
         dct: dict[str, str] = {str(value): key for key, value in drawing_pb2.Style.items()}
 
